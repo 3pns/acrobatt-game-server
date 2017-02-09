@@ -10,8 +10,9 @@ import (
 
 
 type Board struct {
-	Squares [20][20] Square `json:"squares"`
-	pieces [] *Piece
+	Squares [20][20] *Square `json:"squares"`
+	Pieces [] Piece `json:"pieces"`
+	Players [] *Player `json:"pieces"`
 }
 
 type Square struct {
@@ -26,7 +27,7 @@ type Piece struct {
 	Origin *Square `json:"origin"`
 	Rotation string `json:"rotation"`
 	Flipped bool `json:"flipped"`
-	Player Player `json:"player"`
+	Player *Player `json:"player"`
 }
 
 type Cube struct {
@@ -35,36 +36,36 @@ type Cube struct {
 }
 
 type Player struct {
-	name string
-	color string
+	Id int `json:"id"`
+	Name string `json:"name"`
+	Color string `json:"color"`
+	Pieces [] Piece `json:"pieces"`
 }
 
 	
 func main() {
 	fmt.Println("----- Test -----")
 
-	//joueur
-	player := Player{"Bertrand", "yellow"}
-	fmt.Println(player)
-
 	//plateau
 	var board Board
 	initBoard(&board)
+	initPieces(&board)
+
+	//joueur
+	player := Player{0, "Bertrand", "yellow", board.Pieces}
+
+	//causing stackoverflow
+	//player.initPieces()
+	fmt.Println(player)
 	
 	//pièces
 	fmt.Println("----- Piece -----")
-	var piece Piece
-	piece.Id = 0
-	piece.Rotation = "N"
-	piece.Flipped = false
-	piece.Player = player
-	board.Squares[10][15].Empty = false
-	piece.Origin = &board.Squares[10][15]
-	piece.Cubes = append(piece.Cubes, Cube{0, 0})
+	fmt.Println(board.Pieces[0])
+	board.placePiece(&board.Pieces[0], Square{10, 3, true})
 
 	fmt.Println("----- PRINT TO JSON -----")
 	//b, err := json.Marshal(Square{0, 0, true})
-	b, err := json.Marshal(piece)
+	b, err := json.Marshal(player)
   if err != nil {
       fmt.Println(err)
   }
@@ -81,20 +82,11 @@ func printBoard(board *Board){
 		fmt.Print(" ")
 		for j := 0; j < 20; j++ {
 			
-			if board.Squares[i][j].Empty == true {
+			if board.Squares[j][i].Empty == true {
 				printBlack("▇ ")
 				
 			} else {
-				//printRed("▪") //petit carré
-				//printRed("⎕") // carré vide
-				//printBlack("■ ") // carré moyen
-				if board.Squares[i][j].Empty {
-					printBlack("▇ ")
-					} else {
-						printRed("▇ ")
-					}
-				 // 7/8 pavé
-				//printBlack("▆ ") // 3/4
+				printRed("▇ ")
 			}
 		}
 		fmt.Print(" ")
@@ -108,10 +100,38 @@ func initBoard(board *Board){
 	fmt.Println("initializing board")
 	for i := 0; i < 20; i++ {
 		for j := 0; j < 20; j++ {
-			(*board).Squares[i][j] = Square{i, j, true}
+			(*board).Squares[i][j] = &Square{i, j, true}
 		}
 	}
 	fmt.Println("board initialized with success !\n")
+}
+
+func initPieces(board *Board){
+	fmt.Println("generating pieces")
+
+	var piece Piece
+	piece.Id = 0
+	piece.Rotation = "N"
+	piece.Flipped = false
+	piece.Cubes = append(piece.Cubes, Cube{0, 0})
+	board.Pieces = append(board.Pieces, piece)
+
+	fmt.Println("pieces generated with success !\n")
+}
+
+func (board Board) placePiece(piece *Piece, square Square) {
+	board.Squares[square.X][square.Y].Empty = false
+	piece.Origin = board.Squares[square.X][square.Y]
+}
+
+func (player *Player) initPieces() {
+for index,piece := range player.Pieces {
+	player.Pieces[index].Player = player
+	piece.Player = player
+  // index is the index where we are
+  // element is the element from someSlice for where we are
+}
+	fmt.Println("init player pieces")
 }
 
 func setWhiteBackground (){
@@ -150,6 +170,8 @@ func printWhite(str string){
 }
 
 /*
+
+// code server Websocket
 func main() {
 
 	fmt.Println("Launching server on port 8081...")
