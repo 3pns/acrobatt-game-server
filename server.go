@@ -21,17 +21,17 @@ type Square struct {
 }
 
 type Piece struct {
-	id int
-	cubes []Cube
-	origin *Square
-	rotation string
-	flipped bool
-	player Player
+	Id int `json:"id"`
+	Cubes []Cube `json:"cubes"`
+	Origin *Square `json:"origin"`
+	Rotation string `json:"rotation"`
+	Flipped bool `json:"flipped"`
+	Player Player `json:"player"`
 }
 
 type Cube struct {
-	x int
-	y int
+	X int
+	Y int
 }
 
 type Player struct {
@@ -54,21 +54,23 @@ func main() {
 	//pièces
 	fmt.Println("----- Piece -----")
 	var piece Piece
-	piece.id = 0
-	//piece.origin = board.squares[10][10]
-	piece.rotation = "N"
-	piece.flipped = false
-	piece.player = player
-	fmt.Println(piece)
-	fmt.Println(piece.origin)
-	
-	fmt.Println("----- BOARD TO JSON -----")
-	b, err := json.Marshal(&board.Squares[0][0])
+	piece.Id = 0
+	piece.Rotation = "N"
+	piece.Flipped = false
+	piece.Player = player
+	board.Squares[10][15].Empty = false
+	piece.Origin = &board.Squares[10][15]
+	piece.Cubes = append(piece.Cubes, Cube{0, 0})
+
+	fmt.Println("----- PRINT TO JSON -----")
+	//b, err := json.Marshal(Square{0, 0, true})
+	b, err := json.Marshal(piece)
   if err != nil {
       fmt.Println(err)
   }
   myJson := string(b) // converti byte en string
 	fmt.Println(myJson)
+
 	printBoard(&board)
 	fmt.Println("\n----- Game Over -----")
 }
@@ -79,8 +81,8 @@ func printBoard(board *Board){
 		fmt.Print(" ")
 		for j := 0; j < 20; j++ {
 			
-			if board.Squares[i][j].Empty == false {
-				fmt.Print("0")
+			if board.Squares[i][j].Empty == true {
+				printBlack("▇ ")
 				
 			} else {
 				//printRed("▪") //petit carré
@@ -95,6 +97,7 @@ func printBoard(board *Board){
 				//printBlack("▆ ") // 3/4
 			}
 		}
+		fmt.Print(" ")
 		setBlackBackground ()
 		fmt.Println("")
 	}
