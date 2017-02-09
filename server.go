@@ -5,18 +5,19 @@ import (
 	"fmt"
 	_ "bufio"
 	_ "strings"
+	"encoding/json"
 )
 
 
 type Board struct {
-	squares [20][20] *Square
+	Squares [20][20] Square `json:"squares"`
 	pieces [] *Piece
 }
 
 type Square struct {
-	x int
-	y int
-	empty bool
+	X int `json:"x"`
+	Y int `json:"y"`
+	Empty bool `json:"empty"`
 }
 
 type Piece struct {
@@ -54,15 +55,20 @@ func main() {
 	fmt.Println("----- Piece -----")
 	var piece Piece
 	piece.id = 0
-	piece.origin = board.squares[10][10]
+	//piece.origin = board.squares[10][10]
 	piece.rotation = "N"
 	piece.flipped = false
 	piece.player = player
 	fmt.Println(piece)
 	fmt.Println(piece.origin)
 	
-
-	
+	fmt.Println("----- BOARD TO JSON -----")
+	b, err := json.Marshal(&board.Squares[0][0])
+  if err != nil {
+      fmt.Println(err)
+  }
+  myJson := string(b) // converti byte en string
+	fmt.Println(myJson)
 	printBoard(&board)
 	fmt.Println("\n----- Game Over -----")
 }
@@ -73,14 +79,14 @@ func printBoard(board *Board){
 		fmt.Print(" ")
 		for j := 0; j < 20; j++ {
 			
-			if board.squares[i][j] == nil {
+			if board.Squares[i][j].Empty == false {
 				fmt.Print("0")
 				
 			} else {
 				//printRed("▪") //petit carré
 				//printRed("⎕") // carré vide
 				//printBlack("■ ") // carré moyen
-				if board.squares[i][j].empty {
+				if board.Squares[i][j].Empty {
 					printBlack("▇ ")
 					} else {
 						printRed("▇ ")
@@ -99,7 +105,7 @@ func initBoard(board *Board){
 	fmt.Println("initializing board")
 	for i := 0; i < 20; i++ {
 		for j := 0; j < 20; j++ {
-			(*board).squares[i][j] = &Square{i, j, true}
+			(*board).Squares[i][j] = Square{i, j, true}
 		}
 	}
 	fmt.Println("board initialized with success !\n")
