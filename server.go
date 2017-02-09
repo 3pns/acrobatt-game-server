@@ -9,7 +9,8 @@ import (
 
 
 type Board struct {
-	squareTab [20][20] *Square
+	squares [20][20] *Square
+	pieces [] *Piece
 }
 
 type Square struct {
@@ -20,10 +21,16 @@ type Square struct {
 
 type Piece struct {
 	id int
-	origin Square
+	cubes []Cube
+	origin *Square
 	rotation string
 	flipped bool
 	player Player
+}
+
+type Cube struct {
+	x int
+	y int
 }
 
 type Player struct {
@@ -33,48 +40,106 @@ type Player struct {
 
 	
 func main() {
-	fmt.Println("#### Test ####")
+	fmt.Println("----- Test -----")
 
+	//joueur
 	player := Player{"Bertrand", "yellow"}
 	fmt.Println(player)
 
+	//plateau
 	var board Board
-	var tab [20][20] *Square
-	mySquare := Square{1, 2, false}
-	
-	
-	tab[0][0] = &mySquare
-	board.squareTab = tab
 	initBoard(&board)
+	
+	//pièces
+	fmt.Println("----- Piece -----")
+	var piece Piece
+	piece.id = 0
+	piece.origin = board.squares[10][10]
+	piece.rotation = "N"
+	piece.flipped = false
+	piece.player = player
+	fmt.Println(piece)
+	fmt.Println(piece.origin)
+	
+
+	
 	printBoard(&board)
-	fmt.Println("")
-	fmt.Print(board.squareTab)
+	fmt.Println("\n----- Game Over -----")
 }
 
 func printBoard(board *Board){
 	for i := 0; i < 20; i++ {
+		setWhiteBackground()
+		fmt.Print(" ")
 		for j := 0; j < 20; j++ {
 			
-			if board.squareTab[i][j] == nil {
+			if board.squares[i][j] == nil {
 				fmt.Print("0")
 				
 			} else {
-				fmt.Print("#")
+				//printRed("▪") //petit carré
+				//printRed("⎕") // carré vide
+				//printBlack("■ ") // carré moyen
+				if board.squares[i][j].empty {
+					printBlack("▇ ")
+					} else {
+						printRed("▇ ")
+					}
+				 // 7/8 pavé
+				//printBlack("▆ ") // 3/4
 			}
 		}
+		setBlackBackground ()
 		fmt.Println("")
 	}
+	printReset()
 }
 
 func initBoard(board *Board){
 	fmt.Println("initializing board")
 	for i := 0; i < 20; i++ {
 		for j := 0; j < 20; j++ {
-			(*board).squareTab[i][j] = &Square{i, j, true}
+			(*board).squares[i][j] = &Square{i, j, true}
 		}
 	}
-	fmt.Println("board initialized with success !")
+	fmt.Println("board initialized with success !\n")
 }
+
+func setWhiteBackground (){
+	fmt.Print("\x1B[47m")
+}
+func setBlackBackground (){
+	fmt.Print("\x1B[40m")
+}
+
+func printReset(){
+	fmt.Print("\x1B[0m")
+}
+
+func printBlack(str string){
+	fmt.Print("\x1B[30m" + str)
+}
+
+func printRed(str string){
+	fmt.Print("\x1B[31m" + str)
+}
+
+func printGreen(str string){
+	fmt.Print("\x1B[32m" + str)
+}
+
+func printYellow(str string){
+	fmt.Print("\x1B[33m" + str)
+}
+
+func printBlue(str string){
+	fmt.Print("\x1B[34m" + str)
+}
+
+func printWhite(str string){
+	fmt.Print("\x1B[37m" + str)
+}
+
 /*
 func main() {
 
