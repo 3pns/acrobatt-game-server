@@ -5,6 +5,7 @@ import "fmt"
 import "bufio"
 import "os"
 
+//client Websocket
 func main() {
 
   // connect to this socket
