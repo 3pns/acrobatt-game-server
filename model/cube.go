@@ -1,6 +1,6 @@
 package model
 
 type Cube struct {
-  X int
-  Y int
+	X int
+	Y int
 }

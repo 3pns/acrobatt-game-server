@@ -1,10 +1,33 @@
 package model
 
 type Piece struct {
-  Id int `json:"id"`
-  Cubes []Cube `json:"cubes"`
-  Origin *Square `json:"origin"`
-  Rotation string `json:"rotation"`
-  Flipped bool `json:"flipped"`
-  Player *Player `json:"player"`
+	Id       int     `json:"id"`
+	Cubes    []Cube  `json:"cubes"`
+	Origin   *Square `json:"origin"`
+	Rotation string  `json:"rotation"`
+	Flipped  bool    `json:"flipped"`
+	Player   *Player `json:"player"`
+}
+
+type PieceFactory struct {
+  Id       int
+  Rotation string
+  Flipped  bool
+}
+
+func NewPieceFactory() * PieceFactory{
+  var factory = new(PieceFactory)
+  factory.Id = 0
+  factory.Rotation = "S"
+  factory.Flipped = false
+  return factory
+}
+
+func (factory *PieceFactory) NewPiece() Piece {
+  var piece Piece
+	piece.Id = factory.Id
+	piece.Rotation = factory.Rotation
+  piece.Flipped = factory.Flipped
+  factory.Id++
+  return piece
 }
