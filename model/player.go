@@ -11,12 +11,9 @@ type Player struct {
 	Pieces []Piece `json:"pieces"`
 }
 
-func (player *Player) initPieces() {
-	for index, piece := range player.Pieces {
-		player.Pieces[index].Player = player
-		piece.Player = player
-		// index is the index where we are
-		// element is the element from someSlice for where we are
+func (player *Player) Init() {
+	for index, _ := range player.Pieces {
+		player.Pieces[index].PlayerId = player.Id
 	}
 	fmt.Println("init player pieces")
 }

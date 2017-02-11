@@ -9,11 +9,11 @@ import (
 type Board struct {
 	Squares [20][20]*Square `json:"squares"`
 	Pieces  []Piece         `json:"pieces"`
-	Players []*Player       `json:"pieces"`
+	Players []*Player       `json:"players"`
 }
 
 func (board *Board) PlacePiece(piece *Piece, square *Square) {
-	board.Squares[square.X][square.Y].Empty = false
+	board.Squares[square.X][square.Y].PlayerId = &piece.PlayerId
 	piece.Origin = board.Squares[square.X][square.Y]
 
 	//1 - vérifier si on a le droit de placer la pièce
@@ -39,7 +39,7 @@ func (board *Board) PlacePiece(piece *Piece, square *Square) {
 			yBoardValue = cube.X
 		}
 		fmt.Println("Apres : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		board.Squares[square.X+xFactor*xBoardValue][square.Y+yFactor*yBoardValue].Empty = false
+		board.Squares[square.X+xFactor*xBoardValue][square.Y+yFactor*yBoardValue].PlayerId = &piece.PlayerId
 	}
 }
 
@@ -47,7 +47,7 @@ func (board *Board) InitBoard() {
 	fmt.Println("initializing board")
 	for i := 0; i < 20; i++ {
 		for j := 0; j < 20; j++ {
-			board.Squares[i][j] = &Square{i, j, true}
+			board.Squares[i][j] = &Square{i, j, nil}
 		}
 	}
 	fmt.Println("board initialized with success !\n")
@@ -56,26 +56,26 @@ func (board *Board) InitBoard() {
 func (board *Board) InitPieces() {
 	fmt.Println("generating pieces")
 
-  var factory = NewPieceFactory()
+	var factory = NewPieceFactory()
 
 	var piece = factory.NewPiece()
-	piece.Cubes = []Cube{Cube{0,0}}
+	piece.Cubes = []Cube{Cube{0, 0}}
 	board.Pieces = append(board.Pieces, piece)
 
 	var piece1 = factory.NewPiece()
-	piece1.Cubes = []Cube{Cube{0,0}, Cube{0,1}}
+	piece1.Cubes = []Cube{Cube{0, 0}, Cube{0, 1}}
 	board.Pieces = append(board.Pieces, piece1)
 
 	var piece2 = factory.NewPiece()
-	piece2.Cubes = []Cube{Cube{0,0}, Cube{0,1}, Cube{1,0}}
+	piece2.Cubes = []Cube{Cube{0, 0}, Cube{0, 1}, Cube{1, 0}}
 	board.Pieces = append(board.Pieces, piece2)
 
 	var piece3 = factory.NewPiece()
-	piece3.Cubes = []Cube{Cube{0,0}, Cube{0,1}, Cube{0,2}}
+	piece3.Cubes = []Cube{Cube{0, 0}, Cube{0, 1}, Cube{0, 2}}
 	board.Pieces = append(board.Pieces, piece3)
 
 	var piece4 = factory.NewPiece()
-	piece4.Cubes = []Cube{Cube{0,0}, Cube{1,0}, Cube{0,1}, Cube{0,2}}
+	piece4.Cubes = []Cube{Cube{0, 0}, Cube{1, 0}, Cube{0, 1}, Cube{0, 2}}
 	board.Pieces = append(board.Pieces, piece4)
 
 	fmt.Println("pieces generated with success !\n")
@@ -87,7 +87,7 @@ func (board *Board) PrintBoard() {
 		fmt.Print(" ")
 		for j := 0; j < 20; j++ {
 
-			if board.Squares[j][i].Empty == true {
+			if board.Squares[j][i].PlayerId == nil {
 				utils.PrintBlack("▇ ")
 
 			} else {

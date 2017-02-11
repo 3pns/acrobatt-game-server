@@ -6,28 +6,28 @@ type Piece struct {
 	Origin   *Square `json:"origin"`
 	Rotation string  `json:"rotation"`
 	Flipped  bool    `json:"flipped"`
-	Player   *Player `json:"player"`
+	PlayerId int     `json:"playerId"`
 }
 
 type PieceFactory struct {
-  Id       int
-  Rotation string
-  Flipped  bool
+	Id       int
+	Rotation string
+	Flipped  bool
 }
 
-func NewPieceFactory() * PieceFactory{
-  var factory = new(PieceFactory)
-  factory.Id = 0
-  factory.Rotation = "S"
-  factory.Flipped = false
-  return factory
+func NewPieceFactory() *PieceFactory {
+	var factory = new(PieceFactory)
+	factory.Id = 0
+	factory.Rotation = "S"
+	factory.Flipped = false
+	return factory
 }
 
 func (factory *PieceFactory) NewPiece() Piece {
-  var piece Piece
+	var piece Piece
 	piece.Id = factory.Id
 	piece.Rotation = factory.Rotation
-  piece.Flipped = factory.Flipped
-  factory.Id++
-  return piece
+	piece.Flipped = factory.Flipped
+	factory.Id++
+	return piece
 }
