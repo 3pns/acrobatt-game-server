@@ -1,15 +1,14 @@
-package server
+package main
 
 import (
-	_ "net"
-	"fmt"
+	. "./model"
 	_ "bufio"
-	_ "strings"
 	"encoding/json"
+	"fmt"
+	_ "net"
+	_ "strings"
 )
 
-import . "./model"
-	
 func main() {
 	fmt.Println("----- Test -----")
 
@@ -19,24 +18,28 @@ func main() {
 	board.InitPieces()
 
 	//joueur
-	player := Player{0, "Bertrand", "yellow", board.Pieces}
-
-	//causing stackoverflow
-	//player.initPieces()
+	player := Player{0, "Joueur", "blue", board.Pieces}
+	ai1 := Player{1, "AI-1", "green", board.Pieces}
+	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
+	ai3 := Player{3, "AI-3", "red", board.Pieces}
+	player.Init()
+	ai1.Init()
+	ai2.Init()
+	ai3.Init()
+	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
 	fmt.Println(player)
-	
+
 	//pièces
-	fmt.Println("----- Piece -----")
-	fmt.Println(board.Pieces[0])
-	board.PlacePiece(&board.Pieces[4], Square{10, 3, true})
+	board.Pieces[4].Rotation = "W"
+	board.Pieces[4].Flipped = false
+	board.PlacePiece(&board.Pieces[len(board.Pieces)-1], board.Squares[10][10])
 
 	fmt.Println("----- PRINT TO JSON -----")
-	//b, err := json.Marshal(Square{0, 0, true})
-	b, err := json.Marshal(player)
-  if err != nil {
-      fmt.Println(err)
-  }
-  myJson := string(b) // converti byte en string
+	b, err := json.Marshal(board)
+	if err != nil {
+		fmt.Println(err)
+	}
+	myJson := string(b) // converti byte en string
 	fmt.Println(myJson)
 
 	board.PrintBoard()
