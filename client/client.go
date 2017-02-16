@@ -13,7 +13,7 @@ func main() {
 	for {
 		// read in input from stdin
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Text to send: ")
+		fmt.Print("JSON to send: ")
 		text, _ := reader.ReadString('\n')
 		// send to socket
 		fmt.Fprintf(conn, text+"\n")
