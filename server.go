@@ -32,7 +32,7 @@ func main() {
 	//pièces
 	board.Pieces[4].Rotation = "W"
 	board.Pieces[4].Flipped = false
-	board.PlacePiece(&board.Pieces[4], board.Squares[10][10])
+	board.PlacePiece(&board.Pieces[len(board.Pieces)-1], board.Squares[10][10])
 
 	fmt.Println("----- PRINT TO JSON -----")
 	b, err := json.Marshal(board)

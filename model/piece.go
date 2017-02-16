@@ -18,7 +18,7 @@ type PieceFactory struct {
 func NewPieceFactory() *PieceFactory {
 	var factory = new(PieceFactory)
 	factory.Id = 0
-	factory.Rotation = "S"
+	factory.Rotation = "N"
 	factory.Flipped = false
 	return factory
 }
