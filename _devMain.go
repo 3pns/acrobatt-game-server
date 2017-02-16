@@ -1,15 +1,14 @@
 package main
 
 import (
-	_ "./model"
-	"bufio"
-	_ "encoding/json"
+	. "./model"
+	_ "bufio"
+	"encoding/json"
 	"fmt"
-	"net"
-	"strings"
-	"io"
+	_ "net"
+	_ "strings"
 )
-/*
+
 func main() {
 	fmt.Println("----- Test -----")
 
@@ -42,7 +41,9 @@ func main() {
 
 	board.PrintBoard()
 	fmt.Println("\n----- Game Over -----")
-}*/
+}
+
+/*
 
 // code server Websocket
 func main() {
@@ -57,21 +58,16 @@ func main() {
 	// run loop forever (or until ctrl-c)
 	for {
 		// will listen for message to process ending in newline (\n)
-		message, err := bufio.NewReader(conn).ReadString('\n')
-
-		if err != nil {
-		   if err == io.EOF {
-		     return
-		   }
-		}
+		message, _ := bufio.NewReader(conn).ReadString('\n')
 		// output message received
 		fmt.Print("Message Received:", string(message))
 		// sample process for string received
 		newmessage := strings.ToUpper(message)
 		// send new string back to client
 		conn.Write([]byte(newmessage + "\n"))
+
 		if (string(message) == "QUIT") {
 			return
 		}
 	}
-}
+}*/
