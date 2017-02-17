@@ -3,7 +3,7 @@ package main
 import (
 	. "./model"
 	"bufio"
-	_"encoding/json"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net"
@@ -11,7 +11,12 @@ import (
 	"io"
 	"github.com/gorilla/websocket"
 	"flag"
+	"log"
 )
+
+// standard types
+//https://github.com/gorilla/websocket/blob/master/conn.go
+
 /*
 func main() {
 	fmt.Println("----- Test -----")
@@ -48,6 +53,7 @@ func main() {
 }*/
 
 // code server Websocket
+var upgrader = websocket.Upgrader{}
 func main() {
 
 	fmt.Println("Launching server on port 8081...")
@@ -120,29 +126,53 @@ func startConnect (conn net.Conn) {
 }
 
 func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
-		for {
-		    messageType, r, err := conn.NextReader()
-		    fmt.Println("Message Type Received:", string(messageType))
-		    fmt.Println("Message Received:", r)
-		    if err != nil {
-		        return
-		    }
-		    w, err := conn.NextWriter(messageType)
-		    if err != nil {
-		        return
-		    }
-		    if _, err := io.Copy(w, r); err != nil {
-		        return
-		    }
-		    if err := w.Close(); err != nil {
-		        return
-		    }
-		}
+	var board Board
+	board.InitBoard()
+	board.InitPieces()
+	player := Player{0, "Joueur", "blue", board.Pieces}
+	ai1 := Player{1, "AI-1", "green", board.Pieces}
+	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
+	ai3 := Player{3, "AI-3", "red", board.Pieces}
+	player.Init()
+	ai1.Init()
+	ai2.Init()
+	ai3.Init()
+	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
+
+	b, err := json.Marshal(board)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = conn.WriteMessage(1, b)
+	if err != nil {
+		log.Println("write:", err)
+	}
+
+	for {
+	    messageType, r, err := conn.NextReader()
+	    fmt.Println("Message Type Received:", string(messageType))
+	    fmt.Println("Message Received:", r)
+	    if err != nil {
+	        return
+	    }
+	    w, err := conn.NextWriter(messageType)
+	    if err != nil {
+	        return
+	    }
+	    if _, err := io.Copy(w, r); err != nil {
+	        return
+	    }
+	    if err := w.Close(); err != nil {
+	        return
+	    }
+	}
 }
-var upgrader = websocket.Upgrader{
+/*var upgrader = websocket.Upgrader{
     ReadBufferSize:  1024,
     WriteBufferSize: 1024,
-}
+}*/
+
 /*
 func handler(w http.ResponseWriter, r *http.Request){
     conn, err := upgrader.Upgrade(w, r, nil)
