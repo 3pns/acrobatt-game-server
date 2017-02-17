@@ -2,11 +2,9 @@ package main
 
 import (
 	. "./model"
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net"
 	_ "strings"
 	"io"
 	"github.com/gorilla/websocket"
@@ -55,29 +53,11 @@ func main() {
 // code server Websocket
 var upgrader = websocket.Upgrader{}
 func main() {
-
 	fmt.Println("Launching server on port 8081...")
-
-	//Bytestream Listen
-	// listen on all interfaces
-	/*
-	ln, _ := net.Listen("tcp", ":8081")
-	// accept connection on port
-	waitingState:
-	fmt.Print("waiting cest ici que sa wait")
-	conn, _ := ln.Accept()
-	go startConnect (conn)*/
-
 	//WebSocket Listen
 	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
 	http.HandleFunc("/", handleNewConnection)
 	http.ListenAndServe(*addr, nil)
-
-
-	// run loop forever (or until ctrl-c)
-
-	//on retourne à l'état d'attente d'une connexion
-	//goto waitingState
 }
 
 func handleNewConnection(w http.ResponseWriter, r *http.Request) {
@@ -88,41 +68,6 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
       return
   }
   go startSocket (conn, w, r)
-}
-
-func startConnect (conn net.Conn) {
-	var board Board
-	board.InitBoard()
-	board.InitPieces()
-	player := Player{0, "Joueur", "blue", board.Pieces}
-	ai1 := Player{1, "AI-1", "green", board.Pieces}
-	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
-	ai3 := Player{3, "AI-3", "red", board.Pieces}
-	player.Init()
-	ai1.Init()
-	ai2.Init()
-	ai3.Init()
-	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
-
-	//envoi de la board
-	board.Refresh(conn)
-	for {
-		// will listen for message to process ending in newline (\n)
-		message, err := bufio.NewReader(conn).ReadString('\n')
-
-		//detection de la fin de la connexion
-		if err != nil {
-		   if err == io.EOF {
-		     break
-		   }
-		}
-		fmt.Print("Message Received:", string(message))
-		board.Refresh(conn)
-		if (string(message) == "QUIT") {
-			break
-		}
-	}
-
 }
 
 func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
@@ -139,12 +84,12 @@ func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
 	ai3.Init()
 	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
 
+	//envoi de la board
 	b, err := json.Marshal(board)
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	err = conn.WriteMessage(1, b)
+	err = conn.WriteMessage(websocket.TextMessage, b)
 	if err != nil {
 		log.Println("write:", err)
 	}
