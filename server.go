@@ -55,7 +55,7 @@ func main() {
 func main() {
 	fmt.Println("Launching server on port 8081...")
 	//WebSocket Listen
-	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	var addr = flag.String("addr", ":8081", "http service address")
 	http.HandleFunc("/", handleNewConnection)
 	http.ListenAndServe(*addr, nil)
 }
