@@ -29,6 +29,7 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 
 	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	//var addr = flag.String("addr", "94.23.249.62:8081", "http service address")
 	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
 	fmt.Println("connecting to ", u.String())
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
