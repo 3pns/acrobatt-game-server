@@ -4,6 +4,8 @@ import (
 	"../utils"
 	"fmt"
 	"strconv"
+	"net"
+	"encoding/json"
 )
 
 type Board struct {
@@ -169,4 +171,13 @@ func (board *Board) PrintBoard() {
 		fmt.Println("")
 	}
 	utils.PrintReset()
+}
+
+func (board *Board) Refresh(conn net.Conn) {
+	b, err := json.Marshal(board)
+	if err != nil {
+		fmt.Println(err)
+	}
+	conn.Write(b)
+	conn.Write([]byte("\n"))
 }

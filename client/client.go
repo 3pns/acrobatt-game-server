@@ -1,15 +1,20 @@
 package main
 
-import "net"
-import "fmt"
-import "bufio"
-import "os"
+import (
+	. "../model"
+	"encoding/json"
+	"net"
+	"fmt"
+	"bufio"
+	"os"
+)
 
 //client Websocket
 func main() {
+	
+	conn, _ := net.Dial("tcp", "127.0.0.1:8081") // connect to this socket local
+	//conn, _ := net.Dial("tcp", "94.23.249.62:8081") // production server
 
-	// connect to this socket
-	conn, _ := net.Dial("tcp", "127.0.0.1:8081")
 	for {
 		// read in input from stdin
 		reader := bufio.NewReader(os.Stdin)
@@ -18,7 +23,11 @@ func main() {
 		// send to socket
 		fmt.Fprintf(conn, text+"\n")
 		// listen for reply
-		message, _ := bufio.NewReader(conn).ReadString('\n')
-		fmt.Print("Message from server: " + message)
+		jsonMessage, _ := bufio.NewReader(conn).ReadString('\n')
+		board := Board{}
+		json.Unmarshal([]byte(jsonMessage), &board)
+		fmt.Println("###### DATA #####")
+		fmt.Println(board.Squares[2][2])
+		board.PrintBoard()
 	}
 }

@@ -3,11 +3,13 @@ package main
 import (
 	. "./model"
 	"bufio"
-	"encoding/json"
+	_"encoding/json"
 	"fmt"
+	"net/http"
 	"net"
-	"strings"
+	_ "strings"
 	"io"
+	"github.com/gorilla/websocket"
 )
 /*
 func main() {
@@ -49,17 +51,32 @@ func main() {
 
 	fmt.Println("Launching server on port 8081...")
 
+	//Bytestream Listen
 	// listen on all interfaces
+	/*
 	ln, _ := net.Listen("tcp", ":8081")
 	// accept connection on port
 	waitingState:
 	fmt.Print("waiting cest ici que sa wait")
 	conn, _ := ln.Accept()
-	go startConnect (conn)
+	go startConnect (conn)*/
+
+	//WebSocket Listen
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        //log.Println(err)
+        return
+    }
+    go startSocket (conn, w, r)
+	})
+	http.ListenAndServe(":8081", nil)
+
+
 	// run loop forever (or until ctrl-c)
 
 	//on retourne à l'état d'attente d'une connexion
-	goto waitingState
+	//goto waitingState
 }
 
 func startConnect (conn net.Conn) {
@@ -77,11 +94,7 @@ func startConnect (conn net.Conn) {
 	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
 
 	//envoi de la board
-	b, err := json.Marshal(board)
-	if err != nil {
-		fmt.Println(err)
-	}
-	conn.Write(b)
+	board.Refresh(conn)
 	for {
 		// will listen for message to process ending in newline (\n)
 		message, err := bufio.NewReader(conn).ReadString('\n')
@@ -92,14 +105,58 @@ func startConnect (conn net.Conn) {
 		     break
 		   }
 		}
-		// output message received
 		fmt.Print("Message Received:", string(message))
-		// sample process for string received
-		newmessage := strings.ToUpper(message)
-		// send new string back to client
-		conn.Write([]byte(newmessage + "\n"))
+		board.Refresh(conn)
 		if (string(message) == "QUIT") {
 			break
 		}
 	}
+
+}
+
+func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
+		for {
+		    messageType, r, err := conn.NextReader()
+		    if err != nil {
+		        return
+		    }
+		    w, err := conn.NextWriter(messageType)
+		    if err != nil {
+		        return
+		    }
+		    if _, err := io.Copy(w, r); err != nil {
+		        return
+		    }
+		    if err := w.Close(); err != nil {
+		        return
+		    }
+		}
+}
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+}
+
+func handler(w http.ResponseWriter, r *http.Request){
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        //log.Println(err)
+        return
+    }
+		for {
+		    messageType, r, err := conn.NextReader()
+		    if err != nil {
+		        return
+		    }
+		    w, err := conn.NextWriter(messageType)
+		    if err != nil {
+		        return
+		    }
+		    if _, err := io.Copy(w, r); err != nil {
+		        return
+		    }
+		    if err := w.Close(); err != nil {
+		        return
+		    }
+}
 }
