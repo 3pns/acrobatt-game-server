@@ -51,11 +51,11 @@ func main() {
 }*/
 
 // code server Websocket
-var upgrader = websocket.Upgrader{}
+//var upgrader = websocket.Upgrader{}
 func main() {
 	fmt.Println("Launching server on port 8081...")
 	//WebSocket Listen
-	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	var addr = flag.String("addr", ":8081", "http service address")
 	http.HandleFunc("/", handleNewConnection)
 	http.ListenAndServe(*addr, nil)
 }
@@ -113,10 +113,13 @@ func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
 	    }
 	}
 }
-/*var upgrader = websocket.Upgrader{
+var upgrader = websocket.Upgrader{
     ReadBufferSize:  1024,
     WriteBufferSize: 1024,
-}*/
+    CheckOrigin: func(r *http.Request) bool {
+        return true
+    },
+}
 
 /*
 func handler(w http.ResponseWriter, r *http.Request){
