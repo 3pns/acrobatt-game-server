@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	_ "strings"
-	"io"
+	_"io"
 	"github.com/gorilla/websocket"
 	"flag"
 	"log"
@@ -95,6 +95,17 @@ func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
 	}
 
 	for {
+		mt, message, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("read: ", err)
+			return
+		}
+		if mt == websocket.TextMessage {
+			fmt.Println("message de type TextMessage détécté: ")
+			myJson := string(message)
+			fmt.Println("message reçu: ", myJson)
+		}
+		/*
 	    messageType, r, err := conn.NextReader()
 	    fmt.Println("Message Type Received:", string(messageType))
 	    fmt.Println("Message Received:", r)
@@ -110,9 +121,10 @@ func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
 	    }
 	    if err := w.Close(); err != nil {
 	        return
-	    }
+	    }*/
 	}
 }
+
 var upgrader = websocket.Upgrader{
     ReadBufferSize:  1024,
     WriteBufferSize: 1024,
@@ -120,28 +132,3 @@ var upgrader = websocket.Upgrader{
         return true
     },
 }
-
-/*
-func handler(w http.ResponseWriter, r *http.Request){
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        //log.Println(err)
-        return
-    }
-		for {
-		    messageType, r, err := conn.NextReader()
-		    if err != nil {
-		        return
-		    }
-		    w, err := conn.NextWriter(messageType)
-		    if err != nil {
-		        return
-		    }
-		    if _, err := io.Copy(w, r); err != nil {
-		        return
-		    }
-		    if err := w.Close(); err != nil {
-		        return
-		    }
-}
-}*/

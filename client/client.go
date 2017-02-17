@@ -5,7 +5,7 @@ import (
 	_"encoding/json"
 	_"net"
 	"fmt"
-	_"bufio"
+	"bufio"
 	_"os"
 	"github.com/gorilla/websocket"
 	"flag"
@@ -18,10 +18,6 @@ import (
 
 //client Websocket
 func main() {
-	
-	//conn, _ := net.Dial("tcp", "127.0.0.1:8081") // connect to this socket local
-	//conn, _ := net.Dial("tcp", "94.23.249.62:8081") // production server
-
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -32,34 +28,52 @@ func main() {
 	//var addr = flag.String("addr", "94.23.249.62:8081", "http service address")
 	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
 	fmt.Println("connecting to ", u.String())
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		fmt.Print("dial:", err)
 	}
-	defer c.Close()
-	fmt.Println("TEST1")
+	defer conn.Close()
 	done := make(chan struct{})
-	fmt.Println("TEST2")
 
 	//on read les messages dans une goroutine
 	go func() {
-		fmt.Println("TEST4")
-		defer c.Close()
+		defer conn.Close()
 		defer close(done)
 		for {
-			_, message, err := c.ReadMessage()
+			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println("read: ", err)
 				return
 			}
-			myJson := string(message)
-			fmt.Println("recv: ", myJson)
+			if mt == websocket.TextMessage {
+				fmt.Println("message de type TextMessage détécté: ")
+				myJson := string(message)
+				fmt.Println("message : ", myJson)
+				fmt.Print("Enter text: ")
+			}
 		}
 	}()
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
+	for {
+		fmt.Print("Enter text: ")
+		reader := bufio.NewReader(os.Stdin)
+		text, _ := reader.ReadString('\n')
+		sz := len(text)//on enlève le dernier \n
+		text = text[:sz-1]
+		if (text == "exit\n"){
+			return
+		} else {
+			err = conn.WriteMessage(websocket.TextMessage, []byte(text))
+			if err != nil {
+				log.Println("write:", err)
+				return
+			}
+		}
+	}
+/*
 	for {
 		select {
 		case t := <-ticker.C:
@@ -85,6 +99,10 @@ func main() {
 			return
 		}
 	}
+*/
+
+
+
 	/*for {
 		// read in input from stdin
 		reader := bufio.NewReader(os.Stdin)
