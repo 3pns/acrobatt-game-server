@@ -10,6 +10,7 @@ import (
 	_ "strings"
 	"io"
 	"github.com/gorilla/websocket"
+	"flag"
 )
 /*
 func main() {
@@ -62,21 +63,25 @@ func main() {
 	go startConnect (conn)*/
 
 	//WebSocket Listen
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        //log.Println(err)
-        return
-    }
-    go startSocket (conn, w, r)
-	})
-	http.ListenAndServe(":8081", nil)
+	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	http.HandleFunc("/", handleNewConnection)
+	http.ListenAndServe(*addr, nil)
 
 
 	// run loop forever (or until ctrl-c)
 
 	//on retourne à l'état d'attente d'une connexion
 	//goto waitingState
+}
+
+func handleNewConnection(w http.ResponseWriter, r *http.Request) {
+	fmt.Print("New Connection Established:")
+  conn, err := upgrader.Upgrade(w, r, nil)
+  if err != nil {
+      //log.Println(err)
+      return
+  }
+  go startSocket (conn, w, r)
 }
 
 func startConnect (conn net.Conn) {
@@ -117,6 +122,8 @@ func startConnect (conn net.Conn) {
 func startSocket (conn *websocket.Conn, w http.ResponseWriter, r *http.Request){
 		for {
 		    messageType, r, err := conn.NextReader()
+		    fmt.Println("Message Type Received:", string(messageType))
+		    fmt.Println("Message Received:", r)
 		    if err != nil {
 		        return
 		    }
@@ -136,7 +143,7 @@ var upgrader = websocket.Upgrader{
     ReadBufferSize:  1024,
     WriteBufferSize: 1024,
 }
-
+/*
 func handler(w http.ResponseWriter, r *http.Request){
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
@@ -159,4 +166,4 @@ func handler(w http.ResponseWriter, r *http.Request){
 		        return
 		    }
 }
-}
+}*/
