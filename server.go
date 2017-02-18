@@ -2,7 +2,7 @@ package main
 
 import (
 	. "./model"
-	_"encoding/json"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -41,18 +41,16 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 
 func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	//création de board à factoriser dans une autre socket ...
+	var playerId = 0
 	var board Board
 	board.InitBoard()
 	board.InitPieces()
 	board.InitPlayers()
 
 	//envoi de la board à la connexion
-	var req  = ClientRequest {"Fetch", "", nil}
+	var req  = Request {"Fetch", "", nil}
 	req.MarshalData(board)
-	err := conn.WriteMessage(websocket.TextMessage, req.Marshal())
-	if err != nil {
-		log.Println("write:", err)
-	}
+	WriteTextMessage(conn, req.Marshal())
 
 	for {
 		mt, message, err := conn.ReadMessage()
@@ -61,9 +59,17 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if mt == websocket.TextMessage {
-			fmt.Println("message de type TextMessage détécté")
-			myJson := string(message)
-			fmt.Println("message reçu: ", myJson)
+			request := Request{}
+			json.Unmarshal(message, &request)
+			if (request.Type == "PlacePiece"){
+				piece := Piece{}
+				json.Unmarshal(request.Data, &piece)
+				fmt.Print("plaçage de Piece")
+				if(piece.PlayerId == playerId){
+					board.PlacePiece(piece)
+					refreshBoard(conn, board)
+				}
+			}
 		}	
 		/*
 		   messageType, r, err := conn.NextReader()
@@ -82,6 +88,19 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 		   if err := w.Close(); err != nil {
 		       return
 		   }*/
+	}
+}
+
+func refreshBoard (conn *websocket.Conn, board Board){
+	var req  = Request {"Refresh", "", nil}
+	req.MarshalData(board)
+	WriteTextMessage (conn, req.Data)
+}
+
+func WriteTextMessage (conn *websocket.Conn, data []byte){
+	err := conn.WriteMessage(websocket.TextMessage, data)
+	if err != nil {
+		log.Println("write:", err)
 	}
 }
 

@@ -18,6 +18,7 @@ import (
 
 //client Websocket
 func main() {
+	var menu = "Choose: (1)PlacePiece (2)Refresh (exit) Close the game  "
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -34,7 +35,8 @@ func main() {
 	}
 	defer conn.Close()
 	done := make(chan struct{})
-
+	cboard := make(chan Board, 1)
+	var myBoard Board
 	//on read les messages dans une goroutine
 	go func() {
 		defer conn.Close()
@@ -47,13 +49,14 @@ func main() {
 			}
 			if mt == websocket.TextMessage {
 
-				clientRequest := ClientRequest{}
+				clientRequest := Request{}
 				json.Unmarshal(message, &clientRequest)
 				if (clientRequest.DataType == "Board"){
 					fmt.Println("Data de type Board détécté: ")
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
 					board.PrintBoard()
+					cboard <- board
 				}
 				if (clientRequest.DataType == "Pieces"){
 					fmt.Println("Data de type Board détécté: ")
@@ -67,7 +70,7 @@ func main() {
 					json.Unmarshal(clientRequest.Data, &board)
 					board.PrintBoard()
 				}	
-				fmt.Print("Enter text: ")
+				fmt.Print(menu)
 			}
 		}
 	}()
@@ -79,19 +82,39 @@ func main() {
 	defer ticker.Stop()
 
 	for {
-		fmt.Print("Enter text: ")
-		reader := bufio.NewReader(os.Stdin)
-		text, _ := reader.ReadString('\n')
-		sz := len(text)//on enlève le dernier \n
-		text = text[:sz-1]
+		fmt.Print(menu)
+		var text = getInput()
 		if (text == "exit"){
 			return
-		} else {
+		} else if text == "1"{
+			fmt.Print("TODO ")
+			text = getInput()
+		}
+		if text == "1" {/*
+			var req  = Request {"", "", nil}
+			req.MarshalData(board)
+			//toujours envoyer une requete
 			err = conn.WriteMessage(websocket.TextMessage, []byte(text))
 			if err != nil {
 				log.Println("write:", err)
 				return
-			}
+			}*/
+		}
+		if text == "2" {
+		    select {
+		    case newBoard, ok := <-cboard:
+		    	//nouvelle donnée dans le buffer
+		        if ok {
+		            myBoard = newBoard
+		            myBoard.PrintBoard()
+		        } else {
+		            fmt.Println("Channel closed!")
+		        }
+		    default:
+		        myBoard.PrintBoard()
+    }
+
+
 		}
 	}
 /*
@@ -121,4 +144,12 @@ func main() {
 		}
 	}
 */
+}
+
+func getInput () string{
+	reader := bufio.NewReader(os.Stdin)
+	text, _ := reader.ReadString('\n')
+	sz := len(text)//on enlève le dernier \n
+	text = text[:sz-1]
+	return text
 }

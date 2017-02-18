@@ -14,9 +14,9 @@ type Board struct {
 	Players []*Player       `json:"players"`
 }
 
-func (board *Board) PlacePiece(piece *Piece, square *Square) {
-	board.Squares[square.X][square.Y].PlayerId = &piece.PlayerId
-	piece.Origin = board.Squares[square.X][square.Y]
+func (board *Board) PlacePiece(piece Piece) {
+	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[piece.PlayerId].Id
+	board.Players[piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
 
 	//1 - vérifier si on a le droit de placer la pièce
 	//piece.Rotation = "E"
@@ -42,7 +42,7 @@ func (board *Board) PlacePiece(piece *Piece, square *Square) {
 			yBoardValue = cube.X
 		}
 		fmt.Println("Apres : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		board.Squares[square.X+xFactor*xBoardValue][square.Y+yFactor*yBoardValue].PlayerId = &piece.PlayerId
+		board.Squares[piece.Origin.X+xFactor*xBoardValue][piece.Origin.Y+yFactor*yBoardValue].PlayerId = &piece.PlayerId
 	}
 }
 

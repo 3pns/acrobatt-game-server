@@ -11,13 +11,13 @@ import (
 	_ "strings"
 )
 
-type ClientRequest struct {
-	RequestType string `json:"requestType"`
+type Request struct {
+	Type string `json:"type"`
 	DataType    string `json:"dataType"`
 	Data        []byte `json:"data"`
 }
 
-func (request *ClientRequest) MarshalData(t interface{}) {
+func (request *Request) MarshalData(t interface{}) {
 	fmt.Print("Marshalling")
 	value, ok := t.(Board)
 	if ok {
@@ -31,7 +31,7 @@ func (request *ClientRequest) MarshalData(t interface{}) {
 
 }
 
-func (request *ClientRequest) Marshal() []byte{
+func (request *Request) Marshal() []byte{
 	marshaleldrequest, err := json.Marshal(request)
 	if err != nil {
 		fmt.Println(err)
@@ -40,6 +40,6 @@ func (request *ClientRequest) Marshal() []byte{
 }
 
 
-func (request *ClientRequest) Unmarshal() {
-
+func (request *Request) Unmarshal() {
+	fmt.Print("Unmarshalling")
 }
