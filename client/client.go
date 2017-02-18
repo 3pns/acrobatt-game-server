@@ -37,7 +37,9 @@ func main() {
 	defer conn.Close()
 	done := make(chan struct{})
 	cboard := make(chan Board, 1)
+	cplayer := make(chan Player, 1)
 	var myBoard Board
+	var myPlayer Player
 	//on read les messages dans une goroutine
 	go func() {
 		defer conn.Close()
@@ -61,10 +63,12 @@ func main() {
 					fmt.Println("Data de type Pieces détécté !!! ")
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
-				}else if (clientRequest.DataType == "Players"){
-					fmt.Println("Data de type Board détécté !!! ")
-					board := Board{}
-					json.Unmarshal(clientRequest.Data, &board)
+				}else if (clientRequest.DataType == "Player"){
+					fmt.Println("Data de type Player détécté !!! ")
+					player := Player{}
+					json.Unmarshal(clientRequest.Data, &player)
+					fmt.Println(player)
+					cplayer <- player
 				}	
 				fmt.Print(menu)
 			}
@@ -86,15 +90,16 @@ func main() {
 			fmt.Print("TODO ")
 			text = getInput()
 		}
-		if text == "1" {/*
-			var req  = Request {"", "", nil}
-			req.MarshalData(board)
+		if text == "1" {
+			//myBoard
+			//var req  = Request {"PlacePiece", "Piece", nil}
+			//req.MarshalData()
 			//toujours envoyer une requete
 			err = conn.WriteMessage(websocket.TextMessage, []byte(text))
 			if err != nil {
 				log.Println("write:", err)
 				return
-			}*/
+			}
 		}
 		if text == "2" {
 		    select {
@@ -109,10 +114,26 @@ func main() {
 			    default:
 			        myBoard.PrintBoard()
     		}
+		    select {
+			    case newPlayer, ok := <-cplayer:
+			    	//nouvelle donnée dans le buffer
+			        if ok {
+			            myPlayer = newPlayer
+			        } else {
+			            fmt.Println("Channel closed!")
+			        }
+			    default:
+			        fmt.Println(myPlayer)
+    		}
 		}
 		if text == "3" {
 			var req  = Request {"Fetch", "", nil}
 			//fmt.Println(getJson(req))
+			WriteTextMessage(conn, req.Marshal())
+		}
+		if text == "4" {
+			var req  = Request {"FetchPlayer", "", nil}
+			fmt.Println(getJson(req))
 			WriteTextMessage(conn, req.Marshal())
 		}
 	}

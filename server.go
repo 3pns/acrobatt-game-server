@@ -46,12 +46,13 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	board.InitBoard()
 	board.InitPieces()
 	board.InitPlayers()
-
+	var player *Player = board.Players[playerId]
+	fmt.Println(player)
 	//envoi de la board à la connexion
-	/*
+
 	var req  = Request {"Fetch", "", nil}
 	req.MarshalData(board)
-	WriteTextMessage(conn, req.Marshal())*/
+	WriteTextMessage(conn, req.Marshal())
 
 	for {
 		mt, message, err := conn.ReadMessage()
@@ -74,7 +75,12 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				var req  = Request {"Fetch", "", nil}
 				req.MarshalData(board)
 				WriteTextMessage(conn, req.Marshal())
+			}else if request.Type == "FetchPlayer" {
+				var req  = Request {"FetchPlayer", "Player", nil}
+				req.MarshalData(*player)
+				WriteTextMessage(conn, req.Marshal())
 			}
+
 		}	
 		/*
 		   messageType, r, err := conn.NextReader()

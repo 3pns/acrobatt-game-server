@@ -19,13 +19,22 @@ type Request struct {
 
 func (request *Request) MarshalData(t interface{}) {
 	fmt.Print("Marshalling")
-	value, ok := t.(Board)
+	board, ok := t.(Board)
 	if ok {
-		b, err := json.Marshal(value)
+		b, err := json.Marshal(board)
 		if err != nil {
 			fmt.Println(err)
 		}
 		request.DataType = "Board"
+		request.Data = b
+	}
+	player, ok := t.(Player)
+	if ok {
+		b, err := json.Marshal(player)
+		if err != nil {
+			fmt.Println(err)
+		}
+		request.DataType = "Player"
 		request.Data = b
 	}
 
