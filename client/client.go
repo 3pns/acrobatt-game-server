@@ -63,7 +63,7 @@ func main() {
 		text, _ := reader.ReadString('\n')
 		sz := len(text)//on enlève le dernier \n
 		text = text[:sz-1]
-		if (text == "exit\n"){
+		if (text == "exit"){
 			return
 		} else {
 			err = conn.WriteMessage(websocket.TextMessage, []byte(text))
