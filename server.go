@@ -2,12 +2,12 @@ package main
 
 import (
 	. "./model"
+	. "./utils"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gorilla/websocket"
 	_ "io"
-	"log"
 	"net/http"
 	_ "strings"
 )
@@ -48,9 +48,10 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	board.InitPlayers()
 
 	//envoi de la board à la connexion
+	/*
 	var req  = Request {"Fetch", "", nil}
 	req.MarshalData(board)
-	WriteTextMessage(conn, req.Marshal())
+	WriteTextMessage(conn, req.Marshal())*/
 
 	for {
 		mt, message, err := conn.ReadMessage()
@@ -69,6 +70,10 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 					board.PlacePiece(piece)
 					refreshBoard(conn, board)
 				}
+			}else if request.Type == "Fetch" {
+				var req  = Request {"Fetch", "", nil}
+				req.MarshalData(board)
+				WriteTextMessage(conn, req.Marshal())
 			}
 		}	
 		/*
@@ -95,13 +100,6 @@ func refreshBoard (conn *websocket.Conn, board Board){
 	var req  = Request {"Refresh", "", nil}
 	req.MarshalData(board)
 	WriteTextMessage (conn, req.Data)
-}
-
-func WriteTextMessage (conn *websocket.Conn, data []byte){
-	err := conn.WriteMessage(websocket.TextMessage, data)
-	if err != nil {
-		log.Println("write:", err)
-	}
 }
 
 func startGame() {

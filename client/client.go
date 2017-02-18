@@ -2,6 +2,7 @@ package main
 
 import (
 	. "../model"
+	. "../utils"
 	"encoding/json"
 	_"net"
 	"fmt"
@@ -18,7 +19,7 @@ import (
 
 //client Websocket
 func main() {
-	var menu = "Choose: (1)PlacePiece (2)Refresh (exit) Close the game  "
+	var menu = "Choose: (1)PlacePiece (2)Refresh (3)Fetch (4)FetchPlayers (exit) Close the game  "
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -52,23 +53,18 @@ func main() {
 				clientRequest := Request{}
 				json.Unmarshal(message, &clientRequest)
 				if (clientRequest.DataType == "Board"){
-					fmt.Println("Data de type Board détécté: ")
+					fmt.Println("Data de type Board détécté !!! ")
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
-					board.PrintBoard()
 					cboard <- board
-				}
-				if (clientRequest.DataType == "Pieces"){
-					fmt.Println("Data de type Board détécté: ")
+				}else if (clientRequest.DataType == "Pieces"){
+					fmt.Println("Data de type Pieces détécté !!! ")
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
-					board.PrintBoard()
-				}
-				if (clientRequest.DataType == "Board"){
-					fmt.Println("Data de type Board détécté: ")
+				}else if (clientRequest.DataType == "Players"){
+					fmt.Println("Data de type Board détécté !!! ")
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
-					board.PrintBoard()
 				}	
 				fmt.Print(menu)
 			}
@@ -102,19 +98,22 @@ func main() {
 		}
 		if text == "2" {
 		    select {
-		    case newBoard, ok := <-cboard:
-		    	//nouvelle donnée dans le buffer
-		        if ok {
-		            myBoard = newBoard
-		            myBoard.PrintBoard()
-		        } else {
-		            fmt.Println("Channel closed!")
-		        }
-		    default:
-		        myBoard.PrintBoard()
-    }
-
-
+			    case newBoard, ok := <-cboard:
+			    	//nouvelle donnée dans le buffer
+			        if ok {
+			            myBoard = newBoard
+			            myBoard.PrintBoard()
+			        } else {
+			            fmt.Println("Channel closed!")
+			        }
+			    default:
+			        myBoard.PrintBoard()
+    		}
+		}
+		if text == "3" {
+			var req  = Request {"Fetch", "", nil}
+			//fmt.Println(getJson(req))
+			WriteTextMessage(conn, req.Marshal())
 		}
 	}
 /*
@@ -152,4 +151,12 @@ func getInput () string{
 	sz := len(text)//on enlève le dernier \n
 	text = text[:sz-1]
 	return text
+}
+
+func getJson (t interface{}) string{
+	b, err := json.Marshal(t)
+	if err != nil {
+		fmt.Print("getJson Marshell Error :", err)
+	}
+	return string (b)
 }

@@ -2,6 +2,8 @@ package utils
 
 import (
   "fmt"
+  "github.com/gorilla/websocket"
+  "log"
 )
 
 func SetWhiteBackground (){
@@ -37,4 +39,11 @@ func PrintBlue(str string){
 
 func PrintWhite(str string){
   fmt.Print("\x1B[37m" + str)
+}
+
+func WriteTextMessage (conn *websocket.Conn, data []byte){
+  err := conn.WriteMessage(websocket.TextMessage, data)
+  if err != nil {
+    log.Println("write:", err)
+  }
 }
