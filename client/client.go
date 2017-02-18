@@ -1,8 +1,8 @@
 package main
 
 import (
-	//. "../model"
-	_"encoding/json"
+	. "../model"
+	"encoding/json"
 	_"net"
 	"fmt"
 	"bufio"
@@ -46,13 +46,34 @@ func main() {
 				return
 			}
 			if mt == websocket.TextMessage {
-				fmt.Println("message de type TextMessage détécté: ")
-				myJson := string(message)
-				fmt.Println("message : ", myJson)
+
+				clientRequest := ClientRequest{}
+				json.Unmarshal(message, &clientRequest)
+				if (clientRequest.DataType == "Board"){
+					fmt.Println("Data de type Board détécté: ")
+					board := Board{}
+					json.Unmarshal(clientRequest.Data, &board)
+					board.PrintBoard()
+				}
+				if (clientRequest.DataType == "Pieces"){
+					fmt.Println("Data de type Board détécté: ")
+					board := Board{}
+					json.Unmarshal(clientRequest.Data, &board)
+					board.PrintBoard()
+				}
+				if (clientRequest.DataType == "Board"){
+					fmt.Println("Data de type Board détécté: ")
+					board := Board{}
+					json.Unmarshal(clientRequest.Data, &board)
+					board.PrintBoard()
+				}	
 				fmt.Print("Enter text: ")
 			}
 		}
 	}()
+
+	//var req ClientRequest ("placePiece", "Piece", )
+	//conn.WriteMessage(websocket.TextMessage, []byte(req))
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -100,22 +121,4 @@ func main() {
 		}
 	}
 */
-
-
-
-	/*for {
-		// read in input from stdin
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("JSON to send: ")
-		text, _ := reader.ReadString('\n')
-		// send to socket
-		fmt.Fprintf(conn, text+"\n")
-		// listen for reply
-		jsonMessage, _ := bufio.NewReader(conn).ReadString('\n')
-		board := Board{}
-		json.Unmarshal([]byte(jsonMessage), &board)
-		fmt.Println("###### DATA #####")
-		fmt.Println(board.Squares[2][2])
-		board.PrintBoard()
-	}*/
 }
