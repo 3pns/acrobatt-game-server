@@ -47,7 +47,6 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	board.InitPieces()
 	board.InitPlayers()
 	var player *Player = board.Players[playerId]
-	fmt.Println(player)
 	//envoi de la board à la connexion
 
 	var req  = Request {"Fetch", "", nil}
@@ -63,10 +62,12 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 		if mt == websocket.TextMessage {
 			request := Request{}
 			json.Unmarshal(message, &request)
+			//fmt.Print(request)
 			if (request.Type == "PlacePiece"){
 				piece := Piece{}
 				json.Unmarshal(request.Data, &piece)
-				fmt.Print("plaçage de Piece")
+				fmt.Println("plaçage de Piece")
+				//fmt.Println(piece)
 				if(piece.PlayerId == playerId){
 					board.PlacePiece(piece)
 					refreshBoard(conn, board)

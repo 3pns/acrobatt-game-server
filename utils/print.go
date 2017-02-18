@@ -4,6 +4,7 @@ import (
   "fmt"
   "github.com/gorilla/websocket"
   "log"
+  "encoding/json"
 )
 
 func SetWhiteBackground (){
@@ -39,6 +40,14 @@ func PrintBlue(str string){
 
 func PrintWhite(str string){
   fmt.Print("\x1B[37m" + str)
+}
+
+func GetJson (t interface{}) string{
+  b, err := json.Marshal(t)
+  if err != nil {
+    fmt.Print("getJson Marshell Error :", err)
+  }
+  return string (b)
 }
 
 func WriteTextMessage (conn *websocket.Conn, data []byte){

@@ -59,10 +59,10 @@ func main() {
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
 					cboard <- board
-				}else if (clientRequest.DataType == "Pieces"){
+				}else if (clientRequest.DataType == "Piece"){
 					fmt.Println("Data de type Pieces détécté !!! ")
-					board := Board{}
-					json.Unmarshal(clientRequest.Data, &board)
+					piece := Piece{}
+					json.Unmarshal(clientRequest.Data, &piece)
 				}else if (clientRequest.DataType == "Player"){
 					fmt.Println("Data de type Player détécté !!! ")
 					player := Player{}
@@ -86,22 +86,14 @@ func main() {
 		var text = getInput()
 		if (text == "exit"){
 			return
-		} else if text == "1"{
-			fmt.Print("TODO ")
-			text = getInput()
-		}
-		if text == "1" {
-			//myBoard
-			//var req  = Request {"PlacePiece", "Piece", nil}
-			//req.MarshalData()
-			//toujours envoyer une requete
-			err = conn.WriteMessage(websocket.TextMessage, []byte(text))
-			if err != nil {
-				log.Println("write:", err)
-				return
-			}
-		}
-		if text == "2" {
+		} else if text == "1" {
+			myPlayer.Pieces[17].Origin = &Square {10, 10, nil}
+			var req  = Request {"PlacePiece", "Piece", nil}
+			fmt.Println(getJson(myPlayer.Pieces))
+			//var piececopy = myPlayer.Pieces[17]
+			req.MarshalData(myPlayer.Pieces[17])
+			WriteTextMessage(conn, req.Marshal())
+		} else if text == "2" {
 		    select {
 			    case newBoard, ok := <-cboard:
 			    	//nouvelle donnée dans le buffer

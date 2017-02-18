@@ -18,9 +18,10 @@ type Request struct {
 }
 
 func (request *Request) MarshalData(t interface{}) {
-	fmt.Print("Marshalling")
+	
 	board, ok := t.(Board)
 	if ok {
+		fmt.Println("Marshalling Board")
 		b, err := json.Marshal(board)
 		if err != nil {
 			fmt.Println(err)
@@ -30,6 +31,7 @@ func (request *Request) MarshalData(t interface{}) {
 	}
 	player, ok := t.(Player)
 	if ok {
+		fmt.Println("Marshalling Player")
 		b, err := json.Marshal(player)
 		if err != nil {
 			fmt.Println(err)

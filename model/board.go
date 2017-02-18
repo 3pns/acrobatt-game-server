@@ -15,8 +15,16 @@ type Board struct {
 }
 
 func (board *Board) PlacePiece(piece Piece) {
+	if piece.Origin == nil {
+		fmt.Println("Fatal Error piece has no Origin")
+		return
+	}
+
+
 	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[piece.PlayerId].Id
+	fmt.Println("##### INBETWEEN #####")
 	board.Players[piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
+	fmt.Println("##### INAFTER #####")
 
 	//1 - vérifier si on a le droit de placer la pièce
 	//piece.Rotation = "E"
