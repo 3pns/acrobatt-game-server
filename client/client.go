@@ -1,11 +1,12 @@
 package main
 
 import (
-	//. "../model"
-	_"encoding/json"
+	. "../model"
+	. "../utils"
+	"encoding/json"
 	_"net"
 	"fmt"
-	_"bufio"
+	"bufio"
 	_"os"
 	"github.com/gorilla/websocket"
 	"flag"
@@ -18,10 +19,7 @@ import (
 
 //client Websocket
 func main() {
-	
-	//conn, _ := net.Dial("tcp", "127.0.0.1:8081") // connect to this socket local
-	//conn, _ := net.Dial("tcp", "94.23.249.62:8081") // production server
-
+	var menu = "Choose: (1)PlacePiece (2)Refresh (3)Fetch (4)FetchPlayers (exit) Close the game  "
 	flag.Parse()
 	log.SetFlags(0)
 
@@ -32,34 +30,106 @@ func main() {
 	//var addr = flag.String("addr", "94.23.249.62:8081", "http service address")
 	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
 	fmt.Println("connecting to ", u.String())
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		fmt.Print("dial:", err)
 	}
-	defer c.Close()
-	fmt.Println("TEST1")
+	defer conn.Close()
 	done := make(chan struct{})
-	fmt.Println("TEST2")
-
+	cboard := make(chan Board, 1)
+	cplayer := make(chan Player, 1)
+	var myBoard Board
+	var myPlayer Player
 	//on read les messages dans une goroutine
 	go func() {
-		fmt.Println("TEST4")
-		defer c.Close()
+		defer conn.Close()
 		defer close(done)
 		for {
-			_, message, err := c.ReadMessage()
+			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println("read: ", err)
 				return
 			}
-			myJson := string(message)
-			fmt.Println("recv: ", myJson)
+			if mt == websocket.TextMessage {
+
+				clientRequest := Request{}
+				json.Unmarshal(message, &clientRequest)
+				if (clientRequest.DataType == "Board"){
+					fmt.Println("Data de type Board détécté !!! ")
+					board := Board{}
+					json.Unmarshal(clientRequest.Data, &board)
+					cboard <- board
+				}else if (clientRequest.DataType == "Piece"){
+					fmt.Println("Data de type Pieces détécté !!! ")
+					piece := Piece{}
+					json.Unmarshal(clientRequest.Data, &piece)
+				}else if (clientRequest.DataType == "Player"){
+					fmt.Println("Data de type Player détécté !!! ")
+					player := Player{}
+					json.Unmarshal(clientRequest.Data, &player)
+					fmt.Println(player)
+					cplayer <- player
+				}	
+				fmt.Print(menu)
+			}
 		}
 	}()
+
+	//var req ClientRequest ("placePiece", "Piece", )
+	//conn.WriteMessage(websocket.TextMessage, []byte(req))
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
+	for {
+		fmt.Print(menu)
+		var text = getInput()
+		if (text == "exit"){
+			return
+		} else if text == "1" {
+			myPlayer.Pieces[17].Origin = &Square {10, 10, nil}
+			var req  = Request {"PlacePiece", "Piece", nil}
+			fmt.Println(getJson(myPlayer.Pieces))
+			//var piececopy = myPlayer.Pieces[17]
+			req.MarshalData(myPlayer.Pieces[17])
+			WriteTextMessage(conn, req.Marshal())
+		} else if text == "2" {
+		    select {
+			    case newBoard, ok := <-cboard:
+			    	//nouvelle donnée dans le buffer
+			        if ok {
+			            myBoard = newBoard
+			            myBoard.PrintBoard()
+			        } else {
+			            fmt.Println("Channel closed!")
+			        }
+			    default:
+			        myBoard.PrintBoard()
+    		}
+		    select {
+			    case newPlayer, ok := <-cplayer:
+			    	//nouvelle donnée dans le buffer
+			        if ok {
+			            myPlayer = newPlayer
+			        } else {
+			            fmt.Println("Channel closed!")
+			        }
+			    default:
+			        fmt.Println(myPlayer)
+    		}
+		}
+		if text == "3" {
+			var req  = Request {"Fetch", "", nil}
+			//fmt.Println(getJson(req))
+			WriteTextMessage(conn, req.Marshal())
+		}
+		if text == "4" {
+			var req  = Request {"FetchPlayer", "", nil}
+			fmt.Println(getJson(req))
+			WriteTextMessage(conn, req.Marshal())
+		}
+	}
+/*
 	for {
 		select {
 		case t := <-ticker.C:
@@ -85,19 +155,21 @@ func main() {
 			return
 		}
 	}
-	/*for {
-		// read in input from stdin
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("JSON to send: ")
-		text, _ := reader.ReadString('\n')
-		// send to socket
-		fmt.Fprintf(conn, text+"\n")
-		// listen for reply
-		jsonMessage, _ := bufio.NewReader(conn).ReadString('\n')
-		board := Board{}
-		json.Unmarshal([]byte(jsonMessage), &board)
-		fmt.Println("###### DATA #####")
-		fmt.Println(board.Squares[2][2])
-		board.PrintBoard()
-	}*/
+*/
+}
+
+func getInput () string{
+	reader := bufio.NewReader(os.Stdin)
+	text, _ := reader.ReadString('\n')
+	sz := len(text)//on enlève le dernier \n
+	text = text[:sz-1]
+	return text
+}
+
+func getJson (t interface{}) string{
+	b, err := json.Marshal(t)
+	if err != nil {
+		fmt.Print("getJson Marshell Error :", err)
+	}
+	return string (b)
 }
