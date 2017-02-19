@@ -162,25 +162,36 @@ func (board *Board) InitPieces() {
 }
 
 func (board *Board) InitPlayers() {
-	player := Player{0, "Joueur", "blue", board.Pieces}
-	ai1 := Player{1, "AI-1", "green", board.Pieces}
-	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
-	ai3 := Player{3, "AI-3", "red", board.Pieces}
-
-	for index, _ := range player.Pieces {
-		fmt.Println("index :",index," player ID :",*player.Pieces[index].PlayerId)
+	//copie des pieces dans un nouveau slice pour chaque joueur
+	var player0Pieces = []Piece{}
+	for _, piece := range board.Pieces {
+		player0Pieces = append(player0Pieces, piece)
 	}
+	player0 := Player{0, "Joueur", "blue", player0Pieces}
 
-	player.Init()
-	ai1.Init()
-	ai2.Init()
-	ai3.Init()
-	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
-	fmt.Println("player0 ID :",board.Players[0].Id)
-	fmt.Println("playerId :",player.Id)
-	for index, _ := range player.Pieces {
-		fmt.Println("index :",index," player ID :",*player.Pieces[index].PlayerId)
+	var player1Pieces = []Piece{}
+	for _, piece := range board.Pieces {
+		player1Pieces = append(player1Pieces, piece)
 	}
+	player1 := Player{1, "AI-1", "green", player1Pieces}
+
+	var player2Pieces = []Piece{}
+	for _, piece := range board.Pieces {
+		player2Pieces = append(player2Pieces, piece)
+	}
+	player2 := Player{2, "AI-2", "yellow", player2Pieces}
+
+	var player3Pieces = []Piece{}
+	for _, piece := range board.Pieces {
+		player3Pieces = append(player3Pieces, piece)
+	}
+	player3 := Player{3, "AI-3", "red", player3Pieces}
+
+	player0.Init()
+	player1.Init()
+	player2.Init()
+	player3.Init()
+	board.Players = []*Player{&player0, &player1, &player2, &player3}
 }
 
 func (board *Board) PrintBoard() {
