@@ -70,6 +70,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				//fmt.Println(piece)
 				if(piece.PlayerId == playerId){
 					board.PlacePiece(piece)
+					//board.PrintBoard()
 					refreshBoard(conn, board)
 				}
 			}else if request.Type == "Fetch" {
@@ -106,11 +107,9 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 func refreshBoard (conn *websocket.Conn, board Board){
 	var req  = Request {"Refresh", "", nil}
 	req.MarshalData(board)
-	WriteTextMessage (conn, req.Data)
+	WriteTextMessage (conn, req.Marshal())
 }
 
 func startGame() {
 
 }
-
-

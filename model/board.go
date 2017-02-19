@@ -178,11 +178,19 @@ func (board *Board) PrintBoard() {
 		utils.SetWhiteBackground()
 		fmt.Print(" ")
 		for j := 0; j < 20; j++ {
-
 			if board.Squares[j][i].PlayerId == nil {
 				utils.PrintBlack("▇ ")
 
-			} else {
+			} else if *board.Squares[j][i].PlayerId == 0 {
+				utils.PrintBlue("▇ ")
+
+			} else if *board.Squares[j][i].PlayerId == 1 {
+				utils.PrintGreen("▇ ")
+
+			} else if *board.Squares[j][i].PlayerId == 2 {
+				utils.PrintYellow("▇ ")
+
+			}else {
 				utils.PrintRed("▇ ")
 			}
 		}

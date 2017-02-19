@@ -28,6 +28,7 @@ func (factory *PieceFactory) NewPiece() Piece {
 	piece.Id = factory.Id
 	piece.Rotation = factory.Rotation
 	piece.Flipped = factory.Flipped
+	piece.PlayerId = -1
 	factory.Id++
 	return piece
 }
