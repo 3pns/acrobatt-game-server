@@ -21,9 +21,9 @@ func (board *Board) PlacePiece(piece Piece) {
 	}
 
 
-	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[piece.PlayerId].Id
+	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
 	fmt.Println("##### INBETWEEN #####")
-	board.Players[piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
+	board.Players[*piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
 	fmt.Println("##### INAFTER #####")
 
 	//1 - vérifier si on a le droit de placer la pièce
@@ -50,7 +50,7 @@ func (board *Board) PlacePiece(piece Piece) {
 			yBoardValue = cube.X
 		}
 		fmt.Println("Apres : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		board.Squares[piece.Origin.X+xFactor*xBoardValue][piece.Origin.Y+yFactor*yBoardValue].PlayerId = &piece.PlayerId
+		board.Squares[piece.Origin.X+xFactor*xBoardValue][piece.Origin.Y+yFactor*yBoardValue].PlayerId = piece.PlayerId
 	}
 }
 
@@ -166,11 +166,21 @@ func (board *Board) InitPlayers() {
 	ai1 := Player{1, "AI-1", "green", board.Pieces}
 	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
 	ai3 := Player{3, "AI-3", "red", board.Pieces}
+
+	for index, _ := range player.Pieces {
+		fmt.Println("index :",index," player ID :",*player.Pieces[index].PlayerId)
+	}
+
 	player.Init()
 	ai1.Init()
 	ai2.Init()
 	ai3.Init()
 	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
+	fmt.Println("player0 ID :",board.Players[0].Id)
+	fmt.Println("playerId :",player.Id)
+	for index, _ := range player.Pieces {
+		fmt.Println("index :",index," player ID :",*player.Pieces[index].PlayerId)
+	}
 }
 
 func (board *Board) PrintBoard() {

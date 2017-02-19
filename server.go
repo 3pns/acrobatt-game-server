@@ -46,7 +46,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	board.InitBoard()
 	board.InitPieces()
 	board.InitPlayers()
-	var player *Player = board.Players[playerId]
+	var player *Player = board.Players[0]
 	//envoi de la board à la connexion
 
 	var req  = Request {"Fetch", "", nil}
@@ -68,7 +68,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				json.Unmarshal(request.Data, &piece)
 				fmt.Println("plaçage de Piece")
 				//fmt.Println(piece)
-				if(piece.PlayerId == playerId){
+				if(*piece.PlayerId == playerId){
 					board.PlacePiece(piece)
 					//board.PrintBoard()
 					refreshBoard(conn, board)
