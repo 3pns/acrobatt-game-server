@@ -41,6 +41,11 @@ func main() {
 			json.Unmarshal(clientRequest.Data, &board)
 		}
 	}
+
+	var player = board.Players[0]
+	board.Pieces[10].Origin = board.Squares[0][2]
+	board.Pieces[10].Rotation = "S"
+	player.PlacePiece(board.Pieces[10], &board)
 }
 
 func main2() {
@@ -62,17 +67,17 @@ func main2() {
 	ai3.Init()
 	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
 	fmt.Println(player)
-	board.Pieces[10].Origin = board.Squares[10][10]
+	board.Pieces[10].Origin = board.Squares[2][2]
 	board.Pieces[10].Rotation = "S"
-	board.PlacePiece(board.Pieces[10])
+	player.PlacePiece(board.Pieces[10], &board)
 
-	fmt.Println("----- PRINT TO JSON -----")
+	/*fmt.Println("----- PRINT TO JSON -----")
 	b, err := json.Marshal(board)
 	if err != nil {
 		fmt.Println(err)
 	}
 	myJson := string(b) // converti byte en string
-	fmt.Println(myJson)
+	fmt.Println(myJson)*/
 
 	board.PrintBoard()
 	fmt.Println("\n----- Game Over -----")

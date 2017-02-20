@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type Piece struct {
 	Id       int     `json:"id"`
 	Cubes    []Cube  `json:"cubes"`
@@ -31,4 +36,12 @@ func (factory *PieceFactory) NewPiece() Piece {
 	piece.PlayerId = nil
 	factory.Id++
 	return piece
+}
+
+func (piece Piece) String() string {
+	b, err := json.Marshal(piece)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return string(b)
 }

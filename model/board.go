@@ -14,45 +14,6 @@ type Board struct {
 	Players []*Player       `json:"players"`
 }
 
-func (board *Board) PlacePiece(piece Piece) {
-	if piece.Origin == nil {
-		fmt.Println("Fatal Error piece has no Origin")
-		return
-	}
-
-	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
-	fmt.Println("##### INBETWEEN #####")
-	board.Players[*piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
-	fmt.Println("##### INAFTER #####")
-
-	//1 - vérifier si on a le droit de placer la pièce
-	//1.1 un cube est toujours dans la board
-	//1.2 un cube n'est pas adjacent à un autre cube de la même couleur d'une autre pièce
-	//2.2 un des cubes est dans la zone de départ ET/OU en diagonale d'un cube de la même couleur
-	//piece.Rotation = "E"
-	//2 - placer la pièce
-	var projectedCubes []Cube
-	var placementAuthorized = true
-	var hasAtLeastACubeAtStartOrDiagonal = false
-	fmt.Println("----- Plaçage d'une pièce -----")
-	for _, cube := range piece.Cubes {
-		var projectedCube = cube.Project(*piece.Origin, piece.Rotation, piece.Flipped) // on projete le cube dans l'espace = vrai position
-		projectedCubes = append(projectedCubes, projectedCube)
-
-		hasAtLeastACubeAtStartOrDiagonal = true
-		if !placementAuthorized{
-			return
-		}
-		
-	}
-	if placementAuthorized && hasAtLeastACubeAtStartOrDiagonal {
-		for _, cube := range projectedCubes {
-			board.Squares[cube.X][cube.Y].PlayerId = piece.PlayerId
-		}
-	}
-
-}
-
 func (board *Board) InitBoard() {
 	fmt.Println("initializing board")
 	for i := 0; i < 20; i++ {
@@ -205,7 +166,7 @@ func (board *Board) InitPlayers() {
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
-	
+
 	var player3StartCubes = []Cube{}
 	for i:=10; i<20; i++ {
 		player3StartCubes = append(player3StartCubes, Cube{i,19})
@@ -219,10 +180,6 @@ func (board *Board) InitPlayers() {
 	player1.Init()
 	player2.Init()
 	player3.Init()
-
-	for index, _ := range player0.Pieces {
-		fmt.Println("index :",index," player ID :",*player0.Pieces[index].PlayerId)
-	}
 
 	board.Players = []*Player{&player0, &player1, &player2, &player3}
 }

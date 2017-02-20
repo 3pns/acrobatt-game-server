@@ -69,7 +69,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				fmt.Println("plaçage de Piece")
 				//fmt.Println(piece)
 				if(*piece.PlayerId == playerId){
-					board.PlacePiece(piece)
+					player.PlacePiece(piece, &board)
 					//board.PrintBoard()
 					refreshBoard(conn, board)
 				}
