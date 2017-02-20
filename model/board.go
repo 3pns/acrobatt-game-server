@@ -163,10 +163,8 @@ func (board *Board) InitPieces() {
 func (board *Board) InitPlayers() {
 	//Joueur 0
 	//copie des pieces modèle dans un nouveau slice pour le joueur
-	var player0Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player0Pieces = append(player0Pieces, piece)
-	}
+	var player0Pieces = make([]Piece, len(board.Pieces))
+	copy(player0Pieces, board.Pieces)
 	//génération des cases de départs
 	var player0StartCubes = []Cube{}
 	for i:=0; i<10; i++ {
@@ -179,10 +177,9 @@ func (board *Board) InitPlayers() {
 	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
 
 	//Joueur 1
-	var player1Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player1Pieces = append(player1Pieces, piece)
-	}
+	var player1Pieces = make([]Piece, len(board.Pieces))
+	copy(player1Pieces, board.Pieces)
+
 	var player1StartCubes = []Cube{}
 	for i:=0; i<10; i++ {
 		player1StartCubes = append(player1StartCubes, Cube{i,19})
@@ -193,10 +190,9 @@ func (board *Board) InitPlayers() {
 	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartCubes}
 
 	//Joueur 2
-	var player2Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player2Pieces = append(player2Pieces, piece)
-	}
+	var player2Pieces = make([]Piece, len(board.Pieces))
+	copy(player2Pieces, board.Pieces)
+
 	var player2StartCubes = []Cube{}
 	for i:=10; i<20; i++ {
 		player2StartCubes = append(player2StartCubes, Cube{i,0})
@@ -207,10 +203,9 @@ func (board *Board) InitPlayers() {
 	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartCubes}
 
 	//Joueur 3
-	var player3Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player3Pieces = append(player3Pieces, piece)
-	}
+	var player3Pieces = make([]Piece, len(board.Pieces))
+	copy(player3Pieces, board.Pieces)
+	
 	var player3StartCubes = []Cube{}
 	for i:=10; i<20; i++ {
 		player3StartCubes = append(player3StartCubes, Cube{i,19})
@@ -224,6 +219,11 @@ func (board *Board) InitPlayers() {
 	player1.Init()
 	player2.Init()
 	player3.Init()
+
+	for index, _ := range player0.Pieces {
+		fmt.Println("index :",index," player ID :",*player0.Pieces[index].PlayerId)
+	}
+
 	board.Players = []*Player{&player0, &player1, &player2, &player3}
 }
 
