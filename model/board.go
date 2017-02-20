@@ -20,7 +20,6 @@ func (board *Board) PlacePiece(piece Piece) {
 		return
 	}
 
-
 	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
 	fmt.Println("##### INBETWEEN #####")
 	board.Players[*piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
@@ -32,11 +31,26 @@ func (board *Board) PlacePiece(piece Piece) {
 	//2.2 un des cubes est dans la zone de départ ET/OU en diagonale d'un cube de la même couleur
 	//piece.Rotation = "E"
 	//2 - placer la pièce
+	var projectedCubes []Cube
+	var placementAuthorized = true
+	var hasAtLeastACubeAtStartOrDiagonal = false
 	fmt.Println("----- Plaçage d'une pièce -----")
 	for _, cube := range piece.Cubes {
-		var projectedCube = cube.Project(*piece.Origin, piece.Rotation, piece.Flipped)
-		board.Squares[projectedCube.X][projectedCube.Y].PlayerId = piece.PlayerId
+		var projectedCube = cube.Project(*piece.Origin, piece.Rotation, piece.Flipped) // on projete le cube dans l'espace = vrai position
+		projectedCubes = append(projectedCubes, projectedCube)
+
+		hasAtLeastACubeAtStartOrDiagonal = true
+		if !placementAuthorized{
+			return
+		}
+		
 	}
+	if placementAuthorized && hasAtLeastACubeAtStartOrDiagonal {
+		for _, cube := range projectedCubes {
+			board.Squares[cube.X][cube.Y].PlayerId = piece.PlayerId
+		}
+	}
+
 }
 
 func (board *Board) InitBoard() {
@@ -147,30 +161,64 @@ func (board *Board) InitPieces() {
 }
 
 func (board *Board) InitPlayers() {
-	//copie des pieces dans un nouveau slice pour chaque joueur
+	//Joueur 0
+	//copie des pieces modèle dans un nouveau slice pour le joueur
 	var player0Pieces = []Piece{}
 	for _, piece := range board.Pieces {
 		player0Pieces = append(player0Pieces, piece)
 	}
-	player0 := Player{0, "Joueur", "blue", player0Pieces}
+	//génération des cases de départs
+	var player0StartCubes = []Cube{}
+	for i:=0; i<10; i++ {
+		player0StartCubes = append(player0StartCubes, Cube{i,0})
+	}
+	for i:=0; i<10; i++ {
+		player0StartCubes = append(player0StartCubes, Cube{0,i})
+	}
+	//création du joueur
+	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
 
+	//Joueur 1
 	var player1Pieces = []Piece{}
 	for _, piece := range board.Pieces {
 		player1Pieces = append(player1Pieces, piece)
 	}
-	player1 := Player{1, "AI-1", "green", player1Pieces}
+	var player1StartCubes = []Cube{}
+	for i:=0; i<10; i++ {
+		player1StartCubes = append(player1StartCubes, Cube{i,19})
+	}
+	for i:=10; i<20; i++ {
+		player1StartCubes = append(player1StartCubes, Cube{0,i})
+	}
+	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartCubes}
 
+	//Joueur 2
 	var player2Pieces = []Piece{}
 	for _, piece := range board.Pieces {
 		player2Pieces = append(player2Pieces, piece)
 	}
-	player2 := Player{2, "AI-2", "yellow", player2Pieces}
+	var player2StartCubes = []Cube{}
+	for i:=10; i<20; i++ {
+		player2StartCubes = append(player2StartCubes, Cube{i,0})
+	}
+	for i:=0; i<10; i++ {
+		player2StartCubes = append(player2StartCubes, Cube{19,i})
+	}
+	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartCubes}
 
+	//Joueur 3
 	var player3Pieces = []Piece{}
 	for _, piece := range board.Pieces {
 		player3Pieces = append(player3Pieces, piece)
 	}
-	player3 := Player{3, "AI-3", "red", player3Pieces}
+	var player3StartCubes = []Cube{}
+	for i:=10; i<20; i++ {
+		player3StartCubes = append(player3StartCubes, Cube{i,19})
+	}
+	for i:=10; i<20; i++ {
+		player3StartCubes = append(player3StartCubes, Cube{19,i})
+	}
+	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartCubes}
 
 	player0.Init()
 	player1.Init()

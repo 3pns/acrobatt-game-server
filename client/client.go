@@ -7,10 +7,43 @@ import (
 	"fmt"
 	_ "net"
 	_ "strings"
+	"flag"
+	"github.com/gorilla/websocket"
+	"net/url"
 )
 
-//client de test pour aider au dévelopement
+//client de test websocket pour aider au dévelopeme,t
+
+//client de test offline pour aider au dévelopement
 func main() {
+
+	//connexion au serveur
+	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
+	fmt.Println("connecting to ", u.String())
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		fmt.Print("dial:", err)
+	}
+	defer conn.Close()
+
+	board := Board{}
+	mt, message, err := conn.ReadMessage()
+	if err != nil {
+		fmt.Println("read: ", err)
+		return
+	}
+	if mt == websocket.TextMessage {
+		clientRequest := Request{}
+		json.Unmarshal(message, &clientRequest)
+		if (clientRequest.DataType == "Board"){
+			fmt.Println("Data de type Board détécté !!! ")
+			json.Unmarshal(clientRequest.Data, &board)
+		}
+	}
+}
+
+func main2() {
 	fmt.Println("----- Test -----")
 
 	//plateau
@@ -19,10 +52,10 @@ func main() {
 	board.InitPieces()
 
 	//joueur
-	player := Player{0, "Joueur", "blue", board.Pieces}
-	ai1 := Player{1, "AI-1", "green", board.Pieces}
-	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
-	ai3 := Player{3, "AI-3", "red", board.Pieces}
+	player := Player{0, "Joueur", "blue", board.Pieces, nil}
+	ai1 := Player{1, "AI-1", "green", board.Pieces, nil}
+	ai2 := Player{2, "AI-2", "yellow", board.Pieces, nil}
+	ai3 := Player{3, "AI-3", "red", board.Pieces, nil}
 	player.Init()
 	ai1.Init()
 	ai2.Init()

@@ -9,6 +9,7 @@ type Player struct {
 	Name   string  `json:"name"`
 	Color  string  `json:"color"`
 	Pieces []Piece `json:"pieces"`
+	StartingCubes	[]Cube `json:"-"`
 }
 
 func (player *Player) Init() {
