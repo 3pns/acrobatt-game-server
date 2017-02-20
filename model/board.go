@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"strconv"
+	_"strconv"
 )
 
 type Board struct {
@@ -27,30 +27,15 @@ func (board *Board) PlacePiece(piece Piece) {
 	fmt.Println("##### INAFTER #####")
 
 	//1 - vérifier si on a le droit de placer la pièce
+	//1.1 un cube est toujours dans la board
+	//1.2 un cube n'est pas adjacent à un autre cube de la même couleur d'une autre pièce
+	//2.2 un des cubes est dans la zone de départ ET/OU en diagonale d'un cube de la même couleur
 	//piece.Rotation = "E"
 	//2 - placer la pièce
 	fmt.Println("----- Plaçage d'une pièce -----")
 	for _, cube := range piece.Cubes {
-		var xFactor = 1
-		var yFactor = 1
-		var xBoardValue = cube.X
-		var yBoardValue = cube.Y
-		if piece.Flipped {
-			xFactor = -xFactor
-		}
-		fmt.Println("Avant : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		if piece.Rotation == "W" {
-			xBoardValue = -cube.Y
-			yBoardValue = -cube.X
-		} else if piece.Rotation == "N" {
-			xBoardValue = -cube.X
-			yBoardValue = -cube.Y
-		} else if piece.Rotation == "E" {
-			xBoardValue = cube.Y
-			yBoardValue = cube.X
-		}
-		fmt.Println("Apres : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		board.Squares[piece.Origin.X+xFactor*xBoardValue][piece.Origin.Y+yFactor*yBoardValue].PlayerId = piece.PlayerId
+		var projectedCube = cube.Project(*piece.Origin, piece.Rotation, piece.Flipped)
+		board.Squares[projectedCube.X][projectedCube.Y].PlayerId = piece.PlayerId
 	}
 }
 
