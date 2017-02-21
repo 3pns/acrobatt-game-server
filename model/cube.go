@@ -5,7 +5,7 @@ type Cube struct {
 	Y int `json:"Y"`
 }
 
-func (cube1 *Cube) Equal (cube2 Cube) bool{
+func (cube1 *Cube) Equal(cube2 Cube) bool {
 	if cube1.X == cube2.X && cube1.Y == cube2.Y {
 		return true
 	} else {
@@ -34,5 +34,5 @@ func (cube *Cube) Project(origin Square, rotation string, flipped bool) Cube {
 	}
 	//fmt.Println("Apres : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
 	//board.Squares[piece.Origin.X+xFactor*xBoardValue][piece.Origin.Y+yFactor*yBoardValue].PlayerId = piece.PlayerId
-	return Cube{origin.X+xFactor*xBoardValue, origin.Y+yFactor*yBoardValue}
+	return Cube{origin.X + xFactor*xBoardValue, origin.Y + yFactor*yBoardValue}
 }

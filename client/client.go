@@ -28,21 +28,45 @@ func main() {
 		fmt.Print("dial:", err)
 	}
 	defer conn.Close()
-
-	board := Board{}
-	mt, message, err := conn.ReadMessage()
-	if err != nil {
-		fmt.Println("read: ", err)
-		return
-	}
-	if mt == websocket.TextMessage {
-		clientRequest := Request{}
-		json.Unmarshal(message, &clientRequest)
-		if (clientRequest.DataType == "Board"){
-			fmt.Println("Data de type Board détécté !!! ")
-			json.Unmarshal(clientRequest.Data, &board)
+	done := make(chan struct{})
+	cboard := make(chan Board, 1)
+	cmessage := make (chan string, 10)
+	go func() {
+		defer conn.Close()
+		defer close(done)
+		for {
+			msg := ""
+			mt, message, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println("read: ", err)
+				return
+			}
+			msg = msg +  "New Message Detected !!! => "
+			if mt == websocket.TextMessage {
+				clientRequest := Request{}
+				json.Unmarshal(message, &clientRequest)
+				if (clientRequest.DataType == "Board"){
+					msg = msg + "Data de type Board détécté !!! "
+					board := Board{}
+					json.Unmarshal(clientRequest.Data, &board)
+					cboard <- board
+				}
+				if clientRequest.Type == "PlacementConfirmed"{
+					msg = msg + "Message PlacementConfirmed recieved !!!"
+				} else if clientRequest.Type == "PlacementRefused"{
+					msg = msg + "Message PlacementRefused recieved !!!"
+				} else if clientRequest.Type == "Fetch"{
+					msg = msg + "Message Fetch recieved !!!"
+				} else if clientRequest.Type == "Refresh"{
+					msg = msg + "Message Refresh recieved !!!"
+				} 
+			}
+			cmessage <- msg
 		}
-	}
+	}()
+
+	board := <-cboard
+	fmt.Println(<-cmessage)
 
 	//var player = board.Players[0]
 	board.Pieces[10].Origin = board.Squares[0][19]
@@ -52,6 +76,8 @@ func main() {
 	req.MarshalData(board.Pieces[10])
 	WriteTextMessage(conn, req.Marshal())
 
+	fmt.Println(<-cmessage)
+
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
 	board.Pieces[0].Origin = board.Squares[4][17]
@@ -59,12 +85,16 @@ func main() {
 	req.MarshalData(board.Pieces[0])
 	WriteTextMessage(conn, req.Marshal())
 
+	fmt.Println(<-cmessage)
+
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
 	board.Pieces[1].Origin = board.Squares[3][16]
 	req  = Request {"PlacePiece", "Piece", nil}
 	req.MarshalData(board.Pieces[1])
 	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
@@ -74,6 +104,8 @@ func main() {
 	req.MarshalData(board.Pieces[2])
 	WriteTextMessage(conn, req.Marshal())
 
+	fmt.Println(<-cmessage)
+
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
 	board.Pieces[3].Origin = board.Squares[2][17]
@@ -81,6 +113,28 @@ func main() {
 	req  = Request {"PlacePiece", "Piece", nil}
 	req.MarshalData(board.Pieces[3])
 	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[4].Origin = board.Squares[2][17]
+	board.Pieces[4].Rotation = "W"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[4])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[4].Origin = board.Squares[5][17]
+	board.Pieces[4].Rotation = "W"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[4])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
 
 }
 /*

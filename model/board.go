@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	_"strconv"
+	_ "strconv"
 )
 
 type Board struct {
@@ -126,28 +126,28 @@ func (board *Board) InitPlayers() {
 	var player0Pieces = make([]Piece, len(board.Pieces))
 	copy(player0Pieces, board.Pieces)
 
-	var player0StartCubes = []Cube{Cube{0,0}}
+	var player0StartCubes = []Cube{Cube{0, 0}}
 	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))
 	copy(player1Pieces, board.Pieces)
 
-	var player1StartCubes = []Cube{Cube{0,19}}
+	var player1StartCubes = []Cube{Cube{0, 19}}
 	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartCubes}
 
 	//Joueur 2
 	var player2Pieces = make([]Piece, len(board.Pieces))
 	copy(player2Pieces, board.Pieces)
 
-	var player2StartCubes = []Cube{Cube{19,0}}
+	var player2StartCubes = []Cube{Cube{19, 0}}
 	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartCubes}
 
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
 
-	var player3StartCubes = []Cube{Cube{19,19}}
+	var player3StartCubes = []Cube{Cube{19, 19}}
 	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartCubes}
 
 	player0.Init()
@@ -175,7 +175,7 @@ func (board *Board) PrintBoard() {
 			} else if *board.Squares[j][i].PlayerId == 2 {
 				utils.PrintYellow("▇ ")
 
-			}else {
+			} else {
 				utils.PrintRed("▇ ")
 			}
 		}

@@ -1,43 +1,36 @@
 package model
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 )
 
 type Player struct {
-	Id     int     `json:"id"`
-	Name   string  `json:"name"`
-	Color  string  `json:"color"`
-	Pieces []Piece `json:"pieces"`
-	startingCubes	[]Cube
+	Id            int     `json:"id"`
+	Name          string  `json:"name"`
+	Color         string  `json:"color"`
+	Pieces        []Piece `json:"pieces"`
+	startingCubes []Cube
 }
 
 func (player *Player) Init() {
-	fmt.Println("playerId in playerInit :",player.Id)
+	fmt.Println("playerId in playerInit :", player.Id)
 	for index, _ := range player.Pieces {
 		player.Pieces[index].PlayerId = &player.Id
 	}
 	fmt.Println("init player pieces")
 }
 
-func (player *Player) PlacePiece(piece Piece, board *Board) {
+func (player *Player) PlacePiece(piece Piece, board *Board) bool {
 	if piece.Origin == nil {
 		fmt.Println("Fatal Error piece to place has no Origin")
-		return
+		return false
 	}
 	if player.Pieces[piece.Id].Origin != nil {
 		fmt.Println("Fatal Error piece has already been used")
-		return
+		return false
 	}
-	player.Pieces[piece.Id].Origin = piece.Origin
-	player.Pieces[piece.Id].Rotation = piece.Rotation
-	piece = player.Pieces[piece.Id]
-
-	fmt.Println(piece.String())
-	
-	fmt.Println("##### INAFTER #####")
-
+	piece.PlayerId = &player.Id
 	//1 - vérifier si on a le droit de placer la pièce
 	//1.1 un cube est toujours dans la board
 	//1.2 un cube n'est pas adjacent à un autre cube de la même couleur d'une autre pièce
@@ -46,46 +39,85 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 	//2 - placer la pièce
 	var projectedCubes []Cube
 	var placementAuthorized = false
-	var cubeOutOfBoard = false
 	//var hasAtLeastACubeAtStartOrDiagonal = false
 	fmt.Println("----- Plaçage d'une pièce -----")
 	for _, cube := range piece.Cubes {
 		var projectedCube = cube.Project(*piece.Origin, piece.Rotation, piece.Flipped) // on projete le cube dans l'espace = vrai position
-		projectedCubes = append(projectedCubes, projectedCube) // on ajoute le cube à la liste des cube projeté => càd dire les vrais cases occupés par la pièces sur la board
+		projectedCubes = append(projectedCubes, projectedCube)                         // on ajoute le cube à la liste des cube projeté => càd dire les vrais cases occupés par la pièces sur la board
 
+		//si le cube est en dehors de la board le placement est interdit
 		if projectedCube.X < 0 || projectedCube.X > 19 || projectedCube.Y < 0 || projectedCube.Y > 19 {
 			fmt.Println("SIGSEV Placement Out of Board Exception")
-			cubeOutOfBoard = true
-			return
+			placementAuthorized = false
+			return false
 		}
-		if player.IsAStartingCube(projectedCube){
+		//si le cube occupe un square occupé le placement est interdit
+		if board.Squares[projectedCube.X][projectedCube.Y].PlayerId != nil {
+			fmt.Println("StackOverflow Board Exception le square est déjà occupé")
+			placementAuthorized = false
+			return false
+		}
+		// si le cube en bas est dans la board et appartient au joueur le placement est interdit
+		if projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
+			if board.Squares[projectedCube.X][projectedCube.Y+1].GetPlayerId() == player.Id {
+				fmt.Println("Placement Unauthorized Exceptio.cuz cube en bas appartient au joueur")
+				placementAuthorized = false
+				return false
+			}
+		}
+		// si le cube en haut est dans la board et appartient au joueur le placement est interdit
+		if projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
+			if board.Squares[projectedCube.X][projectedCube.Y-1].GetPlayerId() == player.Id {
+				fmt.Println("Placement Unauthorized Exceptio.cuz cube en haut appartient au joueur")
+				placementAuthorized = false
+				return false
+			}
+		}
+		// si le cube à gauche est dans la board et appartient au joueur le placement est interdit
+		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 {
+			if board.Squares[projectedCube.X-1][projectedCube.Y].GetPlayerId() == player.Id {
+				fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
+				placementAuthorized = false
+				return false
+			}
+		}
+		// si le cube à droite est dans la board et appartient au joueur le placement est interdit
+		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 {
+			if board.Squares[projectedCube.X+1][projectedCube.Y].GetPlayerId() == player.Id {
+				fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
+				placementAuthorized = false
+				return false
+			}
+		}
+		// si le cube est le cube de départ du joueur le placement est autorisé
+		if player.IsAStartingCube(projectedCube) {
 			placementAuthorized = true
 			fmt.Println("Placement Authorized cuz Starting Cube  :", projectedCube)
 		}
 		// si le cube en bas à gauche est dans la board et appartient au joueur le placement est autorisé
 		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 && projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
-			if board.Squares[projectedCube.X-1][projectedCube.Y+1].GetPlayerId() == player.Id{
+			if board.Squares[projectedCube.X-1][projectedCube.Y+1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Authorized cuz cube en bas à gauche")
 				placementAuthorized = true
 			}
 		}
 		// si le cube en bas à droite est dans la board et appartient au joueur le placement est autorisé
 		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 && projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
-			if board.Squares[projectedCube.X+1][projectedCube.Y+1].GetPlayerId() == player.Id{
+			if board.Squares[projectedCube.X+1][projectedCube.Y+1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Authorized cuz cube en bas à droite")
 				placementAuthorized = true
 			}
 		}
 		// si le cube en haut à gauche est dans la board et appartient au joueur le placement est autorisé
 		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 && projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
-			if board.Squares[projectedCube.X-1][projectedCube.Y-1].GetPlayerId() == player.Id{
+			if board.Squares[projectedCube.X-1][projectedCube.Y-1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Authorized cuz cube en haut à gauche")
 				placementAuthorized = true
 			}
 		}
 		// si le cube en haut à droite est dans la board et appartient au joueur le placement est autorisé
 		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 && projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
-			if board.Squares[projectedCube.X+1][projectedCube.Y-1].GetPlayerId() == player.Id{
+			if board.Squares[projectedCube.X+1][projectedCube.Y-1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Authorized cuz cube en haut à droite")
 				placementAuthorized = true
 			}
@@ -93,21 +125,21 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 	}
 	if !placementAuthorized {
 		fmt.Println("----- BADDIES Placement Unauthorized Exception -----")
-		return
-	}
-	fmt.Println("ALLO FRANCIS")
-	fmt.Println("etat des variables, placement :", placementAuthorized, "cube out of board:", !cubeOutOfBoard)
-	if placementAuthorized && !cubeOutOfBoard {
+		return false
+	} else {
 		fmt.Println("----- Placement Authorized -----")
 		for _, cube := range projectedCubes {
 			board.Squares[cube.X][cube.Y].PlayerId = piece.PlayerId
 		}
-		//board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
+		player.Pieces[piece.Id].Origin = piece.Origin
+		player.Pieces[piece.Id].Rotation = piece.Rotation
+		player.Pieces[piece.Id].Flipped = piece.Flipped
+		return true
 	}
 }
 
 func (player *Player) IsAStartingCube(cube Cube) bool {
-	for _,startingCube := range player.startingCubes {
+	for _, startingCube := range player.startingCubes {
 		if startingCube.Equal(cube) {
 			return true
 		}

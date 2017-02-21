@@ -11,7 +11,7 @@ type Piece struct {
 	Origin   *Square `json:"origin"`
 	Rotation string  `json:"rotation"`
 	Flipped  bool    `json:"flipped"`
-	PlayerId *int     `json:"playerId"`
+	PlayerId *int    `json:"playerId"`
 }
 
 type PieceFactory struct {
