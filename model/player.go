@@ -65,6 +65,28 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 		// si le cube en bas à gauche est dans la board et appartient au joueur le placement est autorisé
 		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 && projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
 			if board.Squares[projectedCube.X-1][projectedCube.Y+1].GetPlayerId() == player.Id{
+				fmt.Println("Placement Authorized cuz cube en bas à gauche")
+				placementAuthorized = true
+			}
+		}
+		// si le cube en bas à droite est dans la board et appartient au joueur le placement est autorisé
+		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 && projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
+			if board.Squares[projectedCube.X+1][projectedCube.Y+1].GetPlayerId() == player.Id{
+				fmt.Println("Placement Authorized cuz cube en bas à droite")
+				placementAuthorized = true
+			}
+		}
+		// si le cube en haut à gauche est dans la board et appartient au joueur le placement est autorisé
+		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 && projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
+			if board.Squares[projectedCube.X-1][projectedCube.Y-1].GetPlayerId() == player.Id{
+				fmt.Println("Placement Authorized cuz cube en haut à gauche")
+				placementAuthorized = true
+			}
+		}
+		// si le cube en haut à droite est dans la board et appartient au joueur le placement est autorisé
+		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 && projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
+			if board.Squares[projectedCube.X+1][projectedCube.Y-1].GetPlayerId() == player.Id{
+				fmt.Println("Placement Authorized cuz cube en haut à droite")
 				placementAuthorized = true
 			}
 		}

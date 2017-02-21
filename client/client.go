@@ -59,6 +59,28 @@ func main() {
 	req.MarshalData(board.Pieces[0])
 	WriteTextMessage(conn, req.Marshal())
 
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[1].Origin = board.Squares[3][16]
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[1])
+	WriteTextMessage(conn, req.Marshal())
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[2].Origin = board.Squares[5][18]
+	board.Pieces[2].Rotation = "E"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[2])
+	WriteTextMessage(conn, req.Marshal())
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[3].Origin = board.Squares[2][17]
+	board.Pieces[3].Rotation = "W"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[3])
+	WriteTextMessage(conn, req.Marshal())
 
 }
 /*
