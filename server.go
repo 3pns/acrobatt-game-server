@@ -11,6 +11,7 @@ import (
 	"net/http"
 	_ "strings"
 )
+
 // standard types
 //https://github.com/gorilla/websocket/blob/master/conn.go
 
@@ -41,15 +42,15 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 
 func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	//création de board à factoriser dans une autre socket ...
-	var playerId = 0
 	var board Board
 	board.InitBoard()
 	board.InitPieces()
 	board.InitPlayers()
-	var player *Player = board.Players[0]
+	var player *Player = board.Players[1]
+	fmt.Println(player.PrintStartingCubes())
 	//envoi de la board à la connexion
 
-	var req  = Request {"Fetch", "", nil}
+	var req = Request{"Fetch", "", nil}
 	req.MarshalData(board)
 	WriteTextMessage(conn, req.Marshal())
 
@@ -63,27 +64,30 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			//fmt.Print(request)
-			if (request.Type == "PlacePiece"){
+			if request.Type == "PlacePiece" {
 				piece := Piece{}
 				json.Unmarshal(request.Data, &piece)
 				fmt.Println("plaçage de Piece")
-				//fmt.Println(piece)
-				if(*piece.PlayerId == playerId){
-					board.PlacePiece(piece)
-					//board.PrintBoard()
+				if player.PlacePiece(piece, &board) {
+					var req = Request{"PlacementConfirmed", "", nil}
+					WriteTextMessage(conn, req.Marshal())
 					refreshBoard(conn, board)
+				} else {
+					var req = Request{"PlacementRefused", "", nil}
+					WriteTextMessage(conn, req.Marshal())
 				}
-			}else if request.Type == "Fetch" {
-				var req  = Request {"Fetch", "", nil}
+				board.PrintBoard()
+			} else if request.Type == "Fetch" {
+				var req = Request{"Fetch", "", nil}
 				req.MarshalData(board)
 				WriteTextMessage(conn, req.Marshal())
-			}else if request.Type == "FetchPlayer" {
-				var req  = Request {"FetchPlayer", "Player", nil}
+			} else if request.Type == "FetchPlayer" {
+				var req = Request{"FetchPlayer", "Player", nil}
 				req.MarshalData(*player)
 				WriteTextMessage(conn, req.Marshal())
 			}
 
-		}	
+		}
 		/*
 		   messageType, r, err := conn.NextReader()
 		   fmt.Println("Message Type Received:", string(messageType))
@@ -104,10 +108,10 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func refreshBoard (conn *websocket.Conn, board Board){
-	var req  = Request {"Refresh", "", nil}
+func refreshBoard(conn *websocket.Conn, board Board) {
+	var req = Request{"Refresh", "", nil}
 	req.MarshalData(board)
-	WriteTextMessage (conn, req.Marshal())
+	WriteTextMessage(conn, req.Marshal())
 }
 
 func startGame() {

@@ -5,53 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"strconv"
+	_ "strconv"
 )
 
 type Board struct {
 	Squares [20][20]*Square `json:"squares"`
 	Pieces  []Piece         `json:"pieces"`
 	Players []*Player       `json:"players"`
-}
-
-func (board *Board) PlacePiece(piece Piece) {
-	if piece.Origin == nil {
-		fmt.Println("Fatal Error piece has no Origin")
-		return
-	}
-
-
-	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
-	fmt.Println("##### INBETWEEN #####")
-	board.Players[*piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
-	fmt.Println("##### INAFTER #####")
-
-	//1 - vérifier si on a le droit de placer la pièce
-	//piece.Rotation = "E"
-	//2 - placer la pièce
-	fmt.Println("----- Plaçage d'une pièce -----")
-	for _, cube := range piece.Cubes {
-		var xFactor = 1
-		var yFactor = 1
-		var xBoardValue = cube.X
-		var yBoardValue = cube.Y
-		if piece.Flipped {
-			xFactor = -xFactor
-		}
-		fmt.Println("Avant : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		if piece.Rotation == "W" {
-			xBoardValue = -cube.Y
-			yBoardValue = -cube.X
-		} else if piece.Rotation == "N" {
-			xBoardValue = -cube.X
-			yBoardValue = -cube.Y
-		} else if piece.Rotation == "E" {
-			xBoardValue = cube.Y
-			yBoardValue = cube.X
-		}
-		fmt.Println("Apres : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
-		board.Squares[piece.Origin.X+xFactor*xBoardValue][piece.Origin.Y+yFactor*yBoardValue].PlayerId = piece.PlayerId
-	}
 }
 
 func (board *Board) InitBoard() {
@@ -162,35 +122,39 @@ func (board *Board) InitPieces() {
 }
 
 func (board *Board) InitPlayers() {
-	//copie des pieces dans un nouveau slice pour chaque joueur
-	var player0Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player0Pieces = append(player0Pieces, piece)
-	}
-	player0 := Player{0, "Joueur", "blue", player0Pieces}
+	//Joueur 0
+	var player0Pieces = make([]Piece, len(board.Pieces))
+	copy(player0Pieces, board.Pieces)
 
-	var player1Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player1Pieces = append(player1Pieces, piece)
-	}
-	player1 := Player{1, "AI-1", "green", player1Pieces}
+	var player0StartCubes = []Cube{Cube{0, 0}}
+	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
 
-	var player2Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player2Pieces = append(player2Pieces, piece)
-	}
-	player2 := Player{2, "AI-2", "yellow", player2Pieces}
+	//Joueur 1
+	var player1Pieces = make([]Piece, len(board.Pieces))
+	copy(player1Pieces, board.Pieces)
 
-	var player3Pieces = []Piece{}
-	for _, piece := range board.Pieces {
-		player3Pieces = append(player3Pieces, piece)
-	}
-	player3 := Player{3, "AI-3", "red", player3Pieces}
+	var player1StartCubes = []Cube{Cube{0, 19}}
+	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartCubes}
+
+	//Joueur 2
+	var player2Pieces = make([]Piece, len(board.Pieces))
+	copy(player2Pieces, board.Pieces)
+
+	var player2StartCubes = []Cube{Cube{19, 0}}
+	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartCubes}
+
+	//Joueur 3
+	var player3Pieces = make([]Piece, len(board.Pieces))
+	copy(player3Pieces, board.Pieces)
+
+	var player3StartCubes = []Cube{Cube{19, 19}}
+	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartCubes}
 
 	player0.Init()
 	player1.Init()
 	player2.Init()
 	player3.Init()
+
 	board.Players = []*Player{&player0, &player1, &player2, &player3}
 }
 
@@ -211,7 +175,7 @@ func (board *Board) PrintBoard() {
 			} else if *board.Squares[j][i].PlayerId == 2 {
 				utils.PrintYellow("▇ ")
 
-			}else {
+			} else {
 				utils.PrintRed("▇ ")
 			}
 		}

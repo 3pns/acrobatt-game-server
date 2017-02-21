@@ -2,32 +2,25 @@ package main
 
 import (
 	. "../model"
-	. "../utils"
-	"encoding/json"
-	_"net"
-	"fmt"
 	"bufio"
-	_"os"
-	"github.com/gorilla/websocket"
+	"encoding/json"
+	"fmt"
+	_ "net"
+	_ "strings"
 	"flag"
+	"github.com/gorilla/websocket"
 	"net/url"
-	"log"
-	"time"
+	. "../utils"
 	"os"
-	"os/signal"
 )
 
-//client Websocket
+//client de test websocket pour aider au dévelopeme,t
+
+//client de test offline pour aider au dévelopement
 func main() {
-	var menu = "Choose: (1)PlacePiece (2)Refresh (3)Fetch (4)FetchPlayers (exit) Close the game  "
-	flag.Parse()
-	log.SetFlags(0)
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
+	//connexion au serveur
 	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
-	//var addr = flag.String("addr", "94.23.249.62:8081", "http service address")
 	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
 	fmt.Println("connecting to ", u.String())
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
@@ -37,139 +30,174 @@ func main() {
 	defer conn.Close()
 	done := make(chan struct{})
 	cboard := make(chan Board, 1)
-	cplayer := make(chan Player, 1)
-	var myBoard Board
-	var myPlayer Player
-	//on read les messages dans une goroutine
+	cmessage := make (chan string, 10)
 	go func() {
 		defer conn.Close()
 		defer close(done)
 		for {
+			msg := ""
 			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println("read: ", err)
 				return
 			}
+			msg = msg +  "New Message Detected !!! => "
 			if mt == websocket.TextMessage {
-
 				clientRequest := Request{}
 				json.Unmarshal(message, &clientRequest)
 				if (clientRequest.DataType == "Board"){
-					fmt.Println("Data de type Board détécté !!! ")
+					msg = msg + "Data de type Board détécté !!! "
 					board := Board{}
 					json.Unmarshal(clientRequest.Data, &board)
 					cboard <- board
-				}else if (clientRequest.DataType == "Piece"){
-					fmt.Println("Data de type Pieces détécté !!! ")
-					piece := Piece{}
-					json.Unmarshal(clientRequest.Data, &piece)
-				}else if (clientRequest.DataType == "Player"){
-					fmt.Println("Data de type Player détécté !!! ")
-					player := Player{}
-					json.Unmarshal(clientRequest.Data, &player)
-					fmt.Println(player)
-					cplayer <- player
-				}	
-				fmt.Print(menu)
+				}
+				if clientRequest.Type == "PlacementConfirmed"{
+					msg = msg + "Message PlacementConfirmed recieved !!!"
+				} else if clientRequest.Type == "PlacementRefused"{
+					msg = msg + "Message PlacementRefused recieved !!!"
+				} else if clientRequest.Type == "Fetch"{
+					msg = msg + "Message Fetch recieved !!!"
+				} else if clientRequest.Type == "Refresh"{
+					msg = msg + "Message Refresh recieved !!!"
+				} 
 			}
+			cmessage <- msg
 		}
 	}()
 
-	//var req ClientRequest ("placePiece", "Piece", )
-	//conn.WriteMessage(websocket.TextMessage, []byte(req))
+	board := <-cboard
+	fmt.Println(<-cmessage)
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
+	//var player = board.Players[0]
+	board.Pieces[10].Origin = board.Squares[0][19]
+	board.Pieces[10].Rotation = "E"
 
-	for {
-		fmt.Print(menu)
-		var text = getInput()
-		if (text == "exit"){
-			return
-		} else if text == "1" {
-			myPlayer.Pieces[17].Origin = &Square {10, 10, nil}
-			var req  = Request {"PlacePiece", "Piece", nil}
-			fmt.Println(getJson(myPlayer.Pieces))
-			//var piececopy = myPlayer.Pieces[17]
-			req.MarshalData(myPlayer.Pieces[17])
-			WriteTextMessage(conn, req.Marshal())
-		} else if text == "2" {
-		    select {
-			    case newBoard, ok := <-cboard:
-			    	//nouvelle donnée dans le buffer
-			        if ok {
-			            myBoard = newBoard
-			            myBoard.PrintBoard()
-			        } else {
-			            fmt.Println("Channel closed!")
-			        }
-			    default:
-			        myBoard.PrintBoard()
-    		}
-		    select {
-			    case newPlayer, ok := <-cplayer:
-			    	//nouvelle donnée dans le buffer
-			        if ok {
-			            myPlayer = newPlayer
-			        } else {
-			            fmt.Println("Channel closed!")
-			        }
-			    default:
-			        fmt.Println(myPlayer)
-    		}
-		}
-		if text == "3" {
-			var req  = Request {"Fetch", "", nil}
-			//fmt.Println(getJson(req))
-			WriteTextMessage(conn, req.Marshal())
-		}
-		if text == "4" {
-			var req  = Request {"FetchPlayer", "", nil}
-			fmt.Println(getJson(req))
-			WriteTextMessage(conn, req.Marshal())
-		}
-	}
+	var req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[10])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[0].Origin = board.Squares[4][17]
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[0])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[1].Origin = board.Squares[3][16]
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[1])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[2].Origin = board.Squares[5][18]
+	board.Pieces[2].Rotation = "E"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[2])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[3].Origin = board.Squares[2][17]
+	board.Pieces[3].Rotation = "W"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[3])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[4].Origin = board.Squares[2][17]
+	board.Pieces[4].Rotation = "W"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[4])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[4].Origin = board.Squares[5][17]
+	board.Pieces[4].Rotation = "W"
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[4])
+	WriteTextMessage(conn, req.Marshal())
+
+	fmt.Println(<-cmessage)
+
+}
 /*
+func main2() {
+	fmt.Println("----- Test -----")
+
+	//plateau
+	var board Board
+	board.InitBoard()
+	board.InitPieces()
+
+	//joueur
+	player := Player{0, "Joueur", "blue", board.Pieces}
+	ai1 := Player{1, "AI-1", "green", board.Pieces}
+	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
+	ai3 := Player{3, "AI-3", "red", board.Pieces}
+	player.Init()
+	ai1.Init()
+	ai2.Init()
+	ai3.Init()
+	board.Players = []*Player{&player, &ai1, &ai2, &ai3}
+	fmt.Println(player)
+	board.Pieces[10].Origin = board.Squares[2][2]
+	board.Pieces[10].Rotation = "S"
+	player.PlacePiece(board.Pieces[10], &board)
+*/
+	/*fmt.Println("----- PRINT TO JSON -----")
+	b, err := json.Marshal(board)
+	if err != nil {
+		fmt.Println(err)
+	}
+	myJson := string(b) // converti byte en string
+	fmt.Println(myJson)
+
+	board.PrintBoard()
+	fmt.Println("\n----- Game Over -----")
+}
+*/
+/*
+
+// code server Websocket
+func main() {
+
+	fmt.Println("Launching server on port 8081...")
+
+	// listen on all interfaces
+	ln, _ := net.Listen("tcp", ":8081")
+
+	// accept connection on port
+	conn, _ := ln.Accept()
+	// run loop forever (or until ctrl-c)
 	for {
-		select {
-		case t := <-ticker.C:
-			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-			if err != nil {
-				log.Println("write:", err)
-				return
-			}
-		case <-interrupt:
-			log.Println("interrupt")
-			// To cleanly close a connection, a client should send a close
-			// frame and wait for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("write close:", err)
-				return
-			}
-			select {
-			case <-done:
-			case <-time.After(time.Second):
-			}
-			c.Close()
+		// will listen for message to process ending in newline (\n)
+		message, _ := bufio.NewReader(conn).ReadString('\n')
+		// output message received
+		fmt.Print("Message Received:", string(message))
+		// sample process for string received
+		newmessage := strings.ToUpper(message)
+		// send new string back to client
+		conn.Write([]byte(newmessage + "\n"))
+
+		if (string(message) == "QUIT") {
 			return
 		}
 	}
-*/
-}
-
-func getInput () string{
-	reader := bufio.NewReader(os.Stdin)
-	text, _ := reader.ReadString('\n')
-	sz := len(text)//on enlève le dernier \n
-	text = text[:sz-1]
-	return text
-}
-
-func getJson (t interface{}) string{
-	b, err := json.Marshal(t)
-	if err != nil {
-		fmt.Print("getJson Marshell Error :", err)
-	}
-	return string (b)
-}
+}*/
