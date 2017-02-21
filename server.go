@@ -41,7 +41,6 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 
 func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	//création de board à factoriser dans une autre socket ...
-	var playerId = 0
 	var board Board
 	board.InitBoard()
 	board.InitPieces()
@@ -68,11 +67,9 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				json.Unmarshal(request.Data, &piece)
 				fmt.Println("plaçage de Piece")
 				//fmt.Println(piece)
-				if(*piece.PlayerId == playerId){
-					player.PlacePiece(piece, &board)
-					//board.PrintBoard()
-					refreshBoard(conn, board)
-				}
+				player.PlacePiece(piece, &board)
+				board.PrintBoard()
+				refreshBoard(conn, board)
 			}else if request.Type == "Fetch" {
 				var req  = Request {"Fetch", "", nil}
 				req.MarshalData(board)

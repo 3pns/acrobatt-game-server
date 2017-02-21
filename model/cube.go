@@ -5,6 +5,14 @@ type Cube struct {
 	Y int `json:"Y"`
 }
 
+func (cube1 *Cube) Equal (cube2 Cube) bool{
+	if cube1.X == cube2.X && cube1.Y == cube2.Y {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (cube *Cube) Project(origin Square, rotation string, flipped bool) Cube {
 	var xFactor = 1
 	var yFactor = 1

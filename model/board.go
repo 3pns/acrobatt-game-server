@@ -129,6 +129,7 @@ func (board *Board) InitPlayers() {
 	//génération des cases de départs
 	var player0StartCubes = []Cube{}
 	for i:=0; i<10; i++ {
+		//player0.AppendStartingCube(Cube{i,0})
 		player0StartCubes = append(player0StartCubes, Cube{i,0})
 	}
 	for i:=0; i<10; i++ {
@@ -136,6 +137,10 @@ func (board *Board) InitPlayers() {
 	}
 	//création du joueur
 	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
+	/*for i:=0; i<10; i++ {
+		player0.AppendStartingCube(Cube{i,0})
+	}*/
+	fmt.Println(player0.PrintStartingCubes())
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))

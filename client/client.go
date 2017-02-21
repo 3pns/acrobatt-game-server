@@ -2,7 +2,7 @@ package main
 
 import (
 	. "../model"
-	_ "bufio"
+	"bufio"
 	"encoding/json"
 	"fmt"
 	_ "net"
@@ -10,6 +10,8 @@ import (
 	"flag"
 	"github.com/gorilla/websocket"
 	"net/url"
+	. "../utils"
+	"os"
 )
 
 //client de test websocket pour aider au dévelopeme,t
@@ -42,12 +44,17 @@ func main() {
 		}
 	}
 
-	var player = board.Players[0]
-	board.Pieces[10].Origin = board.Squares[0][2]
-	board.Pieces[10].Rotation = "S"
-	player.PlacePiece(board.Pieces[10], &board)
-}
+	//var player = board.Players[0]
+	board.Pieces[10].Origin = board.Squares[0][1]
+	board.Pieces[10].Rotation = "E"
 
+	var req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[10])
+	WriteTextMessage(conn, req.Marshal())
+	
+	bufio.NewReader(os.Stdin).ReadBytes('\n') 
+}
+/*
 func main2() {
 	fmt.Println("----- Test -----")
 
@@ -57,10 +64,10 @@ func main2() {
 	board.InitPieces()
 
 	//joueur
-	player := Player{0, "Joueur", "blue", board.Pieces, nil}
-	ai1 := Player{1, "AI-1", "green", board.Pieces, nil}
-	ai2 := Player{2, "AI-2", "yellow", board.Pieces, nil}
-	ai3 := Player{3, "AI-3", "red", board.Pieces, nil}
+	player := Player{0, "Joueur", "blue", board.Pieces}
+	ai1 := Player{1, "AI-1", "green", board.Pieces}
+	ai2 := Player{2, "AI-2", "yellow", board.Pieces}
+	ai3 := Player{3, "AI-3", "red", board.Pieces}
 	player.Init()
 	ai1.Init()
 	ai2.Init()
@@ -70,19 +77,19 @@ func main2() {
 	board.Pieces[10].Origin = board.Squares[2][2]
 	board.Pieces[10].Rotation = "S"
 	player.PlacePiece(board.Pieces[10], &board)
-
+*/
 	/*fmt.Println("----- PRINT TO JSON -----")
 	b, err := json.Marshal(board)
 	if err != nil {
 		fmt.Println(err)
 	}
 	myJson := string(b) // converti byte en string
-	fmt.Println(myJson)*/
+	fmt.Println(myJson)
 
 	board.PrintBoard()
 	fmt.Println("\n----- Game Over -----")
 }
-
+*/
 /*
 
 // code server Websocket

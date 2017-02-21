@@ -28,6 +28,7 @@ func (request *Request) MarshalData(t interface{}) {
 		}
 		request.DataType = "Board"
 		request.Data = b
+		return
 	}
 	player, ok := t.(Player)
 	if ok {
@@ -38,7 +39,20 @@ func (request *Request) MarshalData(t interface{}) {
 		}
 		request.DataType = "Player"
 		request.Data = b
+		return
 	}
+	piece, ok := t.(Piece)
+	if ok {
+		fmt.Println("Marshalling Piece")
+		b, err := json.Marshal(piece)
+		if err != nil {
+			fmt.Println(err)
+		}
+		request.DataType = "Piece"
+		request.Data = b
+		return
+	}
+	
 
 }
 

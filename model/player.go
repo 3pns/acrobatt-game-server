@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"encoding/json"
 )
 
 type Player struct {
@@ -9,7 +10,7 @@ type Player struct {
 	Name   string  `json:"name"`
 	Color  string  `json:"color"`
 	Pieces []Piece `json:"pieces"`
-	StartingCubes	[]Cube `json:"-"`
+	startingCubes	[]Cube
 }
 
 func (player *Player) Init() {
@@ -22,16 +23,19 @@ func (player *Player) Init() {
 
 func (player *Player) PlacePiece(piece Piece, board *Board) {
 	if piece.Origin == nil {
-		fmt.Println("Fatal Error piece has no Origin")
+		fmt.Println("Fatal Error piece to place has no Origin")
+		return
+	}
+	if player.Pieces[piece.Id].Origin != nil {
+		fmt.Println("Fatal Error piece has already been used")
 		return
 	}
 	player.Pieces[piece.Id].Origin = piece.Origin
+	player.Pieces[piece.Id].Rotation = piece.Rotation
 	piece = player.Pieces[piece.Id]
 
 	fmt.Println(piece.String())
-	board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
-	fmt.Println("##### INBETWEEN #####")
-	board.Players[*piece.PlayerId].Pieces[piece.Id].Origin = board.Squares[piece.Origin.X][piece.Origin.Y]
+	
 	fmt.Println("##### INAFTER #####")
 
 	//1 - vérifier si on a le droit de placer la pièce
@@ -41,7 +45,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 	//piece.Rotation = "E"
 	//2 - placer la pièce
 	var projectedCubes []Cube
-	var placementAuthorized = true
+	var placementAuthorized = false
 	var cubeOutOfBoard = false
 	//var hasAtLeastACubeAtStartOrDiagonal = false
 	fmt.Println("----- Plaçage d'une pièce -----")
@@ -50,28 +54,57 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 		projectedCubes = append(projectedCubes, projectedCube) // on ajoute le cube à la liste des cube projeté => càd dire les vrais cases occupés par la pièces sur la board
 
 		if projectedCube.X < 0 || projectedCube.X > 19 || projectedCube.Y < 0 || projectedCube.Y > 19 {
+			fmt.Println("SIGSEV Placement Out of Board Exception")
 			cubeOutOfBoard = true
 			return
 		}
-
-		fmt.Println(projectedCube, " : ")
-		for _,startingCubes := range player.StartingCubes {
-			fmt.Print(startingCubes)
-			if startingCubes == projectedCube {
-				//hasAtLeastACubeAtStartOrDiagonal = true
-			}
+		if player.IsAStartingCube(projectedCube){
+			placementAuthorized = true
+			fmt.Println("Placement Authorized cuz Starting Cube  ")
 		}
+
 		if !placementAuthorized {
+			fmt.Println("----- BADDIES Placement Unauthorized Exception -----")
 			return
 		}
 		
 	}
+	fmt.Println("ALLO FRANCIS")
+	fmt.Println("etat des variables, placement :", placementAuthorized, "cube out of board:", !cubeOutOfBoard)
 	if placementAuthorized && !cubeOutOfBoard {
 		fmt.Println("----- Placement Authorized -----")
 		for _, cube := range projectedCubes {
 			board.Squares[cube.X][cube.Y].PlayerId = piece.PlayerId
 		}
+		//board.Squares[piece.Origin.X][piece.Origin.Y].PlayerId = &board.Players[*piece.PlayerId].Id
 	}
-	board.PrintBoard()
+}
 
+func (player *Player) IsAStartingCube(cube Cube) bool {
+	for _,startingCube := range player.startingCubes {
+		if startingCube.Equal(cube) {
+			return true
+		}
+	}
+	return false
+}
+
+func (player Player) String() string {
+	b, err := json.Marshal(player)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return string(b)
+}
+
+func (player Player) PrintStartingCubes() string {
+	b, err := json.Marshal(player.startingCubes)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return string(b)
+}
+
+func (player *Player) AppendStartingCube(cube Cube) {
+	player.startingCubes = append(player.startingCubes, cube)
 }
