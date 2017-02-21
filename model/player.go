@@ -62,6 +62,12 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 			placementAuthorized = true
 			fmt.Println("Placement Authorized cuz Starting Cube  :", projectedCube)
 		}
+		// si le cube en bas à gauche est dans la board et appartient au joueur le placement est autorisé
+		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 && projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
+			if board.Squares[projectedCube.X-1][projectedCube.Y+1].GetPlayerId() == player.Id{
+				placementAuthorized = true
+			}
+		}
 	}
 	if !placementAuthorized {
 		fmt.Println("----- BADDIES Placement Unauthorized Exception -----")

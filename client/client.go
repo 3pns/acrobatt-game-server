@@ -51,8 +51,15 @@ func main() {
 	var req  = Request {"PlacePiece", "Piece", nil}
 	req.MarshalData(board.Pieces[10])
 	WriteTextMessage(conn, req.Marshal())
-	
-	bufio.NewReader(os.Stdin).ReadBytes('\n') 
+
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	board.Pieces[0].Origin = board.Squares[4][17]
+	req  = Request {"PlacePiece", "Piece", nil}
+	req.MarshalData(board.Pieces[0])
+	WriteTextMessage(conn, req.Marshal())
+
+
 }
 /*
 func main2() {
