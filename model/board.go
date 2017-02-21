@@ -123,62 +123,31 @@ func (board *Board) InitPieces() {
 
 func (board *Board) InitPlayers() {
 	//Joueur 0
-	//copie des pieces modèle dans un nouveau slice pour le joueur
 	var player0Pieces = make([]Piece, len(board.Pieces))
 	copy(player0Pieces, board.Pieces)
-	//génération des cases de départs
-	var player0StartCubes = []Cube{}
-	for i:=0; i<10; i++ {
-		//player0.AppendStartingCube(Cube{i,0})
-		player0StartCubes = append(player0StartCubes, Cube{i,0})
-	}
-	for i:=0; i<10; i++ {
-		player0StartCubes = append(player0StartCubes, Cube{0,i})
-	}
-	//création du joueur
+
+	var player0StartCubes = []Cube{Cube{0,0}}
 	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
-	/*for i:=0; i<10; i++ {
-		player0.AppendStartingCube(Cube{i,0})
-	}*/
-	fmt.Println(player0.PrintStartingCubes())
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))
 	copy(player1Pieces, board.Pieces)
 
-	var player1StartCubes = []Cube{}
-	for i:=0; i<10; i++ {
-		player1StartCubes = append(player1StartCubes, Cube{i,19})
-	}
-	for i:=10; i<20; i++ {
-		player1StartCubes = append(player1StartCubes, Cube{0,i})
-	}
+	var player1StartCubes = []Cube{Cube{0,19}}
 	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartCubes}
 
 	//Joueur 2
 	var player2Pieces = make([]Piece, len(board.Pieces))
 	copy(player2Pieces, board.Pieces)
 
-	var player2StartCubes = []Cube{}
-	for i:=10; i<20; i++ {
-		player2StartCubes = append(player2StartCubes, Cube{i,0})
-	}
-	for i:=0; i<10; i++ {
-		player2StartCubes = append(player2StartCubes, Cube{19,i})
-	}
+	var player2StartCubes = []Cube{Cube{19,0}}
 	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartCubes}
 
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
 
-	var player3StartCubes = []Cube{}
-	for i:=10; i<20; i++ {
-		player3StartCubes = append(player3StartCubes, Cube{i,19})
-	}
-	for i:=10; i<20; i++ {
-		player3StartCubes = append(player3StartCubes, Cube{19,i})
-	}
+	var player3StartCubes = []Cube{Cube{19,19}}
 	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartCubes}
 
 	player0.Init()

@@ -60,14 +60,12 @@ func (player *Player) PlacePiece(piece Piece, board *Board) {
 		}
 		if player.IsAStartingCube(projectedCube){
 			placementAuthorized = true
-			fmt.Println("Placement Authorized cuz Starting Cube  ")
+			fmt.Println("Placement Authorized cuz Starting Cube  :", projectedCube)
 		}
-
-		if !placementAuthorized {
-			fmt.Println("----- BADDIES Placement Unauthorized Exception -----")
-			return
-		}
-		
+	}
+	if !placementAuthorized {
+		fmt.Println("----- BADDIES Placement Unauthorized Exception -----")
+		return
 	}
 	fmt.Println("ALLO FRANCIS")
 	fmt.Println("etat des variables, placement :", placementAuthorized, "cube out of board:", !cubeOutOfBoard)

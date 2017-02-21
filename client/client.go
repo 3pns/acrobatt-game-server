@@ -45,7 +45,7 @@ func main() {
 	}
 
 	//var player = board.Players[0]
-	board.Pieces[10].Origin = board.Squares[0][1]
+	board.Pieces[10].Origin = board.Squares[0][19]
 	board.Pieces[10].Rotation = "E"
 
 	var req  = Request {"PlacePiece", "Piece", nil}
