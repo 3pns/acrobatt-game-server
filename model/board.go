@@ -194,3 +194,15 @@ func (board *Board) Refresh(conn net.Conn) {
 	conn.Write(b)
 	conn.Write([]byte("\n"))
 }
+
+func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool{
+	if (x >= 0 && x <20 && y >= 0 && y<20){
+		if board.Squares[x][y].GetPlayerId() == player.Id{
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}

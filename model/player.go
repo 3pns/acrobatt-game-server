@@ -166,29 +166,54 @@ func (player Player) PrintStartingSquares() string {
 	return string(b)
 }
 
-func (player *Player) PlacePieceWithIAEasy(board *Board) bool {
+func (player *Player) PlaceRandomPieceWithIAEasy(board *Board) bool {
+	//on récupère les pièces restantes à placer
 	var remainingPieces = [] *Piece{}
 	for index, piece := range player.Pieces {
 		if piece.Origin == nil {
 			remainingPieces = append(remainingPieces, &player.Pieces[index])
 		}
 	}
+	//on récupère un index de piece au hasard ssi il reste des pièces à placer
 	var index int
-	var targetCubes = [] *Square {}
+	var targetSquares = [] *Square {}
 	if len(remainingPieces) > 0{
 		index = rand.Intn(len(remainingPieces))	
 	} else {
 		return false
 	}
+	//si le joueur a encore toutes ses pièces le square cible est son square de départ
 	if len(remainingPieces) == 21{
-		targetCubes =  player.startingSquares
+		targetSquares =  player.startingSquares
 	} else {
-		//targetCubes = player.
+		//sinon à partir des squares appartenant au joueur on récupère les squares ou l'IA peut poser une pièce
+		for _, square := range player.squares {
+			targetSquares = append(targetSquares, square.getDiagonalAuthorizedSquares(board)...)
+		} 
 	}
-	fmt.Println(index," ",targetCubes)
-
-	//player.Pieces[index] //ma pièces à placer choisie aléatoirement
-
+	//TODO Remove targetSquares duplicates
+	piece := player.Pieces[index]
+	for _, square := range targetSquares {
+		fmt.Println(player.Pieces[index])
+		piece.Flipped = false
+		piece.Rotation = "N"
+		player.TryPlacePieceOnSquare(board, &piece)
+		piece.Rotation = "E"
+		piece.Rotation = "S"
+		piece.Rotation = "W"
+		piece.Flipped = true
+		piece.Rotation = "N"
+		piece.Rotation = "E"
+		piece.Rotation = "S"
+		piece.Rotation = "W"
+		//for each position (8 positions)
+			//essayer pour ce square et cette orientation de pièces tous les placements possibles pour cette pièce => pieces de 5 cubes = 5 positionnements possible pour la combinaison
+				//essayer de placer la pièece => renvoi false si pas possible
+	}
 	
+	return true
+}
+
+func (player *Player) TryPlacePieceOnSquare(board *Board, piece *Piece) bool {
 	return true
 }
