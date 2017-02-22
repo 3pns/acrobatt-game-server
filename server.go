@@ -47,7 +47,6 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	board.InitPieces()
 	board.InitPlayers()
 	var player *Player = board.Players[0]
-	fmt.Println(player.PrintStartingCubes())
 	//envoi de la board à la connexion
 
 	var req = Request{"Fetch", "", nil, ""}

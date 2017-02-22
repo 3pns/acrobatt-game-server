@@ -11,7 +11,7 @@ type Player struct {
 	Name          string  `json:"name"`
 	Color         string  `json:"color"`
 	Pieces        []Piece `json:"pieces"`
-	startingCubes []Cube
+	startingSquares []*Square
 	squares       []*Square
 }
 
@@ -142,8 +142,8 @@ func (player *Player) PlacePiece(piece Piece, board *Board) bool {
 }
 
 func (player *Player) IsAStartingCube(cube Cube) bool {
-	for _, startingCube := range player.startingCubes {
-		if startingCube.Equal(cube) {
+	for _, startingSquare := range player.startingSquares {
+		if startingSquare.Equal(cube) {
 			return true
 		}
 	}
@@ -158,16 +158,12 @@ func (player Player) String() string {
 	return string(b)
 }
 
-func (player Player) PrintStartingCubes() string {
-	b, err := json.Marshal(player.startingCubes)
+func (player Player) PrintStartingSquares() string {
+	b, err := json.Marshal(player.startingSquares)
 	if err != nil {
 		fmt.Println(err)
 	}
 	return string(b)
-}
-
-func (player *Player) AppendStartingCube(cube Cube) {
-	player.startingCubes = append(player.startingCubes, cube)
 }
 
 func (player *Player) PlacePieceWithIAEasy(board *Board) bool {
@@ -178,14 +174,14 @@ func (player *Player) PlacePieceWithIAEasy(board *Board) bool {
 		}
 	}
 	var index int
-	var targetCubes = []Cube {}
+	var targetCubes = [] *Square {}
 	if len(remainingPieces) > 0{
 		index = rand.Intn(len(remainingPieces))	
 	} else {
 		return false
 	}
 	if len(remainingPieces) == 21{
-		targetCubes =  player.startingCubes
+		targetCubes =  player.startingSquares
 	} else {
 		//targetCubes = player.
 	}

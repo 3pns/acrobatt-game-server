@@ -13,3 +13,11 @@ func (square *Square) GetPlayerId() int {
 		return *square.PlayerId
 	}
 }
+
+func (square *Square) Equal(cube Cube) bool {
+	if square.X == cube.X && square.Y == cube.Y {
+		return true
+	} else {
+		return false
+	}
+}
