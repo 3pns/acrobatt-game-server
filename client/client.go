@@ -72,7 +72,7 @@ func main() {
 	board.Pieces[10].Origin = board.Squares[0][19]
 	board.Pieces[10].Rotation = "E"
 
-	var req  = Request {"PlacePiece", "Piece", nil}
+	var req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[10])
 	WriteTextMessage(conn, req.Marshal())
 
@@ -81,7 +81,7 @@ func main() {
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
 	board.Pieces[0].Origin = board.Squares[4][17]
-	req  = Request {"PlacePiece", "Piece", nil}
+	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[0])
 	WriteTextMessage(conn, req.Marshal())
 
@@ -90,7 +90,7 @@ func main() {
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
 	board.Pieces[1].Origin = board.Squares[3][16]
-	req  = Request {"PlacePiece", "Piece", nil}
+	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[1])
 	WriteTextMessage(conn, req.Marshal())
 
@@ -100,7 +100,7 @@ func main() {
 
 	board.Pieces[2].Origin = board.Squares[5][18]
 	board.Pieces[2].Rotation = "E"
-	req  = Request {"PlacePiece", "Piece", nil}
+	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[2])
 	WriteTextMessage(conn, req.Marshal())
 
@@ -110,7 +110,7 @@ func main() {
 
 	board.Pieces[3].Origin = board.Squares[2][17]
 	board.Pieces[3].Rotation = "W"
-	req  = Request {"PlacePiece", "Piece", nil}
+	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[3])
 	WriteTextMessage(conn, req.Marshal())
 
@@ -120,7 +120,7 @@ func main() {
 
 	board.Pieces[4].Origin = board.Squares[2][17]
 	board.Pieces[4].Rotation = "W"
-	req  = Request {"PlacePiece", "Piece", nil}
+	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[4])
 	WriteTextMessage(conn, req.Marshal())
 
@@ -130,7 +130,7 @@ func main() {
 
 	board.Pieces[4].Origin = board.Squares[5][17]
 	board.Pieces[4].Rotation = "W"
-	req  = Request {"PlacePiece", "Piece", nil}
+	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[4])
 	WriteTextMessage(conn, req.Marshal())
 
