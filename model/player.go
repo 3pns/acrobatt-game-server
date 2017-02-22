@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 )
 
 type Player struct {
@@ -11,6 +12,7 @@ type Player struct {
 	Color         string  `json:"color"`
 	Pieces        []Piece `json:"pieces"`
 	startingCubes []Cube
+	squares       []*Square
 }
 
 func (player *Player) Init() {
@@ -130,6 +132,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board) bool {
 		fmt.Println("----- Placement Authorized -----")
 		for _, cube := range projectedCubes {
 			board.Squares[cube.X][cube.Y].PlayerId = piece.PlayerId
+			player.squares = append(player.squares, board.Squares[cube.X][cube.Y])
 		}
 		player.Pieces[piece.Id].Origin = piece.Origin
 		player.Pieces[piece.Id].Rotation = piece.Rotation
@@ -168,5 +171,28 @@ func (player *Player) AppendStartingCube(cube Cube) {
 }
 
 func (player *Player) PlacePieceWithIAEasy(board *Board) bool {
+	var remainingPieces = [] *Piece{}
+	for index, piece := range player.Pieces {
+		if piece.Origin == nil {
+			remainingPieces = append(remainingPieces, &player.Pieces[index])
+		}
+	}
+	var index int
+	var targetCubes = []Cube {}
+	if len(remainingPieces) > 0{
+		index = rand.Intn(len(remainingPieces))	
+	} else {
+		return false
+	}
+	if len(remainingPieces) == 21{
+		targetCubes =  player.startingCubes
+	} else {
+		//targetCubes = player.
+	}
+	fmt.Println(index," ",targetCubes)
+
+	//player.Pieces[index] //ma pièces à placer choisie aléatoirement
+
+	
 	return true
 }
