@@ -50,7 +50,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	fmt.Println(player.PrintStartingCubes())
 	//envoi de la board à la connexion
 
-	var req = Request{"Fetch", "", nil}
+	var req = Request{"Fetch", "", nil, ""}
 	req.MarshalData(board)
 	WriteTextMessage(conn, req.Marshal())
 
@@ -69,20 +69,20 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				json.Unmarshal(request.Data, &piece)
 				fmt.Println("plaçage de Piece")
 				if player.PlacePiece(piece, &board) {
-					var req = Request{"PlacementConfirmed", "", nil}
+					var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
 					WriteTextMessage(conn, req.Marshal())
 					refreshBoard(conn, board)
 				} else {
-					var req = Request{"PlacementRefused", "", nil}
+					var req = Request{"PlacementRefused", "", nil, request.CallbackId}
 					WriteTextMessage(conn, req.Marshal())
 				}
 				board.PrintBoard()
 			} else if request.Type == "Fetch" {
-				var req = Request{"Fetch", "", nil}
+				var req = Request{"Fetch", "", nil, request.CallbackId}
 				req.MarshalData(board)
 				WriteTextMessage(conn, req.Marshal())
 			} else if request.Type == "FetchPlayer" {
-				var req = Request{"FetchPlayer", "Player", nil}
+				var req = Request{"FetchPlayer", "Player", nil, request.CallbackId}
 				req.MarshalData(*player)
 				WriteTextMessage(conn, req.Marshal())
 			}
@@ -109,7 +109,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshBoard(conn *websocket.Conn, board Board) {
-	var req = Request{"Refresh", "", nil}
+	var req = Request{"Refresh", "", nil, ""}
 	req.MarshalData(board)
 	WriteTextMessage(conn, req.Marshal())
 }

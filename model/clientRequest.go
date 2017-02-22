@@ -15,6 +15,7 @@ type Request struct {
 	Type     string `json:"type"`
 	DataType string `json:"dataType"`
 	Data     []byte `json:"data"`
+	CallbackId string `json:"callBackId"`
 }
 
 func (request *Request) MarshalData(t interface{}) {
