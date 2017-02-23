@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"time"
 	. "../utils"
 )
 
@@ -171,6 +172,8 @@ func (player Player) PrintStartingSquares() string {
 }
 
 func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) bool {
+	//TODO attacher le rand à la game lors du refactoring
+	rand.Seed(time.Now().UTC().UnixNano())
 	//on récupère les pièces restantes à placer
 	var remainingPieces = [] *Piece{}
 	for index, piece := range player.Pieces {
