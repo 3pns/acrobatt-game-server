@@ -180,6 +180,7 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board) bool {
 	if len(remainingPieces) > 0{
 		index = rand.Intn(len(remainingPieces))	
 	} else {
+		//le joueur a placé toutes ses pièces !
 		return false
 	}
 	//si le joueur a encore toutes ses pièces le square cible est son square de départ
@@ -191,29 +192,83 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board) bool {
 			targetSquares = append(targetSquares, square.getDiagonalAuthorizedSquares(board)...)
 		} 
 	}
-	//TODO Remove targetSquares duplicates
-	piece := player.Pieces[index]
-	for _, square := range targetSquares {
+	//on essaye de placer toutes les pièces
+	tryagain:
+	index = rand.Intn(len(remainingPieces))
+	piece = remainingPieces[index]
+	if player.TryPlacePieceOnSquares(board, piece, targetSquares){
+		return true
+	} else if len(remainingPieces) > 0 {
+		//on enlève la pièce du slience
+		remainingPieces = append(remainingPieces[:index], remainingPieces[index+1:]...)
+		goto tryagain
+	}
+	
+	//TODO Remove targetSquares duplicates in slice !
+	//le joueur ne peut placer aucune pièce !
+	return false	
+}
+
+func (player *Player) TryPlacePieceOnSquares(board *Board, piece *Piece, squares [] *Square) bool {
+	for _, square := range squares {
+		//essayer les 8 rotation/coté possible
 		fmt.Println(player.Pieces[index])
 		piece.Flipped = false
 		piece.Rotation = "N"
-		player.TryPlacePieceOnSquare(board, &piece)
+		//essayeer tous les positionnements de la pièce avec cette rotation/coté sur le square
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			//on renvoit true si la pièce a été placé
+			return true
+		}
 		piece.Rotation = "E"
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Rotation = "S"
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Rotation = "W"
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Flipped = true
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Rotation = "N"
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Rotation = "E"
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Rotation = "S"
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 		piece.Rotation = "W"
-		//for each position (8 positions)
-			//essayer pour ce square et cette orientation de pièces tous les placements possibles pour cette pièce => pieces de 5 cubes = 5 positionnements possible pour la combinaison
-				//essayer de placer la pièece => renvoi false si pas possible
+		if player.TryPlacePieceOnSquareWithOrientation(board, &piece, square){
+			return true
+		}
 	}
-	
-	return true
+	//false si la pièce n'a pas été placé
+	return false
 }
 
-func (player *Player) TryPlacePieceOnSquare(board *Board, piece *Piece) bool {
-	return true
+//essaye tous les positionnements de la pièce avec cette rotation/coté sur le square
+func (player *Player) TryPlacePieceOnSquareWithOrientation(board *Board, piece *Piece, square Square) bool {
+	for _,cube := range	piece.Cubes {
+		if AllowedCoordinates(square.X -cube.X, square.Y -cube.Y){
+			piece.Origin = board.Squares[square.X -cube.X][square.Y -cube.Y]
+			if player.PlacePiece(piece, board){
+				return true
+			} else {
+				piece.Origin = nil
+			}
+		}
+		
+	}
+	return false
 }
