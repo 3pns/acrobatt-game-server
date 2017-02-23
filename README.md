@@ -1,26 +1,28 @@
 # Readme Server
 ## Format des Requêtes :
 Attention, les données contenue dans data doivent être convertis en base64 et mis en tant que string en tant que value pour data
+
+Si le client envois un callBackId lors d'une requête, il sera aussi présent dans la réponse. Les messages Broadcasté par le serveur comme les messages de type Refresh n'ont pas de callBackId
 ### Fetch la board
 #### requête :
-{"type":"Fetch","dataType":"","data":null}
+{"type":"Fetch","dataType":"","data":null, "callBackId":""}
 #### réponse :
-{"type":"Fetch","dataType":"Board","data":"myBase64Data"}
+{"type":"Fetch","dataType":"Board","data":"myBase64Data", "callBackId":""}
 ### Fetch le joueur
 #### requête :
-{"type":"FetchPlayer","dataType":"","data":null}
+{"type":"FetchPlayer","dataType":"","data":null, "callBackId":""}
 #### réponse :
-{"type":"FetchPlayer","dataType":"Player","data":"myBase64Data"}
+{"type":"FetchPlayer","dataType":"Player","data":"myBase64Data", "callBackId":""}
 ### Placer un coup (mettre une origin et changer les paramètres de la pièces)
 #### requête :
-{"type":"PlacePiece","dataType":"Piece","data":"myBase64Data"}
+{"type":"PlacePiece","dataType":"Piece","data":"myBase64Data", "callBackId":""}
 
 myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X":2,"Y":1},{"X":2,"Y":2}],"origin":{"X":10,"Y":10,"playerId":null},"rotation":"N","flipped":false,"playerId":0}
 #### réponse au joueur (une des deux) :
-{"type":"PlacementConfirmed","dataType":"","data":""}
+{"type":"PlacementConfirmed","dataType":"","data":"", "callBackId":""}
 
-{"type":"PlacementRefused","dataType":"","data":""}
+{"type":"PlacementRefused","dataType":"","data":"", "callBackId":""}
 #### broadcast à tous les joueurs si le coup est validé :
-{"type":"Refresh","dataType":"Board","data":"myBase64Data"}
+{"type":"Refresh","dataType":"Board","data":"myBase64Data", "callBackId":""}
 
 
