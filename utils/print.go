@@ -56,3 +56,11 @@ func WriteTextMessage(conn *websocket.Conn, data []byte) {
 		log.Println("write:", err)
 	}
 }
+
+func AllowedCoordinates(x int, y int) bool{
+	if (x >= 0 && x <20 && y >=0 && y<20){
+		return true
+	} else {
+		return false
+	}
+}

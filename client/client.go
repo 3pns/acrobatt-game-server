@@ -65,12 +65,18 @@ func main() {
 		}
 	}()
 
+	for {
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
+		var req  = Request {"PlaceRandom", "", nil, ""}
+		WriteTextMessage(conn, req.Marshal())
+	}
+
 	board := <-cboard
 	fmt.Println(<-cmessage)
 
 	//var player = board.Players[0]
-	board.Pieces[10].Origin = board.Squares[0][19]
-	board.Pieces[10].Rotation = "E"
+	board.Pieces[10].Origin = board.Squares[0][3]
+	board.Pieces[10].Rotation = "N"
 
 	var req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[10])
@@ -80,7 +86,7 @@ func main() {
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
-	board.Pieces[0].Origin = board.Squares[4][17]
+	board.Pieces[0].Origin = board.Squares[2][1]
 	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[0])
 	WriteTextMessage(conn, req.Marshal())
@@ -89,7 +95,7 @@ func main() {
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
-	board.Pieces[1].Origin = board.Squares[3][16]
+	board.Pieces[1].Origin = board.Squares[3][3]
 	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[1])
 	WriteTextMessage(conn, req.Marshal())
@@ -98,7 +104,7 @@ func main() {
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
-	board.Pieces[2].Origin = board.Squares[5][18]
+	board.Pieces[2].Origin = board.Squares[5][2]
 	board.Pieces[2].Rotation = "E"
 	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[2])
@@ -108,7 +114,7 @@ func main() {
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
-	board.Pieces[3].Origin = board.Squares[2][17]
+	board.Pieces[3].Origin = board.Squares[2][3]
 	board.Pieces[3].Rotation = "W"
 	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[3])
@@ -118,7 +124,7 @@ func main() {
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
-	board.Pieces[4].Origin = board.Squares[2][17]
+	board.Pieces[4].Origin = board.Squares[2][2]
 	board.Pieces[4].Rotation = "W"
 	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[4])
@@ -128,7 +134,7 @@ func main() {
 
 	bufio.NewReader(os.Stdin).ReadBytes('\n')
 
-	board.Pieces[4].Origin = board.Squares[5][17]
+	board.Pieces[4].Origin = board.Squares[5][2]
 	board.Pieces[4].Rotation = "W"
 	req  = Request {"PlacePiece", "Piece", nil, ""}
 	req.MarshalData(board.Pieces[4])

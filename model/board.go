@@ -126,29 +126,29 @@ func (board *Board) InitPlayers() {
 	var player0Pieces = make([]Piece, len(board.Pieces))
 	copy(player0Pieces, board.Pieces)
 
-	var player0StartCubes = []Cube{Cube{0, 0}}
-	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartCubes}
+	var player0StartSquares = []*Square{board.Squares[0][0]}
+	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartSquares, []*Square{}}
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))
 	copy(player1Pieces, board.Pieces)
 
-	var player1StartCubes = []Cube{Cube{0, 19}}
-	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartCubes}
+	var player1StartSquares = []*Square{board.Squares[0][19]}
+	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartSquares, []*Square{}}
 
 	//Joueur 2
 	var player2Pieces = make([]Piece, len(board.Pieces))
 	copy(player2Pieces, board.Pieces)
 
-	var player2StartCubes = []Cube{Cube{19, 0}}
-	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartCubes}
+	var player2StartSquares = []*Square{board.Squares[19][0]}
+	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartSquares, []*Square{}}
 
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
 
-	var player3StartCubes = []Cube{Cube{19, 19}}
-	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartCubes}
+	var player3StartSquares = []*Square{board.Squares[19][19]}
+	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartSquares, []*Square{}}
 
 	player0.Init()
 	player1.Init()
@@ -193,4 +193,16 @@ func (board *Board) Refresh(conn net.Conn) {
 	}
 	conn.Write(b)
 	conn.Write([]byte("\n"))
+}
+
+func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool{
+	if (x >= 0 && x <20 && y >= 0 && y<20){
+		if board.Squares[x][y].GetPlayerId() == player.Id{
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
 }
