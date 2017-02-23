@@ -65,6 +65,12 @@ func main() {
 		}
 	}()
 
+	for {
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
+		var req  = Request {"PlaceRandom", "", nil, ""}
+		WriteTextMessage(conn, req.Marshal())
+	}
+
 	board := <-cboard
 	fmt.Println(<-cmessage)
 
