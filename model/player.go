@@ -133,6 +133,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 	} else {
 		fmt.Println("----- Placement Authorized -----")
 		if simulation {
+			fmt.Println("returning true because simulation")
 			return true
 		}
 		for _, cube := range projectedCubes {
@@ -142,6 +143,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 		player.Pieces[piece.Id].Origin = piece.Origin
 		player.Pieces[piece.Id].Rotation = piece.Rotation
 		player.Pieces[piece.Id].Flipped = piece.Flipped
+		fmt.Println("returning true because piece placé")
 		return true
 	}
 }

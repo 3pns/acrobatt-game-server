@@ -61,8 +61,8 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		fmt.Println("CHECKING IF HAS PLACEABLE PIECE")
 		if player.HasPlaceabePieces(&board){
-			board.PrintBoard()
 			mt, message, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println("read: ", err)
@@ -73,11 +73,20 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 				json.Unmarshal(message, &request)
 				//fmt.Print(request)
 				if request.Type == "PlacePiece" {
+					fmt.Println("Message de type PlacePiece detected !")
 					piece := Piece{}
 					json.Unmarshal(request.Data, &piece)
 					fmt.Println("plaçage de Piece")
-					if player.PlacePiece(piece, &board, false) {
+					//piece.Origin = board.Squares[0][0]
+					fmt.Println(piece.String())
+					placed[0] =player.PlacePiece(piece, &board, false)
+					if placed[0] {
+						fmt.Println("IiIIIIIIIFFF OOOKKKKKKKKK")
 						var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
+
+						placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
+						placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
+						placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
 						WriteTextMessage(conn, req.Marshal())
 						//TODO A REFACTORISER AVEC VRAI ARCHI
 						refreshBoard(conn, board)
@@ -85,14 +94,16 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 						var req = Request{"PlacementRefused", "", nil, request.CallbackId}
 						WriteTextMessage(conn, req.Marshal())
 					}
-					board.PrintBoard()
+					fmt.Println(" AAAAFFFTTTEEEERRRRRR   IiIIIIIIIFFF ")
+
 				} else if request.Type == "PlaceRandom" {
+					fmt.Println("Message de type PlaceRandom detected !")
 					//TODO A REFACTORISER AVEC VRAI ARCHI
 					placed[0] = player.PlaceRandomPieceWithIAEasy(&board, false)
 					placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
 					placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
 					placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
-					board.PrintBoard()
+
 					var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
 					WriteTextMessage(conn, req.Marshal())
 					refreshBoard(conn, board)
@@ -115,7 +126,8 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 
 			}
 		} else {
-			//skill turn
+			//skip turn
+			fmt.Println("SKIPPING TURN")
 			placed[0] = false
 			placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
 			placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
@@ -127,6 +139,7 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		turn++
+		board.PrintBoard()
 
 		/*
 		   messageType, r, err := conn.NextReader()
