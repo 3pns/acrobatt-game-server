@@ -12,9 +12,9 @@ import (
 )
 
 type Request struct {
-	Type     string `json:"type"`
-	DataType string `json:"dataType"`
-	Data     []byte `json:"data"`
+	Type       string `json:"type"`
+	DataType   string `json:"dataType"`
+	Data       []byte `json:"data"`
 	CallbackId string `json:"callbackId"`
 }
 
