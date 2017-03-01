@@ -56,7 +56,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			return false
 		}
 		// si le cube en bas est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
+		if projectedCube.Y+1 >= 0 && projectedCube.Y+1 < 20 {
 			if board.Squares[projectedCube.X][projectedCube.Y+1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube en bas appartient au joueur")
 				placementAuthorized = false
@@ -64,7 +64,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			}
 		}
 		// si le cube en haut est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
+		if projectedCube.Y-1 >= 0 && projectedCube.Y-1 < 20 {
 			if board.Squares[projectedCube.X][projectedCube.Y-1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube en haut appartient au joueur")
 				placementAuthorized = false
@@ -72,7 +72,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			}
 		}
 		// si le cube à gauche est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 {
+		if projectedCube.X-1 >= 0 && projectedCube.X-1 < 20 {
 			if board.Squares[projectedCube.X-1][projectedCube.Y].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
 				placementAuthorized = false
@@ -80,7 +80,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			}
 		}
 		// si le cube à droite est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 {
+		if projectedCube.X+1 >= 0 && projectedCube.X+1 < 20 {
 			if board.Squares[projectedCube.X+1][projectedCube.Y].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
 				placementAuthorized = false
