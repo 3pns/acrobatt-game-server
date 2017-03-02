@@ -1,20 +1,20 @@
 package model
 
 import (
+	. "../utils"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"time"
-	. "../utils"
 )
 
 type Player struct {
-	Id            int     `json:"id"`
-	Name          string  `json:"name"`
-	Color         string  `json:"color"`
-	Pieces        []Piece `json:"pieces"`
+	Id              int     `json:"id"`
+	Name            string  `json:"name"`
+	Color           string  `json:"color"`
+	Pieces          []Piece `json:"pieces"`
 	startingSquares []*Square
-	squares       []*Square
+	squares         []*Square
 }
 
 func (player *Player) Init() {
@@ -35,15 +35,9 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 		return false
 	}
 	piece.PlayerId = &player.Id
-	//1 - vérifier si on a le droit de placer la pièce
-	//1.1 un cube est toujours dans la board
-	//1.2 un cube n'est pas adjacent à un autre cube de la même couleur d'une autre pièce
-	//2.2 un des cubes est dans la zone de départ ET/OU en diagonale d'un cube de la même couleur
-	//piece.Rotation = "E"
-	//2 - placer la pièce
+	piece.Cubes = board.Pieces[piece.Id].Cubes
 	var projectedCubes []Cube
 	var placementAuthorized = false
-	//var hasAtLeastACubeAtStartOrDiagonal = false
 	fmt.Println("----- Plaçage d'une pièce -----")
 	for _, cube := range piece.Cubes {
 		var projectedCube = cube.Project(*piece.Origin, piece.Rotation, piece.Flipped) // on projete le cube dans l'espace = vrai position
@@ -62,7 +56,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			return false
 		}
 		// si le cube en bas est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.Y+1 > 0 && projectedCube.Y+1 < 20 {
+		if projectedCube.Y+1 >= 0 && projectedCube.Y+1 < 20 {
 			if board.Squares[projectedCube.X][projectedCube.Y+1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube en bas appartient au joueur")
 				placementAuthorized = false
@@ -70,7 +64,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			}
 		}
 		// si le cube en haut est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.Y-1 > 0 && projectedCube.Y-1 < 20 {
+		if projectedCube.Y-1 >= 0 && projectedCube.Y-1 < 20 {
 			if board.Squares[projectedCube.X][projectedCube.Y-1].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube en haut appartient au joueur")
 				placementAuthorized = false
@@ -78,7 +72,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			}
 		}
 		// si le cube à gauche est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.X-1 > 0 && projectedCube.X-1 < 20 {
+		if projectedCube.X-1 >= 0 && projectedCube.X-1 < 20 {
 			if board.Squares[projectedCube.X-1][projectedCube.Y].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
 				placementAuthorized = false
@@ -86,7 +80,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			}
 		}
 		// si le cube à droite est dans la board et appartient au joueur le placement est interdit
-		if projectedCube.X+1 > 0 && projectedCube.X+1 < 20 {
+		if projectedCube.X+1 >= 0 && projectedCube.X+1 < 20 {
 			if board.Squares[projectedCube.X+1][projectedCube.Y].GetPlayerId() == player.Id {
 				fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
 				placementAuthorized = false
@@ -133,6 +127,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 	} else {
 		fmt.Println("----- Placement Authorized -----")
 		if simulation {
+			fmt.Println("returning true because simulation")
 			return true
 		}
 		for _, cube := range projectedCubes {
@@ -142,6 +137,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 		player.Pieces[piece.Id].Origin = piece.Origin
 		player.Pieces[piece.Id].Rotation = piece.Rotation
 		player.Pieces[piece.Id].Flipped = piece.Flipped
+		fmt.Println("returning true because piece placé")
 		return true
 	}
 }
@@ -175,7 +171,7 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) 
 	//TODO attacher le rand à la game lors du refactoring
 	rand.Seed(time.Now().UTC().UnixNano())
 	//on récupère les pièces restantes à placer
-	var remainingPieces = [] *Piece{}
+	var remainingPieces = []*Piece{}
 	for index, piece := range player.Pieces {
 		if piece.Origin == nil {
 			remainingPieces = append(remainingPieces, &player.Pieces[index])
@@ -183,84 +179,84 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) 
 	}
 	//on récupère un index de piece au hasard ssi il reste des pièces à placer
 	var index int
-	var targetSquares = [] *Square {}
-	if len(remainingPieces) > 0{
-		index = rand.Intn(len(remainingPieces))	
+	var targetSquares = []*Square{}
+	if len(remainingPieces) > 0 {
+		index = rand.Intn(len(remainingPieces))
 	} else {
 		//le joueur a placé toutes ses pièces !
 		return false
 	}
 	//si le joueur a encore toutes ses pièces le square cible est son square de départ
-	if len(remainingPieces) == 21{
-		targetSquares =  player.startingSquares
+	if len(remainingPieces) == 21 {
+		targetSquares = player.startingSquares
 	} else {
 		//sinon à partir des squares appartenant au joueur on récupère les squares ou l'IA peut poser une pièce
-		fmt.Println("generating authorize squares for player",player.Id)
+		fmt.Println("generating authorize squares for player", player.Id)
 		for _, square := range player.squares {
-			fmt.Println("checking first player Square:",square.X,",",square.Y)
+			fmt.Println("checking first player Square:", square.X, ",", square.Y)
 			targetSquares = append(targetSquares, square.getDiagonalAuthorizedSquares(board)...)
-		} 
+		}
 	}
 	//on essaye de placer toutes les pièces
-	tryagain:
+tryagain:
 	fmt.Println("remainingPieces: ", len(remainingPieces))
 	fmt.Println("playerSquares: ", player.squares)
 	fmt.Println("targetSquares: ", targetSquares)
 	index = rand.Intn(len(remainingPieces))
 	piece := remainingPieces[index]
-	if player.TryPlacePieceOnSquares(board, piece, targetSquares, simulation){
+	if player.TryPlacePieceOnSquares(board, piece, targetSquares, simulation) {
 		return true
 	} else if len(remainingPieces) > 1 {
 		//on enlève la pièce du slience
 		remainingPieces = append(remainingPieces[:index], remainingPieces[index+1:]...)
 		goto tryagain
 	}
-	
+
 	//TODO Remove targetSquares duplicates in slice !
 	//le joueur ne peut placer aucune pièce !
-	return false	
+	return false
 }
 
-func (player *Player) TryPlacePieceOnSquares(board *Board, piece *Piece, squares [] *Square, simulation bool) bool {
+func (player *Player) TryPlacePieceOnSquares(board *Board, piece *Piece, squares []*Square, simulation bool) bool {
 	for _, square := range squares {
 		//essayer les 8 rotation/coté possible
 		piece.Flipped = false
 		piece.Rotation = "N"
 		//essayeer tous les positionnements de la pièce avec cette rotation/coté sur le square
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			//on renvoit true si la pièce a été placé
 			return true
 		}
 		piece.Rotation = "E"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Rotation = "S"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Rotation = "W"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Flipped = true
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Rotation = "N"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Rotation = "E"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Rotation = "S"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 		piece.Rotation = "W"
-		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation ){
+		if player.TryPlacePieceOnSquareWithOrientation(board, *piece, square, simulation) {
 			return true
 		}
 	}
@@ -270,20 +266,20 @@ func (player *Player) TryPlacePieceOnSquares(board *Board, piece *Piece, squares
 
 //essaye tous les positionnements de la pièce avec cette rotation/coté sur le square
 func (player *Player) TryPlacePieceOnSquareWithOrientation(board *Board, piece Piece, square *Square, simulation bool) bool {
-	for _,cube := range	piece.Cubes {
-		if AllowedCoordinates(square.X -cube.X, square.Y -cube.Y){
-			piece.Origin = board.Squares[square.X -cube.X][square.Y -cube.Y]
-			if player.PlacePiece(piece, board, simulation){
+	for _, cube := range piece.Cubes {
+		if AllowedCoordinates(square.X-cube.X, square.Y-cube.Y) {
+			piece.Origin = board.Squares[square.X-cube.X][square.Y-cube.Y]
+			if player.PlacePiece(piece, board, simulation) {
 				return true
 			} else {
 				piece.Origin = nil
 			}
 		}
-		
+
 	}
 	return false
 }
 
-func (player *Player) HasPlaceabePieces(board *Board) bool{
+func (player *Player) HasPlaceabePieces(board *Board) bool {
 	return player.PlaceRandomPieceWithIAEasy(board, true)
 }

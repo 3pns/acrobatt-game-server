@@ -20,7 +20,8 @@ import (
 func main() {
 
 	//connexion au serveur
-	var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	//var addr = flag.String("addr", "127.0.0.1:8081", "http service address")
+	var addr = flag.String("addr", "93.23.249.62:8081", "http service address")
 	u := url.URL{Scheme: "ws", Host: *addr, Path: "/"}
 	fmt.Println("connecting to ", u.String())
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
