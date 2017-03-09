@@ -57,7 +57,9 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 	for {
 		if turn > 21 || (!placed[0] && !placed[1] && !placed[2] && !placed[3]) {
 			fmt.Println("GAME OVER AT THE BEGGINING")
+			refreshBoard(conn, board)
 			gameOver(conn)
+			board.PrintBoard()
 			return
 		}
 
@@ -129,12 +131,18 @@ func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
 			placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
 			if !placed[0] && !placed[1] && !placed[2] && !placed[3] {
 				fmt.Println("GAME OVER CUZ NO MORE PLACEABLE PIECE!!!")
+				refreshBoard(conn, board)
 				gameOver(conn)
+				board.PrintBoard()
 				return
 			}
 		}
 		turn++
 		board.PrintBoard()
+		placed[0] = true
+		placed[1] = true
+		placed[2] = true
+		placed[3] = true
 
 		/*
 		   messageType, r, err := conn.NextReader()
