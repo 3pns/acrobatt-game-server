@@ -37,10 +37,12 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 		//log.Println(err)
 		return
 	}
-	go startSocket(conn, w, r)
+	var client = NewClient(conn)
+	go startSocket(&client, w, r)
 }
 
-func startSocket(conn *websocket.Conn, w http.ResponseWriter, r *http.Request) {
+func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
+	var conn = client.Conn
 	//création de board à factoriser dans une autre socket ...
 	var board Board
 	board.InitBoard()
