@@ -5,23 +5,20 @@ import (
 	"encoding/json"
 	_ "flag"
 	"fmt"
-	"github.com/gorilla/websocket"
+	_ "github.com/gorilla/websocket"
 	_ "io"
 	_ "net/http"
 	_ "strings"
 )
 
 type Game struct {
-	client0        *Client
-	client1        *Client
-	client2        *Client
-	client3        *Client
+	Clients        []*Client
 	board          *Board
 	RequestChannel chan Request
 }
 
-func NewGame(client0 *Client, client1 *Client, client2 *Client, client3 *Client) Game {
-	var game = Game{client0, client1, client2, client3, nil, make(chan Request, 100)}
+func NewGame(clients []*Client) Game {
+	var game = Game{clients, nil, make(chan Request, 100)}
 	return game
 }
 
@@ -34,10 +31,9 @@ func (game Game) Start() {
 }
 
 func startGame(game Game) {
-	game.client0.CurrentGame = &game
-	game.client1.CurrentGame = &game
-	game.client2.CurrentGame = &game
-	game.client3.CurrentGame = &game
+	for index, _ := range game.Clients {
+		game.Clients[index].CurrentGame = &game
+	}
 	fmt.Println("Starting Game")
 	var board Board
 	board.InitBoard()
@@ -49,7 +45,7 @@ func startGame(game Game) {
 	for {
 		request = <-requests
 		player := board.Players[request.Client.GameId()]
-		conn := game.client0.Conn
+		conn := game.Clients[0].Conn
 		if request.Type == "PlacePiece" {
 			piece := Piece{}
 			json.Unmarshal(request.Data, &piece)
@@ -184,29 +180,24 @@ func startGame(game Game) {
 			       return
 			   }
 		}*/
-	BroadcastGameOver(game.client0.Conn)
+	game.BroadcastGameOver()
 }
 
 func (game *Game) BroadcastRefresh() {
-
 	var req = Request{"Refresh", "", nil, "", nil}
 	req.MarshalData(game.Board())
-	if !game.client0.IsAi() {
-		WriteTextMessage(game.client0.Conn, req.Marshal())
-	}
-	if !game.client1.IsAi() {
-		WriteTextMessage(game.client1.Conn, req.Marshal())
-	}
-	if !game.client2.IsAi() {
-		WriteTextMessage(game.client2.Conn, req.Marshal())
-	}
-	if !game.client3.IsAi() {
-		WriteTextMessage(game.client3.Conn, req.Marshal())
-	}
-
+	game.BroadCastRequest(req)
 }
 
-func BroadcastGameOver(conn *websocket.Conn) {
+func (game *Game) BroadcastGameOver() {
 	var req = Request{"GameOver", "", nil, "", nil}
-	WriteTextMessage(conn, req.Marshal())
+	game.BroadCastRequest(req)
+}
+
+func (game *Game) BroadCastRequest(request Request) {
+	for index, _ := range game.Clients {
+		if !game.Clients[index].IsAi() {
+			WriteTextMessage(game.Clients[index].Conn, request.Marshal())
+		}
+	}
 }

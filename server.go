@@ -43,7 +43,8 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	var ai1 = NewAiClient()
 	var ai2 = NewAiClient()
 	var ai3 = NewAiClient()
-	var game = NewGame(&client, &ai1, &ai2, &ai3)
+	clients := []*Client{&client, &ai1, &ai2, &ai3}
+	var game = NewGame(clients)
 	game.Start()
 
 	//lancement du joueur
