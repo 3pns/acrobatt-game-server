@@ -48,15 +48,15 @@ func (client *Client) IsAuthenticated() bool {
 }
 
 func (client *Client) GameId() int {
-  if client == client.CurrentGame.client0 {
-    return 0
-  } else if client == client.CurrentGame.client1 {
-    return 1
-  } else if client == client.CurrentGame.client2 {
-    return 2
-  } else if client == client.CurrentGame.client3 {
-    return 3
-  } else {
-    return -1
-  }
+	if client == client.CurrentGame.client0 {
+		return 0
+	} else if client == client.CurrentGame.client1 {
+		return 1
+	} else if client == client.CurrentGame.client2 {
+		return 2
+	} else if client == client.CurrentGame.client3 {
+		return 3
+	} else {
+		return -1
+	}
 }

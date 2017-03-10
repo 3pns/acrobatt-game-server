@@ -16,6 +16,7 @@ type Request struct {
 	DataType   string `json:"dataType"`
 	Data       []byte `json:"data"`
 	CallbackId string `json:"callbackId"`
+	Client     *Client
 }
 
 func (request *Request) MarshalData(t interface{}) {
@@ -66,4 +67,12 @@ func (request *Request) Marshal() []byte {
 
 func (request *Request) Unmarshal() {
 	fmt.Print("Unmarshalling")
+}
+
+func (request *Request) HasClient() bool {
+	if request.Client != nil {
+		return true
+	} else {
+		return false
+	}
 }

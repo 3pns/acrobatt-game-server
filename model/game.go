@@ -2,7 +2,7 @@ package model
 
 import (
 	. "../utils"
-	_ "encoding/json"
+	"encoding/json"
 	_ "flag"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -12,20 +12,20 @@ import (
 )
 
 type Game struct {
-	client0 *Client
-	client1 *Client
-	client2 *Client
-	client3 *Client
-	board   *Board
+	client0        *Client
+	client1        *Client
+	client2        *Client
+	client3        *Client
+	board          *Board
 	RequestChannel chan Request
 }
 
 func NewGame(client0 *Client, client1 *Client, client2 *Client, client3 *Client) Game {
-	var game = Game{client0, client1, client2, client3, nil, make (chan Request, 10)}
+	var game = Game{client0, client1, client2, client3, nil, make(chan Request, 100)}
 	return game
 }
 
-func (game *Game) Board() Board{
+func (game *Game) Board() Board {
 	return *game.board
 }
 
@@ -44,134 +44,169 @@ func startGame(game Game) {
 	board.InitPieces()
 	board.InitPlayers()
 	game.board = &board
+	requests := game.RequestChannel
+	request := Request{}
+	for {
+		request = <-requests
+		player := board.Players[request.Client.GameId()]
+		conn := game.client0.Conn
+		if request.Type == "PlacePiece" {
+			piece := Piece{}
+			json.Unmarshal(request.Data, &piece)
+			placed := player.PlacePiece(piece, &board, false)
+			if placed {
+				var req = Request{"PlacementConfirmed", "", nil, request.CallbackId, nil}
+				WriteTextMessage(conn, req.Marshal())
+				game.BroadcastRefresh()
+			} else {
+				var req = Request{"PlacementRefused", "", nil, request.CallbackId, nil}
+				WriteTextMessage(conn, req.Marshal())
+			}
+		} else if request.Type == "PlaceRandom" {
+
+		}
+	}
 
 	//Initialisation
 	/*
-	var turn = 1
-	var player *Player = board.Players[0]
-	var conn = game.client1.Conn
-	var placed = [4]bool{true, true, true, true}*/
+		var turn = 1
+		var player *Player = board.Players[0]
+		var conn = game.client1.Conn
+		var placed = [4]bool{true, true, true, true}*/
 
 	/*
-	for {
-		if turn > 21 || (!placed[0] && !placed[1] && !placed[2] && !placed[3]) {
-			fmt.Println("GAME OVER AT THE BEGGINING")
-			refreshBoard(conn, board)
-			gameOver(conn)
-			board.PrintBoard()
-			return
-		}
-
-		if player.HasPlaceabePieces(&board) {
-			mt, message, err := conn.ReadMessage()
-			if err != nil {
-				fmt.Println("read: ", err)
-				return
-			}
-			if mt == websocket.TextMessage {
-				request := Request{}
-				json.Unmarshal(message, &request)
-				if request.Type == "PlacePiece" {
-					fmt.Println("Message de type PlacePiece detected !")
-					piece := Piece{}
-					json.Unmarshal(request.Data, &piece)
-					fmt.Println("plaçage de Piece")
-					fmt.Println(piece.String())
-					placed[0] = player.PlacePiece(piece, &board, false)
-					if placed[0] {
-						var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
-
-						placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
-						placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
-						placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
-						WriteTextMessage(conn, req.Marshal())
-						//TODO A REFACTORISER AVEC VRAI ARCHI
-						refreshBoard(conn, board)
-					} else {
-						var req = Request{"PlacementRefused", "", nil, request.CallbackId}
-						WriteTextMessage(conn, req.Marshal())
-					}
-
-				} else if request.Type == "PlaceRandom" {
-					fmt.Println("Message de type PlaceRandom detected !")
-					//TODO A REFACTORISER AVEC VRAI ARCHI
-					placed[0] = player.PlaceRandomPieceWithIAEasy(&board, false)
-					placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
-					placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
-					placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
-
-					var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
-					WriteTextMessage(conn, req.Marshal())
-					refreshBoard(conn, board)
-					fmt.Println("fin du tour numéro : %i", turn)
-					if !placed[0] && !placed[1] && !placed[2] && !placed[3] {
-						fmt.Println("GAME OVER CUZ NO MORE PLACEABLE PIECE!!!")
-						gameOver(conn)
-						return
-					}
-
-				} else if request.Type == "Fetch" {
-					var req = Request{"Fetch", "", nil, request.CallbackId}
-					req.MarshalData(board)
-					WriteTextMessage(conn, req.Marshal())
-				} else if request.Type == "FetchPlayer" {
-					var req = Request{"FetchPlayer", "Player", nil, request.CallbackId}
-					req.MarshalData(*player)
-					WriteTextMessage(conn, req.Marshal())
-				}
-
-			}
-		} else {
-			//skip turn
-			fmt.Println("SKIPPING TURN")
-			placed[0] = false
-			placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
-			placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
-			placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
-			if !placed[0] && !placed[1] && !placed[2] && !placed[3] {
-				fmt.Println("GAME OVER CUZ NO MORE PLACEABLE PIECE!!!")
+		for {
+			if turn > 21 || (!placed[0] && !placed[1] && !placed[2] && !placed[3]) {
+				fmt.Println("GAME OVER AT THE BEGGINING")
 				refreshBoard(conn, board)
 				gameOver(conn)
 				board.PrintBoard()
 				return
 			}
-		}
-		turn++
-		board.PrintBoard()
-		placed[0] = true
-		placed[1] = true
-		placed[2] = true
-		placed[3] = true
-		/*
 
-		/*
-		   messageType, r, err := conn.NextReader()
-		   fmt.Println("Message Type Received:", string(messageType))
-		   fmt.Println("Message Received:", r)
-		   if err != nil {
-		       return
-		   }
-		   w, err := conn.NextWriter(messageType)
-		   if err != nil {
-		       return
-		   }
-		   if _, err := io.Copy(w, r); err != nil {
-		       return
-		   }
-		   if err := w.Close(); err != nil {
-		       return
-		   }
-	}*/
-	gameOver(game.client0.Conn)
+			if player.HasPlaceabePieces(&board) {
+				mt, message, err := conn.ReadMessage()
+				if err != nil {
+					fmt.Println("read: ", err)
+					return
+				}
+				if mt == websocket.TextMessage {
+					request := Request{}
+					json.Unmarshal(message, &request)
+					if request.Type == "PlacePiece" {
+						fmt.Println("Message de type PlacePiece detected !")
+						piece := Piece{}
+						json.Unmarshal(request.Data, &piece)
+						fmt.Println("plaçage de Piece")
+						fmt.Println(piece.String())
+						placed[0] = player.PlacePiece(piece, &board, false)
+						if placed[0] {
+							var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
+
+							placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
+							placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
+							placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
+							WriteTextMessage(conn, req.Marshal())
+							//TODO A REFACTORISER AVEC VRAI ARCHI
+							refreshBoard(conn, board)
+						} else {
+							var req = Request{"PlacementRefused", "", nil, request.CallbackId}
+							WriteTextMessage(conn, req.Marshal())
+						}
+
+					} else if request.Type == "PlaceRandom" {
+						fmt.Println("Message de type PlaceRandom detected !")
+						//TODO A REFACTORISER AVEC VRAI ARCHI
+						placed[0] = player.PlaceRandomPieceWithIAEasy(&board, false)
+						placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
+						placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
+						placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
+
+						var req = Request{"PlacementConfirmed", "", nil, request.CallbackId}
+						WriteTextMessage(conn, req.Marshal())
+						refreshBoard(conn, board)
+						fmt.Println("fin du tour numéro : %i", turn)
+						if !placed[0] && !placed[1] && !placed[2] && !placed[3] {
+							fmt.Println("GAME OVER CUZ NO MORE PLACEABLE PIECE!!!")
+							gameOver(conn)
+							return
+						}
+
+					} else if request.Type == "Fetch" {
+						var req = Request{"Fetch", "", nil, request.CallbackId}
+						req.MarshalData(board)
+						WriteTextMessage(conn, req.Marshal())
+					} else if request.Type == "FetchPlayer" {
+						var req = Request{"FetchPlayer", "Player", nil, request.CallbackId}
+						req.MarshalData(*player)
+						WriteTextMessage(conn, req.Marshal())
+					}
+
+				}
+			} else {
+				//skip turn
+				fmt.Println("SKIPPING TURN")
+				placed[0] = false
+				placed[1] = board.Players[(player.Id+1)%4].PlaceRandomPieceWithIAEasy(&board, false)
+				placed[2] = board.Players[(player.Id+2)%4].PlaceRandomPieceWithIAEasy(&board, false)
+				placed[3] = board.Players[(player.Id+3)%4].PlaceRandomPieceWithIAEasy(&board, false)
+				if !placed[0] && !placed[1] && !placed[2] && !placed[3] {
+					fmt.Println("GAME OVER CUZ NO MORE PLACEABLE PIECE!!!")
+					refreshBoard(conn, board)
+					gameOver(conn)
+					board.PrintBoard()
+					return
+				}
+			}
+			turn++
+			board.PrintBoard()
+			placed[0] = true
+			placed[1] = true
+			placed[2] = true
+			placed[3] = true
+			/*
+
+			/*
+			   messageType, r, err := conn.NextReader()
+			   fmt.Println("Message Type Received:", string(messageType))
+			   fmt.Println("Message Received:", r)
+			   if err != nil {
+			       return
+			   }
+			   w, err := conn.NextWriter(messageType)
+			   if err != nil {
+			       return
+			   }
+			   if _, err := io.Copy(w, r); err != nil {
+			       return
+			   }
+			   if err := w.Close(); err != nil {
+			       return
+			   }
+		}*/
+	BroadcastGameOver(game.client0.Conn)
 }
 
-func refreshBoard(conn *websocket.Conn, board Board) {
-	var req = Request{"Refresh", "", nil, ""}
-	req.MarshalData(board)
-	WriteTextMessage(conn, req.Marshal())
+func (game *Game) BroadcastRefresh() {
+
+	var req = Request{"Refresh", "", nil, "", nil}
+	req.MarshalData(game.Board())
+	if !game.client0.IsAi() {
+		WriteTextMessage(game.client0.Conn, req.Marshal())
+	}
+	if !game.client1.IsAi() {
+		WriteTextMessage(game.client1.Conn, req.Marshal())
+	}
+	if !game.client2.IsAi() {
+		WriteTextMessage(game.client2.Conn, req.Marshal())
+	}
+	if !game.client3.IsAi() {
+		WriteTextMessage(game.client3.Conn, req.Marshal())
+	}
+
 }
 
-func gameOver(conn *websocket.Conn) {
-	var req = Request{"GameOver", "", nil, ""}
+func BroadcastGameOver(conn *websocket.Conn) {
+	var req = Request{"GameOver", "", nil, "", nil}
 	WriteTextMessage(conn, req.Marshal())
 }

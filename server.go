@@ -61,6 +61,7 @@ func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
 		if mt == websocket.TextMessage {
 			request := Request{}
 			json.Unmarshal(message, &request)
+			request.Client = client
 			if request.Type == "PlacePiece" {
 				fmt.Println("Message de type PlacePiece detected !")
 				client.CurrentGame.RequestChannel <- request
@@ -71,12 +72,12 @@ func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
 				client.CurrentGame.RequestChannel <- request
 			} else if request.Type == "Fetch" {
 				fmt.Println("Message de type Fetch detected !")
-				var req = Request{"Fetch", "", nil, request.CallbackId}
+				var req = Request{"Fetch", "", nil, request.CallbackId, nil}
 				req.MarshalData(client.CurrentGame.Board())
 				WriteTextMessage(conn, req.Marshal())
 			} else if request.Type == "FetchPlayer" {
 				fmt.Println("Message de type FetchPlayer detected !")
-				var req = Request{"FetchPlayer", "Player", nil, request.CallbackId}
+				var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
 				req.MarshalData(*client.CurrentGame.Board().Players[client.GameId()])
 				WriteTextMessage(conn, req.Marshal())
 			}
