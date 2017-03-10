@@ -2,7 +2,7 @@ package model
 
 import (
 	. "../utils"
-	"encoding/json"
+	_ "encoding/json"
 	_ "flag"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -12,46 +12,46 @@ import (
 )
 
 type Game struct {
+	client0 *Client
 	client1 *Client
 	client2 *Client
 	client3 *Client
-	client4 *Client
 	board   *Board
 }
 
-func NewGame(client1 *Client, client2 *Client, client3 *Client, client4 *Client) *Game {
-	var game = Game{client1, client2, client3, client4, nil}
-	client1.CurrentGame = &game
-	client2.CurrentGame = &game
-	client3.CurrentGame = &game
-	client4.CurrentGame = &game
-	return &game
+func NewGame(client0 *Client, client1 *Client, client2 *Client, client3 *Client) Game {
+	var game = Game{client0, client1, client2, client3, nil}
+	return game
 }
 
 func (game *Game) Board() Board{
 	return *game.board
 }
 
-func (game *Game) Start() {
+func (game Game) Start() {
 	go startGame(game)
 }
 
-func startGame(game *Game) {
+func startGame(game Game) {
+	game.client0.CurrentGame = &game
+	game.client1.CurrentGame = &game
+	game.client2.CurrentGame = &game
+	game.client3.CurrentGame = &game
+	fmt.Println("Starting Game")
 	var board Board
 	board.InitBoard()
 	board.InitPieces()
 	board.InitPlayers()
 	game.board = &board
+
+	//Initialisation
+	/*
 	var turn = 1
 	var player *Player = board.Players[0]
-
-	//TODO envoi de la board à la connexion aux 4 joueurs
 	var conn = game.client1.Conn
+	var placed = [4]bool{true, true, true, true}*/
 
-	var req = Request{"Fetch", "", nil, ""}
-	req.MarshalData(board)
-	WriteTextMessage(conn, req.Marshal())
-	var placed = [4]bool{true, true, true, true}
+	/*
 	for {
 		if turn > 21 || (!placed[0] && !placed[1] && !placed[2] && !placed[3]) {
 			fmt.Println("GAME OVER AT THE BEGGINING")
@@ -141,6 +141,7 @@ func startGame(game *Game) {
 		placed[1] = true
 		placed[2] = true
 		placed[3] = true
+		/*
 
 		/*
 		   messageType, r, err := conn.NextReader()
@@ -158,8 +159,9 @@ func startGame(game *Game) {
 		   }
 		   if err := w.Close(); err != nil {
 		       return
-		   }*/
-	}
+		   }
+	}*/
+	gameOver(game.client0.Conn)
 }
 
 func refreshBoard(conn *websocket.Conn, board Board) {

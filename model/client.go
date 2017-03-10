@@ -30,7 +30,7 @@ func NewAiClient() Client {
 	return client
 }
 
-func (client *Client) isAi() bool {
+func (client *Client) IsAi() bool {
 	if client.Ai == nil {
 		return false
 	} else {
@@ -38,11 +38,25 @@ func (client *Client) isAi() bool {
 	}
 }
 
-func (client *Client) isAuthenticated() bool {
+func (client *Client) IsAuthenticated() bool {
 	if client.token == "" {
 		return false
 	} else {
 		//TODO check token validity
 		return true
 	}
+}
+
+func (client *Client) GameId() int {
+  if client == client.CurrentGame.client0 {
+    return 0
+  } else if client == client.CurrentGame.client1 {
+    return 1
+  } else if client == client.CurrentGame.client2 {
+    return 2
+  } else if client == client.CurrentGame.client3 {
+    return 3
+  } else {
+    return -1
+  }
 }

@@ -73,7 +73,11 @@ func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
 				req.MarshalData(client.CurrentGame.Board())
 				WriteTextMessage(conn, req.Marshal())
 			} else if request.Type == "FetchPlayer" {
+				fmt.Println("Message de type FetchPlayer detected !")
 				//TODO FetchPlayer depuis client.Game.??????
+				/*var req = Request{"FetchPlayer", "Player", nil, request.CallbackId}
+				req.MarshalData(*client.CurrentGame.Board().Players[client.GameId()])
+				WriteTextMessage(conn, req.Marshal())*/
 			}
 		}
 	}
