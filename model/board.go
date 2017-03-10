@@ -12,6 +12,8 @@ type Board struct {
 	Squares [20][20]*Square `json:"squares"`
 	Pieces  []Piece         `json:"pieces"`
 	Players []*Player       `json:"players"`
+	PlayerTurn *Player      `json:"playerTurn"`
+	Turn int `json:"turn"`
 }
 
 func (board *Board) InitBoard() {
@@ -21,6 +23,7 @@ func (board *Board) InitBoard() {
 			board.Squares[i][j] = &Square{i, j, nil}
 		}
 	}
+	board.Turn = 1
 	fmt.Println("board initialized with success !\n")
 }
 
@@ -156,6 +159,7 @@ func (board *Board) InitPlayers() {
 	player3.Init()
 
 	board.Players = []*Player{&player0, &player1, &player2, &player3}
+	board.PlayerTurn = &player0
 }
 
 func (board *Board) PrintBoard() {
@@ -204,5 +208,20 @@ func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool {
 		}
 	} else {
 		return false
+	}
+}
+
+func (board *Board) NextTurn() {
+	for index, _ := range board.Players {
+		if board.Players[index] ==  board.PlayerTurn{
+			if index < (len(board.Players) - 1 ){
+				board.PlayerTurn = board.Players[index + 1]
+				return
+			} else {
+				board.PlayerTurn = board.Players[0]
+				board.Turn++
+				return
+			}
+		}
 	}
 }

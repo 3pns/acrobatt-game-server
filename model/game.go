@@ -45,20 +45,22 @@ func startGame(game Game) {
 	for {
 		request = <-requests
 		player := board.Players[request.Client.GameId()]
+		isPlayerTurn := player == board.PlayerTurn
 		conn := game.Clients[0].Conn
-		if request.Type == "PlacePiece" {
+		if request.Type == "PlacePiece" && isPlayerTurn{
 			piece := Piece{}
 			json.Unmarshal(request.Data, &piece)
 			placed := player.PlacePiece(piece, &board, false)
 			if placed {
 				var req = Request{"PlacementConfirmed", "", nil, request.CallbackId, nil}
 				WriteTextMessage(conn, req.Marshal())
+				game.board.NextTurn() 
 				game.BroadcastRefresh()
 			} else {
 				var req = Request{"PlacementRefused", "", nil, request.CallbackId, nil}
 				WriteTextMessage(conn, req.Marshal())
 			}
-		} else if request.Type == "PlaceRandom" {
+		} else if request.Type == "PlaceRandom" && isPlayerTurn {
 
 		}
 	}
