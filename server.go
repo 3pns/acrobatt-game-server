@@ -38,6 +38,11 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var client = NewClient(conn)
+	var ai1 = NewAiClient()
+	var ai2 = NewAiClient()
+	var ai3 = NewAiClient()
+	var game = NewGame(&client, &ai1, &ai2, &ai3)
+	game.Start()
 	go startSocket(&client, w, r)
 }
 
