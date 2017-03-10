@@ -5,10 +5,11 @@ import (
 )
 
 type Client struct {
-	Conn  *websocket.Conn
-	token string
-	State string
-	Ai    *AI
+	Conn        *websocket.Conn
+	token       string
+	State       string
+	Ai          *AI
+	CurrentGame *Game
 }
 
 func NewClient(conn *websocket.Conn) Client {
