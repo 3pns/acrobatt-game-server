@@ -17,10 +17,11 @@ type Game struct {
 	client2 *Client
 	client3 *Client
 	board   *Board
+	RequestChannel chan Request
 }
 
 func NewGame(client0 *Client, client1 *Client, client2 *Client, client3 *Client) Game {
-	var game = Game{client0, client1, client2, client3, nil}
+	var game = Game{client0, client1, client2, client3, nil, make (chan Request, 10)}
 	return game
 }
 
