@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	_ "flag"
 	"fmt"
-	_ "github.com/gorilla/websocket"
+	"github.com/gorilla/websocket"
 	_ "io"
 	_ "net/http"
 	_ "strings"
@@ -50,7 +50,10 @@ func startGame(game Game) {
 		request = <-game.RequestChannel
 		player := board.Players[request.Client.GameId()]
 		isPlayerTurn := player == board.PlayerTurn
-		conn := game.Clients[0].Conn
+		conn := &websocket.Conn{}
+		if !request.Client.IsAi(){
+			conn = request.Client.Conn
+		}
 		if request.Type == "PlacePiece" && isPlayerTurn {
 			fmt.Println("Message de type PlacePiece detected !")
 			piece := Piece{}
@@ -74,9 +77,16 @@ func startGame(game Game) {
 			game.board.NextTurn()
 			game.board.PrintBoard()
 			game.BroadcastRefresh()
+		} else if request.Type == "Fetch" {
+			var req = Request{"Fetch", "", nil, request.CallbackId, nil}
+			req.MarshalData(game.Board())
+			WriteTextMessage(conn, req.Marshal())
+		} else if request.Type == "FetchPlayer" {
+			var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
+			req.MarshalData(game.Board().Players[request.Client.GameId()])
+			WriteTextMessage(conn, req.Marshal())
 		}
-
-		if game.IsGameOver(){
+		if game.IsGameOver() {
 			game.BroadcastGameOver()
 			return
 		}
@@ -107,7 +117,7 @@ func (game *Game) BroadCastRequest(request Request) {
 
 func (game *Game) IsGameOver() bool {
 	for index, _ := range game.board.Players {
-		if game.board.Players[index].HasPlaceabePieces(game.board){
+		if game.board.Players[index].HasPlaceabePieces(game.board) {
 			return false
 		}
 	}

@@ -2,7 +2,7 @@ package main
 
 import (
 	. "./model"
-	. "./utils"
+	_ "./utils"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -55,10 +55,10 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GO !!!")
 
 	//lancement du joueur
-	go startSocket(&client, w, r)
+	go startRequestDispatcher(&client, w, r)
 }
 
-func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
+func startRequestDispatcher(client *Client, w http.ResponseWriter, r *http.Request) {
 	var conn = client.Conn
 	for {
 		mt, message, err := conn.ReadMessage()
@@ -70,20 +70,8 @@ func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
-			if request.Type == "PlacePiece" {
+			if request.Type == "PlacePiece" || request.Type == "PlaceRandom" || request.Type == "Fetch" || request.Type == "FetchPlayer" {
 				client.CurrentGame.RequestChannel <- request
-				//TODO placePiece sur board dans client.Game.Board
-			} else if request.Type == "PlaceRandom" {
-				//TODO placeRandom sur board dans game du client
-				client.CurrentGame.RequestChannel <- request
-			} else if request.Type == "Fetch" {
-				var req = Request{"Fetch", "", nil, request.CallbackId, nil}
-				req.MarshalData(client.CurrentGame.Board())
-				WriteTextMessage(conn, req.Marshal())
-			} else if request.Type == "FetchPlayer" {
-				var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
-				req.MarshalData(*client.CurrentGame.Board().Players[client.GameId()])
-				WriteTextMessage(conn, req.Marshal())
 			}
 		}
 	}

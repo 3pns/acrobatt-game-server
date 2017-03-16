@@ -9,12 +9,12 @@ import (
 )
 
 type Player struct {
-	Id              int     `json:"id"`
-	Name            string  `json:"name"`
-	Color           string  `json:"color"`
-	Pieces          []Piece `json:"pieces"`
-	startingSquares []*Square
-	squares         []*Square
+	Id                int     `json:"id"`
+	Name              string  `json:"name"`
+	Color             string  `json:"color"`
+	Pieces            []Piece `json:"pieces"`
+	startingSquares   []*Square
+	squares           []*Square
 	hasPlaceabePieces bool
 }
 

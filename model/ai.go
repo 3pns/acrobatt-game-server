@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"time"
+	_"time"
 )
 
 type AI struct {
@@ -25,20 +25,18 @@ func NewIA(client *Client) AI {
 func (ai *AI) Start() {
 	request := Request{}
 	board := Board{}
-	//client := ai.client
-	//player := ai.Player
 	for {
 		request = <-ai.RequestChannel
 		if request.Type == "Refresh" {
 			json.Unmarshal(request.Data, &board)
 			if board.PlayerTurn != nil && board.PlayerTurn.Id == ai.Player.Id {
-				time.Sleep(time.Millisecond * 750)
+				//time.Sleep(time.Millisecond * 750)
 				var req = Request{"PlaceRandom", "", nil, "", ai.client}
 				ai.client.CurrentGame.RequestChannel <- req
 			}
 		} else if request.Type == "GameOver" {
-      fmt.Println("Closing AI")
-      return
-    }
+			fmt.Println("Closing AI")
+			return
+		}
 	}
 }

@@ -2,8 +2,8 @@ package model
 
 import (
 	. "../utils"
-	_"fmt"
-	_"strconv"
+	_ "fmt"
+	_ "strconv"
 )
 
 type Square struct {
