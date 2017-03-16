@@ -14,13 +14,14 @@ func NewIA(client *Client) AI{
   return ai
 }
 
-func (client *Client) start () {
+func (ai *AI) Start () {
   request := Request{}
-  board := client.CurrentGame.Board()
+  client := ai.client
   GameRequestChannel := client.CurrentGame.RequestChannel
-  player := board.Players[request.Client.GameId()]
+  player := client.CurrentGame.Board().Players[request.Client.GameId()]
   for {
     request = <- client.Ai.RequestChannel
+    board := client.CurrentGame.Board()
     isPlayerTurn := player == board.PlayerTurn
     if request.Type == "Refresh" && isPlayerTurn{
       var req  = Request {"PlaceRandom", "", nil, "", nil}

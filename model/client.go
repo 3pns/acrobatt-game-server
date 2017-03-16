@@ -21,14 +21,14 @@ func NewClient(conn *websocket.Conn) Client {
 	return client
 }
 
-func NewAiClient() Client {
+func NewAiClient() *Client {
 	var client Client
 	client.Conn = nil
 	client.token = ""
 	client.State = "Start"
 	ai := NewIA(&client)
 	client.Ai = &ai
-	return client
+	return &client
 }
 
 func (client *Client) IsAi() bool {

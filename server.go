@@ -40,12 +40,15 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 
 	//lancement d'une partie
 	var client = NewClient(conn)
-	var ai1 = NewAiClient()
-	var ai2 = NewAiClient()
-	var ai3 = NewAiClient()
-	clients := []*Client{&client, &ai1, &ai2, &ai3}
+	var aiClient1 = NewAiClient()
+	var aiClient2 = NewAiClient()
+	var aiClient3 = NewAiClient()
+	clients := []*Client{&client, aiClient1, aiClient2, aiClient3}
 	var game = NewGame(clients)
 	game.Start()
+	go aiClient1.Ai.Start()
+	go aiClient2.Ai.Start()
+	go aiClient3.Ai.Start()
 
 	//lancement du joueur
 	go startSocket(&client, w, r)
