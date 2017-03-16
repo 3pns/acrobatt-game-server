@@ -31,15 +31,20 @@ func (game Game) Start() {
 }
 
 func startGame(game Game) {
-	for index, _ := range game.Clients {
-		game.Clients[index].CurrentGame = &game
-	}
 	fmt.Println("Starting Game")
 	var board Board
 	board.InitBoard()
 	board.InitPieces()
 	board.InitPlayers()
 	game.board = &board
+
+	for index, _ := range game.Clients {
+		game.Clients[index].CurrentGame = &game
+		if game.Clients[index].IsAi(){
+			game.Clients[index].Ai.Player = game.board.Players[index]
+		}
+	}
+
 	request := Request{}
 	for {
 		request = <-game.RequestChannel

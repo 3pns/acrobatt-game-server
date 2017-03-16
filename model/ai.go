@@ -4,6 +4,7 @@ type AI struct {
   RequestChannel chan Request
   Difficulty string
   client *Client
+  Player *Player
 }
 
 func NewIA(client *Client) AI{
@@ -17,15 +18,14 @@ func NewIA(client *Client) AI{
 func (ai *AI) Start () {
   request := Request{}
   client := ai.client
-  GameRequestChannel := client.CurrentGame.RequestChannel
-  player := client.CurrentGame.Board().Players[request.Client.GameId()]
+  player := ai.Player
   for {
-    request = <- client.Ai.RequestChannel
+    request = <- ai.RequestChannel
     board := client.CurrentGame.Board()
-    isPlayerTurn := player == board.PlayerTurn
+    isPlayerTurn := player.Id == board.PlayerTurn.Id
     if request.Type == "Refresh" && isPlayerTurn{
-      var req  = Request {"PlaceRandom", "", nil, "", nil}
-      GameRequestChannel <- req
+      var req  = Request {"PlaceRandom", "", nil, "", client}
+      client.CurrentGame.RequestChannel <- req
     }
   }
 }
