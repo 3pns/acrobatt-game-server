@@ -3,7 +3,6 @@ package main
 import (
 	. "./model"
 	_ "./utils"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -37,42 +36,17 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 		//log.Println(err)
 		return
 	}
-
 	//lancement d'une partie
-	var client = NewClient(conn)
-	var aiClient1 = NewAiClient()
-	var aiClient2 = NewAiClient()
-	var aiClient3 = NewAiClient()
-	clients := []*Client{&client, aiClient1, aiClient2, aiClient3}
+	var client0 = NewClient(conn)
+	var client1 = NewAiClient()
+	var client2 = NewAiClient()
+	var client3 = NewAiClient()
+	clients := []*Client{client0, client1, client2, client3}
 	var game = NewGame(clients)
 	game.Start()
-	fmt.Println("Starting AI 1")
-	go aiClient1.Ai.Start()
-	fmt.Println("Starting AI 2")
-	go aiClient2.Ai.Start()
-	fmt.Println("Starting AI 3")
-	go aiClient3.Ai.Start()
+	go client0.Start()
+	go client1.Start()
+	go client2.Start()
+	go client3.Start()
 	fmt.Println("GO !!!")
-
-	//lancement du joueur
-	go startRequestDispatcher(&client, w, r)
-}
-
-func startRequestDispatcher(client *Client, w http.ResponseWriter, r *http.Request) {
-	var conn = client.Conn
-	for {
-		mt, message, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("read: ", err)
-			return
-		}
-		if mt == websocket.TextMessage {
-			request := Request{}
-			json.Unmarshal(message, &request)
-			request.Client = client
-			if request.Type == "PlacePiece" || request.Type == "PlaceRandom" || request.Type == "Fetch" || request.Type == "FetchPlayer" {
-				client.CurrentGame.RequestChannel <- request
-			}
-		}
-	}
 }
