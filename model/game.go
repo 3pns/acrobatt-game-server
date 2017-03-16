@@ -40,10 +40,9 @@ func startGame(game Game) {
 	board.InitPieces()
 	board.InitPlayers()
 	game.board = &board
-	requests := game.RequestChannel
 	request := Request{}
 	for {
-		request = <-requests
+		request = <-game.RequestChannel
 		player := board.Players[request.Client.GameId()]
 		isPlayerTurn := player == board.PlayerTurn
 		conn := game.Clients[0].Conn
@@ -61,7 +60,9 @@ func startGame(game Game) {
 				WriteTextMessage(conn, req.Marshal())
 			}
 		} else if request.Type == "PlaceRandom" && isPlayerTurn {
-
+			player.PlaceRandomPieceWithIAEasy(&board, false)
+			game.board.NextTurn()
+			game.BroadcastRefresh()
 		}
 	}
 
@@ -198,7 +199,9 @@ func (game *Game) BroadcastGameOver() {
 
 func (game *Game) BroadCastRequest(request Request) {
 	for index, _ := range game.Clients {
-		if !game.Clients[index].IsAi() {
+		if game.Clients[index].IsAi() {
+			game.Clients[index].Ai.RequestChannel <- request
+		} else {
 			WriteTextMessage(game.Clients[index].Conn, request.Marshal())
 		}
 	}

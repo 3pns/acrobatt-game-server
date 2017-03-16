@@ -26,7 +26,8 @@ func NewAiClient() Client {
 	client.Conn = nil
 	client.token = ""
 	client.State = "Start"
-	client.Ai = &AI{}
+	ai := NewIA(&client)
+	client.Ai = &ai
 	return client
 }
 
