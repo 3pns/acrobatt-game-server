@@ -40,7 +40,7 @@ func startGame(game Game) {
 
 	for index, _ := range game.Clients {
 		game.Clients[index].CurrentGame = &game
-		if game.Clients[index].IsAi(){
+		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.Player = game.board.Players[index]
 		}
 	}
@@ -51,20 +51,22 @@ func startGame(game Game) {
 		player := board.Players[request.Client.GameId()]
 		isPlayerTurn := player == board.PlayerTurn
 		conn := game.Clients[0].Conn
-		if request.Type == "PlacePiece" && isPlayerTurn{
+		if request.Type == "PlacePiece" && isPlayerTurn {
+			fmt.Println("Message de type PlacePiece detected !")
 			piece := Piece{}
 			json.Unmarshal(request.Data, &piece)
 			placed := player.PlacePiece(piece, &board, false)
 			if placed {
 				var req = Request{"PlacementConfirmed", "", nil, request.CallbackId, nil}
 				WriteTextMessage(conn, req.Marshal())
-				game.board.NextTurn() 
+				game.board.NextTurn()
 				game.BroadcastRefresh()
 			} else {
 				var req = Request{"PlacementRefused", "", nil, request.CallbackId, nil}
 				WriteTextMessage(conn, req.Marshal())
 			}
 		} else if request.Type == "PlaceRandom" && isPlayerTurn {
+			fmt.Println("Message de type PlaceRandom detected !")
 			player.PlaceRandomPieceWithIAEasy(&board, false)
 			game.board.NextTurn()
 			game.BroadcastRefresh()

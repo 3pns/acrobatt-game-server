@@ -1,31 +1,41 @@
 package model
 
+import (
+	"encoding/json"
+	_ "fmt"
+	"time"
+)
+
 type AI struct {
-  RequestChannel chan Request
-  Difficulty string
-  client *Client
-  Player *Player
+	RequestChannel chan Request
+	Difficulty     string
+	client         *Client
+	Player         *Player
 }
 
-func NewIA(client *Client) AI{
-  var ai AI
-  ai.RequestChannel = make(chan Request, 100)
-  ai.Difficulty = "easy"
-  ai.client = client
-  return ai
+func NewIA(client *Client) AI {
+	var ai AI
+	ai.RequestChannel = make(chan Request, 100)
+	ai.Difficulty = "easy"
+	ai.Player = nil
+	ai.client = client
+	return ai
 }
 
-func (ai *AI) Start () {
-  request := Request{}
-  client := ai.client
-  player := ai.Player
-  for {
-    request = <- ai.RequestChannel
-    board := client.CurrentGame.Board()
-    isPlayerTurn := player.Id == board.PlayerTurn.Id
-    if request.Type == "Refresh" && isPlayerTurn{
-      var req  = Request {"PlaceRandom", "", nil, "", client}
-      client.CurrentGame.RequestChannel <- req
-    }
-  }
+func (ai *AI) Start() {
+	request := Request{}
+	board := Board{}
+	//client := ai.client
+	//player := ai.Player
+	for {
+		request = <-ai.RequestChannel
+		if request.Type == "Refresh" {
+			json.Unmarshal(request.Data, &board)
+			if board.PlayerTurn != nil && board.PlayerTurn.Id == ai.Player.Id {
+				time.Sleep(time.Millisecond * 750)
+				var req = Request{"PlaceRandom", "", nil, "", ai.client}
+				ai.client.CurrentGame.RequestChannel <- req
+			}
+		}
+	}
 }

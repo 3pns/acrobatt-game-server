@@ -9,11 +9,11 @@ import (
 )
 
 type Board struct {
-	Squares [20][20]*Square `json:"squares"`
-	Pieces  []Piece         `json:"pieces"`
-	Players []*Player       `json:"players"`
-	PlayerTurn *Player      `json:"playerTurn"`
-	Turn int `json:"turn"`
+	Squares    [20][20]*Square `json:"squares"`
+	Pieces     []Piece         `json:"pieces"`
+	Players    []*Player       `json:"players"`
+	PlayerTurn *Player         `json:"playerTurn"`
+	Turn       int             `json:"turn"`
 }
 
 func (board *Board) InitBoard() {
@@ -213,9 +213,9 @@ func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool {
 
 func (board *Board) NextTurn() {
 	for index, _ := range board.Players {
-		if board.Players[index] ==  board.PlayerTurn{
-			if index < (len(board.Players) - 1 ){
-				board.PlayerTurn = board.Players[index + 1]
+		if board.Players[index] == board.PlayerTurn {
+			if index < (len(board.Players) - 1) {
+				board.PlayerTurn = board.Players[index+1]
 				return
 			} else {
 				board.PlayerTurn = board.Players[0]

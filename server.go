@@ -71,20 +71,16 @@ func startSocket(client *Client, w http.ResponseWriter, r *http.Request) {
 			json.Unmarshal(message, &request)
 			request.Client = client
 			if request.Type == "PlacePiece" {
-				fmt.Println("Message de type PlacePiece detected !")
 				client.CurrentGame.RequestChannel <- request
 				//TODO placePiece sur board dans client.Game.Board
 			} else if request.Type == "PlaceRandom" {
-				fmt.Println("Message de type PlaceRandom detected !")
 				//TODO placeRandom sur board dans game du client
 				client.CurrentGame.RequestChannel <- request
 			} else if request.Type == "Fetch" {
-				fmt.Println("Message de type Fetch detected !")
 				var req = Request{"Fetch", "", nil, request.CallbackId, nil}
 				req.MarshalData(client.CurrentGame.Board())
 				WriteTextMessage(conn, req.Marshal())
 			} else if request.Type == "FetchPlayer" {
-				fmt.Println("Message de type FetchPlayer detected !")
 				var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
 				req.MarshalData(*client.CurrentGame.Board().Players[client.GameId()])
 				WriteTextMessage(conn, req.Marshal())
