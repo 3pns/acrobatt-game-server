@@ -2,8 +2,8 @@ package model
 
 import (
 	. "../utils"
-	"fmt"
-	"strconv"
+	_"fmt"
+	_"strconv"
 )
 
 type Square struct {
@@ -63,22 +63,22 @@ func (square *Square) getDiagonalAuthorizedSquares(board *Board) []*Square {
 
 func (square *Square) hasAdjacentSquaresWithPlayerId(board *Board, playerId int) bool {
 	//si le square en haut appartient au joueur
-	fmt.Print("square(", square.X, ",", square.Y, ") : ")
+	//fmt.Print("square(", square.X, ",", square.Y, ") : ")
 	if AllowedCoordinates(square.X, square.Y-1) && board.Squares[square.X][square.Y-1].GetPlayerId() == playerId {
-		fmt.Println("batard : ", square.X, ",", strconv.Itoa(square.Y-1))
-		fmt.Println("pas bon a cause de square du bas ")
+		//fmt.Println("batard : ", square.X, ",", strconv.Itoa(square.Y-1))
+		//fmt.Println("pas bon a cause de square du bas ")
 		return true
 	} else if AllowedCoordinates(square.X, square.Y+1) && board.Squares[square.X][square.Y+1].GetPlayerId() == playerId {
-		fmt.Println("pas bon a cause de square du haut ")
+		//fmt.Println("pas bon a cause de square du haut ")
 		return true
 	} else if AllowedCoordinates(square.X-1, square.Y) && board.Squares[square.X-1][square.Y].GetPlayerId() == playerId {
-		fmt.Println("pas bon a cause de square de gauche ")
+		//fmt.Println("pas bon a cause de square de gauche ")
 		return true
 	} else if AllowedCoordinates(square.X+1, square.Y) && board.Squares[square.X+1][square.Y].GetPlayerId() == playerId {
-		fmt.Println("pas bon a cause de square de droite ")
+		//fmt.Println("pas bon a cause de square de droite ")
 		return true
 	}
-	fmt.Println("pas de case adjacente appartenant au joueur ")
+	//fmt.Println("pas de case adjacente appartenant au joueur ")
 	return false
 }
 

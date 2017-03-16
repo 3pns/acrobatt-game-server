@@ -55,13 +55,16 @@ func startGame(game Game) {
 			fmt.Println("Message de type PlacePiece detected !")
 			piece := Piece{}
 			json.Unmarshal(request.Data, &piece)
+			fmt.Println(piece)
 			placed := player.PlacePiece(piece, &board, false)
 			if placed {
 				var req = Request{"PlacementConfirmed", "", nil, request.CallbackId, nil}
 				WriteTextMessage(conn, req.Marshal())
 				game.board.NextTurn()
+				game.board.PrintBoard()
 				game.BroadcastRefresh()
 			} else {
+				fmt.Println("PlacementRefused")
 				var req = Request{"PlacementRefused", "", nil, request.CallbackId, nil}
 				WriteTextMessage(conn, req.Marshal())
 			}
@@ -69,6 +72,7 @@ func startGame(game Game) {
 			fmt.Println("Message de type PlaceRandom detected !")
 			player.PlaceRandomPieceWithIAEasy(&board, false)
 			game.board.NextTurn()
+			game.board.PrintBoard()
 			game.BroadcastRefresh()
 		}
 	}
