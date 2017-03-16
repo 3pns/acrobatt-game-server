@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	_ "fmt"
+	"fmt"
 	"time"
 )
 
@@ -36,6 +36,9 @@ func (ai *AI) Start() {
 				var req = Request{"PlaceRandom", "", nil, "", ai.client}
 				ai.client.CurrentGame.RequestChannel <- req
 			}
-		}
+		} else if request.Type == "GameOver" {
+      fmt.Println("Closing AI")
+      return
+    }
 	}
 }

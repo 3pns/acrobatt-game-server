@@ -15,6 +15,7 @@ type Player struct {
 	Pieces          []Piece `json:"pieces"`
 	startingSquares []*Square
 	squares         []*Square
+	hasPlaceabePieces bool
 }
 
 func (player *Player) Init() {
@@ -282,5 +283,15 @@ func (player *Player) TryPlacePieceOnSquareWithOrientation(board *Board, piece P
 }
 
 func (player *Player) HasPlaceabePieces(board *Board) bool {
-	return player.PlaceRandomPieceWithIAEasy(board, true)
+	if player.hasPlaceabePieces {
+		res := player.PlaceRandomPieceWithIAEasy(board, true)
+		if res {
+			return true
+		} else {
+			player.hasPlaceabePieces = false
+			return false
+		}
+	} else {
+		return false
+	}
 }
