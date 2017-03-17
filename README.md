@@ -19,23 +19,23 @@ Si le client envois un callbackId lors d'une requête, il sera aussi présent da
 
 myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X":2,"Y":1},{"X":2,"Y":2}],"origin":{"X":10,"Y":10,"playerId":null},"rotation":"N","flipped":false,"playerId":0}
 #### réponse au joueur (une des deux) :
-{"type":"PlacementConfirmed","dataType":"","data":"", "callbackId":""}
+{"type":"PlacementConfirmed","dataType":"","data":null, "callbackId":""}
 
-{"type":"PlacementRefused","dataType":"","data":"", "callbackId":""}
+{"type":"PlacementRefused","dataType":"","data":null, "callbackId":""}
 
 #### placer un coup automatiquement (pas de réponse envoyé par le serveur) :
-{"type":"PlaceRandom","dataType":"","data":"", "callbackId":""}
+{"type":"PlaceRandom","dataType":"","data":null, "callbackId":""}
 ### Liste des messages Broadcastés à tous les joueurs
 #### broadcast à tous les joueurs de la board si un est validé :
 {"type":"Refresh","dataType":"Board","data":"myBase64Data", "callbackId":""}
 #### Game Over
-{"type":"GameOver","dataType":"","data":"", "callbackId":""}
+{"type":"GameOver","dataType":"","data":null, "callbackId":""}
 
 #### Abandonner puis quitter uner partie
-{"type":"Concede","dataType":"","data":"", "callbackId":""}
-{"type":"Quit","dataType":"","data":"", "callbackId":""}
+{"type":"Concede","dataType":"","data":null, "callbackId":""}
+{"type":"Quit","dataType":"","data":null, "callbackId":""}
 
 
 ### Depuis l'état start
-{"type":"CreateDemo","dataType":"","data":"", "callbackId":""}
+{"type":"CreateDemo","dataType":"","data":null, "callbackId":""}
 {"type":"Authenticate","dataType":"string","data":"mytoken", "callbackId":""}
