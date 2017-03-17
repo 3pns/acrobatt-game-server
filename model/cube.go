@@ -18,8 +18,10 @@ func (cube *Cube) Project(origin Square, rotation string, flipped bool) Cube {
 	var yFactor = 1
 	var xBoardValue = cube.X
 	var yBoardValue = cube.Y
-	if flipped {
+	if flipped && (rotation == "S" || rotation == "N") {
 		xFactor = -xFactor
+	} else if flipped && (rotation == "W" || rotation == "E") {
+		yFactor = -yFactor
 	}
 	//fmt.Println("Avant : x :" + strconv.Itoa(xBoardValue) + ", y: " + strconv.Itoa(yBoardValue))
 	if rotation == "W" {

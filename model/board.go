@@ -9,9 +9,11 @@ import (
 )
 
 type Board struct {
-	Squares [20][20]*Square `json:"squares"`
-	Pieces  []Piece         `json:"pieces"`
-	Players []*Player       `json:"players"`
+	Squares    [20][20]*Square `json:"squares"`
+	Pieces     []Piece         `json:"pieces"`
+	Players    []*Player       `json:"players"`
+	PlayerTurn *Player         `json:"playerTurn"`
+	Turn       int             `json:"turn"`
 }
 
 func (board *Board) InitBoard() {
@@ -21,6 +23,7 @@ func (board *Board) InitBoard() {
 			board.Squares[i][j] = &Square{i, j, nil}
 		}
 	}
+	board.Turn = 1
 	fmt.Println("board initialized with success !\n")
 }
 
@@ -127,28 +130,28 @@ func (board *Board) InitPlayers() {
 	copy(player0Pieces, board.Pieces)
 
 	var player0StartSquares = []*Square{board.Squares[0][0]}
-	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartSquares, []*Square{}}
+	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartSquares, []*Square{}, true}
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))
 	copy(player1Pieces, board.Pieces)
 
 	var player1StartSquares = []*Square{board.Squares[0][19]}
-	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartSquares, []*Square{}}
+	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartSquares, []*Square{}, true}
 
 	//Joueur 2
 	var player2Pieces = make([]Piece, len(board.Pieces))
 	copy(player2Pieces, board.Pieces)
 
 	var player2StartSquares = []*Square{board.Squares[19][0]}
-	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartSquares, []*Square{}}
+	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartSquares, []*Square{}, true}
 
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
 
 	var player3StartSquares = []*Square{board.Squares[19][19]}
-	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartSquares, []*Square{}}
+	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartSquares, []*Square{}, true}
 
 	player0.Init()
 	player1.Init()
@@ -156,6 +159,7 @@ func (board *Board) InitPlayers() {
 	player3.Init()
 
 	board.Players = []*Player{&player0, &player1, &player2, &player3}
+	board.PlayerTurn = &player0
 }
 
 func (board *Board) PrintBoard() {
@@ -205,4 +209,17 @@ func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool {
 	} else {
 		return false
 	}
+}
+
+func (board *Board) NextTurn() {
+	if board.Players[len(board.Players)-1] == board.PlayerTurn {
+		board.Turn++
+	}
+	for i := 1; i <= len(board.Players); i++ {
+		if board.Players[((board.PlayerTurn.Id + i) % len(board.Players))].HasPlaceabePieces(board) {
+			board.PlayerTurn = board.Players[((board.PlayerTurn.Id + i) % len(board.Players))]
+			return
+		}
+	}
+	return
 }

@@ -31,3 +31,11 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 #### Game Over
 {"type":"GameOver","dataType":"","data":"", "callbackId":""}
 
+#### Abandonner puis quitter uner partie
+{"type":"Concede","dataType":"","data":"", "callbackId":""}
+{"type":"Quit","dataType":"","data":"", "callbackId":""}
+
+
+### Depuis l'état start
+{"type":"CreateDemo","dataType":"","data":"", "callbackId":""}
+{"type":"Authenticate","dataType":"string","data":"mytoken", "callbackId":""}

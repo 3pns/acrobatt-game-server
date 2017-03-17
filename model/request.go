@@ -16,6 +16,7 @@ type Request struct {
 	DataType   string `json:"dataType"`
 	Data       []byte `json:"data"`
 	CallbackId string `json:"callbackId"`
+	Client     *Client
 }
 
 func (request *Request) MarshalData(t interface{}) {
@@ -66,4 +67,30 @@ func (request *Request) Marshal() []byte {
 
 func (request *Request) Unmarshal() {
 	fmt.Print("Unmarshalling")
+}
+
+func (request *Request) DataToString() string {
+	if request.DataType == "string" {
+		return string(request.Data)
+	}
+	return ""
+}
+
+func (request *Request) HasClient() bool {
+	if request.Client != nil {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (request *Request) Dispatch() {
+	var client = request.Client
+	if client.State.Current() == "game" && (request.Type == "PlacePiece" || request.Type == "PlaceRandom" || request.Type == "Fetch" || request.Type == "FetchPlayer" || request.Type == "Concede") {
+		client.CurrentGame.RequestChannel <- *request
+	} else if client.State.Current() == "start" && request.Type == "CreateDemo" {
+		client.State.Event("create_demo")
+	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
+		client.Authenticate(request.DataToString())
+	}
 }
