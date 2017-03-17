@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	_"time"
+	_ "time"
 )
 
 type AI struct {

@@ -1,15 +1,16 @@
 package model
 
 import (
-	"github.com/gorilla/websocket"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
+	"github.com/looplab/fsm"
 )
 
 type Client struct {
 	Conn        *websocket.Conn
 	token       string
-	State       string
+	State       *fsm.FSM
 	Ai          *AI
 	CurrentGame *Game
 }
@@ -18,8 +19,20 @@ func NewClient(conn *websocket.Conn) *Client {
 	var client Client
 	client.Conn = conn
 	client.token = ""
-	client.State = "Start"
 	client.Ai = nil
+
+	client.State = fsm.NewFSM(
+		"start",
+		fsm.Events{
+			{Name: "create_demo", Src: []string{"start"}, Dst: "game"},
+			{Name: "quit_demo", Src: []string{"game"}, Dst: "start"},
+		},
+		fsm.Callbacks{
+			"create_demo": func(e *fsm.Event) { StartDemo(&client) },
+			"quit_demo":   func(e *fsm.Event) { fmt.Println("quiting demo : " + e.FSM.Current()) },
+		},
+	)
+
 	return &client
 }
 
@@ -27,7 +40,7 @@ func NewAiClient() *Client {
 	var client Client
 	client.Conn = nil
 	client.token = ""
-	client.State = "Start"
+	client.State = nil
 	ai := NewIA(&client)
 	client.Ai = &ai
 	return &client
@@ -59,8 +72,17 @@ func (client *Client) GameId() int {
 	return -1
 }
 
+func (client *Client) Authenticate(token string) bool {
+	if token == "" {
+		return false
+	} else {
+		client.token = token
+		return true
+	}
+}
+
 func (client *Client) Start() {
-	if client.IsAi(){
+	if client.IsAi() {
 		go client.Ai.Start()
 		return
 	}
@@ -75,9 +97,7 @@ func (client *Client) Start() {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
-			if request.Type == "PlacePiece" || request.Type == "PlaceRandom" || request.Type == "Fetch" || request.Type == "FetchPlayer" {
-				client.CurrentGame.RequestChannel <- request
-			}
+			request.Dispatch()
 		}
 	}
 }

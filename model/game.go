@@ -30,6 +30,21 @@ func (game Game) Start() {
 	go startGame(game)
 }
 
+func StartDemo(client *Client) {
+	var client0 = client
+	var client1 = NewAiClient()
+	var client2 = NewAiClient()
+	var client3 = NewAiClient()
+	clients := []*Client{client0, client1, client2, client3}
+	var game = NewGame(clients)
+	game.Start()
+	go client0.Start()
+	go client1.Start()
+	go client2.Start()
+	go client3.Start()
+	fmt.Println("GO !!!")
+}
+
 func startGame(game Game) {
 	fmt.Println("Starting Game")
 	var board Board
@@ -51,7 +66,7 @@ func startGame(game Game) {
 		player := board.Players[request.Client.GameId()]
 		isPlayerTurn := player == board.PlayerTurn
 		conn := &websocket.Conn{}
-		if !request.Client.IsAi(){
+		if !request.Client.IsAi() {
 			conn = request.Client.Conn
 		}
 		if request.Type == "PlacePiece" && isPlayerTurn {
@@ -83,15 +98,29 @@ func startGame(game Game) {
 			WriteTextMessage(conn, req.Marshal())
 		} else if request.Type == "FetchPlayer" {
 			var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
-			req.MarshalData(game.Board().Players[request.Client.GameId()])
+			req.MarshalData(player)
 			WriteTextMessage(conn, req.Marshal())
+		} else if request.Type == "Concede" && isPlayerTurn {
+			player.Concede()
+			game.BroadcastConcede(player)
+			game.board.NextTurn()
+			game.BroadcastRefresh()
+		} else if request.Type == "Quit" && !player.HasPlaceabePieces(game.board) {
+			request.Client.State.Event("quit_demo")
 		}
 		if game.IsGameOver() {
 			game.BroadcastGameOver()
+			game.DisconnectPlayers()
 			return
 		}
 	}
 	return
+}
+
+func (game *Game) BroadcastConcede(player *Player) {
+	var req = Request{"Concede", "", nil, "", nil}
+	req.MarshalData(*player)
+	game.BroadCastRequest(req)
 }
 
 func (game *Game) BroadcastRefresh() {
@@ -122,4 +151,16 @@ func (game *Game) IsGameOver() bool {
 		}
 	}
 	return true
+}
+
+func (game *Game) DisconnectPlayers() {
+	for index, _ := range game.Clients {
+		if !game.Clients[index].IsAi() {
+			if game.Clients[index].IsAuthenticated() {
+				//TODO retourner dans home
+			} else {
+				game.Clients[index].State.Event("quit_demo")
+			}
+		}
+	}
 }

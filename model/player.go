@@ -295,3 +295,7 @@ func (player *Player) HasPlaceabePieces(board *Board) bool {
 		return false
 	}
 }
+
+func (player *Player) Concede() {
+	player.hasPlaceabePieces = false
+}

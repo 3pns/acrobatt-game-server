@@ -212,12 +212,12 @@ func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool {
 }
 
 func (board *Board) NextTurn() {
-	if board.Players[len(board.Players) - 1] == board.PlayerTurn{
+	if board.Players[len(board.Players)-1] == board.PlayerTurn {
 		board.Turn++
 	}
-	for i:=1;i<=len(board.Players);i++{
-		if board.Players[((board.PlayerTurn.Id +i) % len(board.Players))].HasPlaceabePieces(board){
-			board.PlayerTurn = board.Players[((board.PlayerTurn.Id +i) % len(board.Players))]
+	for i := 1; i <= len(board.Players); i++ {
+		if board.Players[((board.PlayerTurn.Id + i) % len(board.Players))].HasPlaceabePieces(board) {
+			board.PlayerTurn = board.Players[((board.PlayerTurn.Id + i) % len(board.Players))]
 			return
 		}
 	}
