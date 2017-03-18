@@ -97,6 +97,7 @@ func (client *Client) Start() {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
+			fmt.Print("Client : New Message recieved : ".request.DataType)
 			request.Dispatch()
 		}
 	}

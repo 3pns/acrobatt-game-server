@@ -31,6 +31,7 @@ func (game Game) Start() {
 }
 
 func StartDemo(client *Client) {
+	fmt.Println("Client : Switching to Game State ")
 	var client0 = client
 	var client1 = NewAiClient()
 	var client2 = NewAiClient()
@@ -42,7 +43,7 @@ func StartDemo(client *Client) {
 	go client1.Start()
 	go client2.Start()
 	go client3.Start()
-	fmt.Println("GO !!!")
+	fmt.Println("Client : StartDemo GO !!!")
 }
 
 func startGame(game Game) {
@@ -159,6 +160,7 @@ func (game *Game) DisconnectPlayers() {
 			if game.Clients[index].IsAuthenticated() {
 				//TODO retourner dans home
 			} else {
+				game.Clients[index].CurrentGame = nil
 				game.Clients[index].State.Event("quit_demo")
 			}
 		}
