@@ -16,14 +16,13 @@ type Request struct {
 	DataType   string `json:"dataType"`
 	Data       []byte `json:"data"`
 	CallbackId string `json:"callbackId"`
-	Client     *Client
+	Client     *Client `json:"-"`
 }
 
 func (request *Request) MarshalData(t interface{}) {
 
 	board, ok := t.(Board)
 	if ok {
-		fmt.Println("Marshalling Board")
 		b, err := json.Marshal(board)
 		if err != nil {
 			fmt.Println(err)
@@ -34,7 +33,6 @@ func (request *Request) MarshalData(t interface{}) {
 	}
 	player, ok := t.(Player)
 	if ok {
-		fmt.Println("Marshalling Player")
 		b, err := json.Marshal(player)
 		if err != nil {
 			fmt.Println(err)
@@ -45,7 +43,6 @@ func (request *Request) MarshalData(t interface{}) {
 	}
 	piece, ok := t.(Piece)
 	if ok {
-		fmt.Println("Marshalling Piece")
 		b, err := json.Marshal(piece)
 		if err != nil {
 			fmt.Println(err)
@@ -54,7 +51,26 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
-
+	games, ok := t.(GameSlice)
+	if ok {
+		b, err := json.Marshal(games)
+		if err != nil {
+			fmt.Println(err)
+		}
+		request.DataType = "[]Game"
+		request.Data = b
+		return
+	}
+	lobbies, ok := t.(LobbySlice)
+	if ok {
+		b, err := json.Marshal(lobbies)
+		if err != nil {
+			fmt.Println(err)
+		}
+		request.DataType = "[]Lobby"
+		request.Data = b
+		return
+	}
 }
 
 func (request *Request) Marshal() []byte {
@@ -88,6 +104,8 @@ func (request *Request) Dispatch() {
 	var client = request.Client
 	if client.State.Current() == "game" && (request.Type == "PlacePiece" || request.Type == "PlaceRandom" || request.Type == "Fetch" || request.Type == "FetchPlayer" || request.Type == "Concede") {
 		client.CurrentGame.RequestChannel <- *request
+	} else if client.State.Current() == "home" {
+		GetServer().Process(*request)
 	} else if client.State.Current() == "start" && request.Type == "CreateDemo" {
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {

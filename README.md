@@ -40,4 +40,6 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 ### Depuis l'état start
 {"type":"CreateDemo","dataType":"","data":null, "callbackId":""}
 
-{"type":"Authenticate","dataType":"string","data":"mytoken", "callbackId":""}
+{"type":"Authenticate","dataType":"string","data":"myBase64token", "callbackId":""}
+
+myBase64token => "MyToken"

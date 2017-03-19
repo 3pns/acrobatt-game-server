@@ -17,6 +17,10 @@ type Game struct {
 	RequestChannel chan Request
 }
 
+type GameSlice struct {
+	games []*Game
+}
+
 func NewGame(clients []*Client) Game {
 	var game = Game{clients, nil, make(chan Request, 100)}
 	return game

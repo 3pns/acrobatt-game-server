@@ -24,8 +24,7 @@ var upgrader = websocket.Upgrader{
 
 func main() {
 	fmt.Println("Launching server on port 8081...")
-	server := Server{}
-	go server.Start()
+	go GetServer().Start()
 
 	var addr = flag.String("addr", ":8081", "http service address")
 	http.HandleFunc("/", handleNewConnection)
