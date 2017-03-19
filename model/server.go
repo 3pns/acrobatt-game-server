@@ -4,13 +4,14 @@ import (
 	. "../utils"
 	"sync"
 	"time"
+	"fmt"
 )
 
 type server struct {
 	currentGames   []*Game
 	clients []*Client
-	clientsInHome  []*Client
 	lobbies []*Lobby
+	lobbyFactory *LobbyFactory
 }
 
 //thread safe singleton pattern
@@ -22,18 +23,25 @@ func GetServer() *server {
         instance = &server{}
         instance.currentGames = []*Game{}
         instance.clients = []*Client{}
-        //instance.clientsInHome = []*Client{}
+        instance.lobbyFactory = NewLobbyFactory()
     })
     return instance
 }
+
+func (serv *server) GetLobbyFactory() *LobbyFactory {
+ 	return serv.lobbyFactory
+ }
 
 func (serv *server) Start() {
 	for {
 		time.Sleep(5 * time.Second)
 		serv.broadcastLobbies()
 		serv.broadcastGames()
+		fmt.Println("Lobbies : ")
+		fmt.Println(serv.lobbies)
+		fmt.Println(GetServer().lobbies)
+		fmt.Println(LobbySlice{GetServer().lobbies})
 	}
-	
 }
 
 func (serv *server) Process(request Request) {
@@ -67,7 +75,10 @@ func (serv *server) AddLobby(lobby *Lobby) {
 
 func (serv *server) broadcastLobbies() {
 	request := Request{"Broadcast", "[]Lobby", nil, "", nil}
-	request.MarshalData(LobbySlice{serv.lobbies})
+	lobbyslice := LobbySlice{}
+	lobbyslice.Lobbies = serv.lobbies
+	fmt.Println(lobbyslice)
+	request.MarshalData(lobbyslice)
 	serv.broadcastRequest(&request)
 }
 

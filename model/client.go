@@ -8,12 +8,12 @@ import (
 )
 
 type Client struct {
-	Conn        *websocket.Conn
-	token       string
-	State       *fsm.FSM
-	Ai          *AI
-	CurrentGame *Game
-	CurrentLobby *Lobby
+	Conn        *websocket.Conn `json:"-"`
+	token       string `json:"-"`
+	State       *fsm.FSM `json:"-"`
+	Ai          *AI `json:"-"`
+	CurrentGame *Game `json:"-"`
+	CurrentLobby *Lobby `json:"-"`
 }
 
 func NewClient(conn *websocket.Conn) *Client {
@@ -44,7 +44,7 @@ func NewClient(conn *websocket.Conn) *Client {
 			"join_lobby":   func(e *fsm.Event) { fmt.Println("joining lobby : " + e.FSM.Current()) },
 			"create_lobby":   func(e *fsm.Event) { 
 				fmt.Println("creating lobby : " + e.FSM.Current())
-				lobby := NewLobby(&client)
+				lobby := GetServer().GetLobbyFactory().NewLobby(&client)
 				GetServer().AddLobby(lobby)
 				},
 			"quit_lobby":   func(e *fsm.Event) { 

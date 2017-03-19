@@ -18,7 +18,7 @@ type Game struct {
 }
 
 type GameSlice struct {
-	games []*Game
+	Games []*Game `json:"games"`
 }
 
 func NewGame(clients []*Client) Game {
