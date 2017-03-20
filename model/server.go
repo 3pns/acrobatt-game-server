@@ -12,6 +12,7 @@ type server struct {
 	clients []*Client
 	lobbies []*Lobby
 	lobbyFactory *LobbyFactory
+	gameFactory *GameFactory
 }
 
 //thread safe singleton pattern
@@ -24,13 +25,18 @@ func GetServer() *server {
         instance.currentGames = []*Game{}
         instance.clients = []*Client{}
         instance.lobbyFactory = NewLobbyFactory()
+        instance.gameFactory = NewGameFactory()
     })
     return instance
 }
 
 func (serv *server) GetLobbyFactory() *LobbyFactory {
  	return serv.lobbyFactory
- }
+}
+
+func (serv *server) GetGameFactory() *GameFactory {
+ 	return serv.gameFactory
+}
 
 func (serv *server) Start() {
 	for {

@@ -51,7 +51,10 @@ func NewClient(conn *websocket.Conn) *Client {
 				fmt.Println("quiting lobby : " + e.FSM.Current()) 
 
 				},
-			"join_game":   func(e *fsm.Event) { fmt.Println("joining game : " + e.FSM.Current()) },
+			"join_game":   func(e *fsm.Event) { 
+				client.CurrentLobby = nil
+				fmt.Println("joining game : " + e.FSM.Current()) 
+				},
 			"quit_game":   func(e *fsm.Event) { fmt.Println("quiting game : " + e.FSM.Current()) },
 		},
 	)

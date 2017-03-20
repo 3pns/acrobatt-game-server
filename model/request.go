@@ -71,6 +71,16 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
+	lobby, ok := t.(Lobby)
+	if ok {
+		b, err := json.Marshal(lobby)
+		if err != nil {
+			fmt.Println(err)
+		}
+		request.DataType = "Lobby"
+		request.Data = b
+		return
+	}
 }
 
 func (request *Request) Marshal() []byte {
@@ -102,7 +112,8 @@ func (request *Request) HasClient() bool {
 
 func (request *Request) Dispatch() {
 	var client = request.Client
-	if client.State.Current() == "game" && (request.Type == "PlacePiece" || request.Type == "PlaceRandom" || request.Type == "Fetch" || request.Type == "FetchPlayer" || request.Type == "Concede") {
+	fmt.Print("dispatching")
+	if client.State.Current() == "game" && client.CurrentGame != nil {
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {
 		GetServer().Process(*request)
@@ -110,5 +121,9 @@ func (request *Request) Dispatch() {
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
 		client.Authenticate(request.DataToString())
+	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
+		fmt.Print("dispatching to lobby request channel")
+		client.CurrentLobby.RequestChannel <- *request
 	}
+	fmt.Print("dispatching failed")
 }

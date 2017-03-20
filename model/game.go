@@ -3,35 +3,39 @@ package model
 import (
 	. "../utils"
 	"encoding/json"
-	_ "flag"
 	"fmt"
 	"github.com/gorilla/websocket"
-	_ "io"
-	_ "net/http"
-	_ "strings"
 )
 
 type Game struct {
+	Id int
 	Clients        []*Client
 	board          *Board
 	RequestChannel chan Request
+}
+
+type GameFactory struct {
+	Id       int
+}
+
+func NewGameFactory() *GameFactory {
+	var factory = new(GameFactory)
+	factory.Id = 0
+	return factory
 }
 
 type GameSlice struct {
 	Games []*Game `json:"games"`
 }
 
-func NewGame(clients []*Client) Game {
-	var game = Game{clients, nil, make(chan Request, 100)}
-	return game
+func (factory *GameFactory) NewGame(clients []*Client) *Game {
+	var game = Game{factory.Id, clients, nil, make(chan Request, 100)}
+	factory.Id++
+	return &game
 }
 
 func (game *Game) Board() Board {
 	return *game.board
-}
-
-func (game Game) Start() {
-	go startGame(game)
 }
 
 func StartDemo(client *Client) {
@@ -41,16 +45,12 @@ func StartDemo(client *Client) {
 	var client2 = NewAiClient()
 	var client3 = NewAiClient()
 	clients := []*Client{client0, client1, client2, client3}
-	var game = NewGame(clients)
-	game.Start()
-	go client0.Start()
-	go client1.Start()
-	go client2.Start()
-	go client3.Start()
+	var game = GetServer().GetGameFactory().NewGame(clients)
+	go game.Start()
 	fmt.Println("Client : StartDemo GO !!!")
 }
 
-func startGame(game Game) {
+func (game *Game) Start() {
 	fmt.Println("Starting Game")
 	var board Board
 	board.InitBoard()
@@ -59,15 +59,19 @@ func startGame(game Game) {
 	game.board = &board
 
 	for index, _ := range game.Clients {
-		game.Clients[index].CurrentGame = &game
+		game.Clients[index].CurrentGame = game
 		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.Player = game.board.Players[index]
+			go game.Clients[index].Start()
+		} else {
+			game.Clients[index].State.Event("join_game")
 		}
 	}
 
 	request := Request{}
 	for {
 		request = <-game.RequestChannel
+		fmt.Println("Game[" + string(game.Id) + "]: new request detected")
 		player := board.Players[request.Client.GameId()]
 		isPlayerTurn := player == board.PlayerTurn
 		conn := &websocket.Conn{}
@@ -162,7 +166,8 @@ func (game *Game) DisconnectPlayers() {
 	for index, _ := range game.Clients {
 		if !game.Clients[index].IsAi() {
 			if game.Clients[index].IsAuthenticated() {
-				//TODO retourner dans home
+				game.Clients[index].CurrentGame = nil
+				game.Clients[index].State.Event("quit_game")
 			} else {
 				game.Clients[index].CurrentGame = nil
 				game.Clients[index].State.Event("quit_demo")
