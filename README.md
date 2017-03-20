@@ -47,6 +47,10 @@ myBase64token => "MyToken"
 ### Depuis l'état home
 {"type":"CreateLobby","dataType":"","data":null, "callbackId":""}
 
+{"type":"Broadcast","dataType":"[]Lobby","data":"myBase64Data", "callbackId":""}
+
+{"type":"Broadcast","dataType":"[]Game","data":"myBase64Data", "callbackId":""}
+
 ### Depuis l'état lobby
 {"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le création du lobby peut démarre la partie
 
