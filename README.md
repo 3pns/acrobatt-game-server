@@ -40,4 +40,18 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 ### Depuis l'état start
 {"type":"CreateDemo","dataType":"","data":null, "callbackId":""}
 
-{"type":"Authenticate","dataType":"string","data":"mytoken", "callbackId":""}
+{"type":"Authenticate","dataType":"string","data":"myBase64token", "callbackId":""}
+
+myBase64token => "MyToken"
+
+### Depuis l'état home
+{"type":"CreateLobby","dataType":"","data":null, "callbackId":""}
+
+### Depuis l'état lobby
+{"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le création du lobby peut démarre la partie
+
+{"type":"Fetch","dataType":"","data":null, "callbackId":""}  => Attention le message est implémenté mais le data est vide
+
+### Depuis l'état game
+
+Si vous êtes en mode demo vous serez renvoyé à l'état start, si vous êtes authentifié et avez démarré la game depuis un lobby vous serez renvoyé dans l'état home.
