@@ -47,16 +47,24 @@ myBase64token => "MyToken"
 ### Depuis l'état home
 {"type":"CreateLobby","dataType":"","data":null, "callbackId":""}
 
+{"type":"JoinLobby","dataType":"int","data":"myInt", "callbackId":""}
+
 {"type":"Broadcast","dataType":"[]Lobby","data":"myBase64Data", "callbackId":""}
 
 {"type":"Broadcast","dataType":"[]Game","data":"myBase64Data", "callbackId":""}
 
 ### Depuis l'état lobby
-{"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le création du lobby peut démarre la partie
+{"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le Master peut démarre la partie
 
 {"type":"Fetch","dataType":"","data":null, "callbackId":""}  => Attention le message est implémenté mais le data est vide
 
 {"type":"Sit","dataType":"int","data":"myInt", "callbackId":""}
+
+{"type":"Unsit","dataType":"int","data":"myInt", "callbackId":""}
+
+{"type":"SitAI","dataType":"int","data":"myInt", "callbackId":""} => Attention seul le Master peut utiliser cette commande
+
+{"type":"UnsitAI","dataType":"int","data":"myInt", "callbackId":""} => Attention seul le Master peut utiliser cette commande
 
 myInt => "myInt" | => 0 : "MA==", 1 : "MQ==", 2 : "Mg==", 3 : "Mw=="
 
