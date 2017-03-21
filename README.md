@@ -56,6 +56,10 @@ myBase64token => "MyToken"
 
 {"type":"Fetch","dataType":"","data":null, "callbackId":""}  => Attention le message est implémenté mais le data est vide
 
+{"type":"Sit","dataType":"int","data":"myInt", "callbackId":""}
+
+myInt => "myInt" | => 0 : "MA==", 1 : "MQ==", 2 : "Mg==", 3 : "Mw=="
+
 ### Depuis l'état game
 
 Si vous êtes en mode demo vous serez renvoyé à l'état start, si vous êtes authentifié et avez démarré la game depuis un lobby vous serez renvoyé dans l'état home.

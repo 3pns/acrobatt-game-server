@@ -67,7 +67,7 @@ func (game *Game) Start() {
 			game.Clients[index].State.Event("join_game")
 		}
 	}
-
+	game.BroadcastRefresh()
 	request := Request{}
 	for {
 		request = <-game.RequestChannel

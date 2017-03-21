@@ -24,6 +24,7 @@ func GetServer() *server {
         instance = &server{}
         instance.currentGames = []*Game{}
         instance.clients = []*Client{}
+        instance.lobbies = make(map[int]*Lobby)
         instance.lobbyFactory = NewLobbyFactory()
         instance.gameFactory = NewGameFactory()
     })
@@ -52,8 +53,10 @@ func (serv *server) Process(request Request) {
 	if request.Type == "CreateLobby" {
 		client.State.Event("create_lobby")
 	} else if request.Type == "JoinLobby" {
-		//TODO JOIN le lobby envoyé dans la requête
-		client.State.Event("join_lobby")
+		index := request.DataToInt()
+		if serv.lobbies[index] != nil {
+			serv.lobbies[index].Join(client)
+		}
 	}
 }
 

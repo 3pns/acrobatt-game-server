@@ -41,7 +41,7 @@ func (factory *LobbyFactory)NewLobby(client *Client) *Lobby {
 	lobby.AIClients[1] = NewAiClient()
 	lobby.AIClients[2] = NewAiClient()
 	lobby.AIClients[3] = NewAiClient()
-	lobby.Clients = []*Client{client, lobby.AIClients[1], lobby.AIClients[2], lobby.AIClients[3]}
+	lobby.Clients = []*Client{client}
 	lobby.Master = client
 	lobby.game = GetServer().GetGameFactory().NewGame(lobby.Clients)
 	lobby.RequestChannel = make(chan Request, 100)
@@ -61,11 +61,7 @@ func (lobby *Lobby) Start() {
 		conn = request.Client.Conn
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
-				lobby.game.Clients[0] = lobby.Seats[0]
-				lobby.game.Clients[1] = lobby.Seats[1]
-				lobby.game.Clients[2] = lobby.Seats[2]
-				lobby.game.Clients[3] = lobby.Seats[3]
-
+				lobby.game.Clients = []*Client{lobby.Seats[0], lobby.Seats[1], lobby.Seats[2], lobby.Seats[3]}
 				go lobby.game.Start()
 				GetServer()
 
@@ -90,7 +86,7 @@ func (lobby *Lobby) Start() {
 		}  else if request.Type == "SitAI" && lobby.isMaster(client) {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
-				lobby.Seats[seatNumber] = nil
+				lobby.Seats[seatNumber] = lobby.AIClients[seatNumber]
 				lobby.broadcast()
 			}
 			
@@ -111,6 +107,12 @@ func (lobby *Lobby) isMaster(client *Client) bool {
 		return true
 	}
 	return false
+}
+
+func (lobby *Lobby) Join(client *Client) {
+	lobby.Clients = append(lobby.Clients, client)
+	client.CurrentLobby = lobby
+	client.State.Event("join_lobby")
 }
 
 func (lobby *Lobby) broadcast() {
