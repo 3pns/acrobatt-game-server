@@ -74,12 +74,27 @@ func (serv *server) RemoveClient(client *Client) {
 	}
 }
 
+func (serv *server) AddGame(game *Game) {
+	serv.currentGames = append(serv.currentGames, game)
+}
+
+func (serv *server) RemoveGame(game *Game) {
+	for index, _ := range serv.currentGames {
+		if serv.currentGames[index] == game {
+			copy(serv.currentGames[index:], serv.currentGames[index+1:])
+			serv.currentGames[len(serv.currentGames)-1] = nil
+			serv.currentGames = serv.currentGames[:len(serv.currentGames)-1]
+		}
+	}
+}
+
 func (serv *server) AddLobby(lobby *Lobby) {
 	serv.lobbies[lobby.Id] = lobby
 }
 
 func (serv *server) RemoveLobby(lobby *Lobby) {
-	serv.lobbies[lobby.Id] = nil
+	//serv.lobbies[lobby.Id] = nil
+	delete(serv.lobbies, lobby.Id)
 }
 
 func (serv *server) broadcastLobbies() {
@@ -93,7 +108,10 @@ func (serv *server) broadcastLobbies() {
 
 func (serv *server) broadcastGames() {
 	request := Request{"Broadcast", "[]Game", nil, "", nil}
-	request.MarshalData(GameSlice{serv.currentGames})
+	gamesSlice := GameSlice{}
+	gamesSlice.Games = serv.gamesSlice()
+	fmt.Println(gamesSlice)
+	request.MarshalData(gamesSlice)
 	serv.broadcastRequest(&request)
 }
 
@@ -111,4 +129,12 @@ func (serv *server) lobbiesSlice()[]*Lobby{
     lobbyslice = append(lobbyslice, lobby)
   }
   return lobbyslice
+}
+
+func (serv *server) gamesSlice()[]*Game{
+	gamesSlices := []*Game{}
+  for _,game := range serv.currentGames {
+    gamesSlices = append(gamesSlices, game)
+  }
+  return gamesSlices
 }

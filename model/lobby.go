@@ -43,7 +43,7 @@ func (factory *LobbyFactory)NewLobby(client *Client) *Lobby {
 	lobby.AIClients[3] = NewAiClient()
 	lobby.Clients = []*Client{client}
 	lobby.Master = client
-	lobby.game = GetServer().GetGameFactory().NewGame(lobby.Clients)
+	lobby.game = GetServer().GetGameFactory().NewGame()
 	lobby.RequestChannel = make(chan Request, 100)
 	lobby.Seats = make(map[int]*Client)
 	client.CurrentLobby = &lobby
@@ -63,8 +63,9 @@ func (lobby *Lobby) Start() {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 				lobby.game.Clients = []*Client{lobby.Seats[0], lobby.Seats[1], lobby.Seats[2], lobby.Seats[3]}
 				go lobby.game.Start()
-				GetServer()
-
+				GetServer().RemoveLobby(lobby)
+				GetServer().AddGame(lobby.game)
+				return
 			}
 		} else if request.Type == "Fetch" {
 			var req = Request{"Fetch", "", nil, request.CallbackId, nil}
@@ -77,11 +78,8 @@ func (lobby *Lobby) Start() {
 				lobby.broadcast()
 			}
 		}  else if request.Type == "Unsit" {
-			for index, _ := range lobby.Seats {
-				if lobby.Seats[index] == client {
-					lobby.Seats[index] = nil
-					lobby.broadcast()
-				}
+			if lobby.unsit(client){
+				lobby.broadcast()
 			}
 		}  else if request.Type == "SitAI" && lobby.isMaster(client) {
 			seatNumber := request.DataToInt()
@@ -97,9 +95,16 @@ func (lobby *Lobby) Start() {
 				lobby.broadcast()
 			}
 			
+		}  else if request.Type == "Quit" {
+			lobby.unsit(client)
+			lobby.RemoveClient(client)
+			client.State.Event("quit_lobby")
+			if len(lobby.Clients) == 0 {
+				GetServer().RemoveLobby(lobby)
+				return
+			}
 		}
 	}
-	
 }
 
 func (lobby *Lobby) isMaster(client *Client) bool {
@@ -115,6 +120,16 @@ func (lobby *Lobby) Join(client *Client) {
 	client.State.Event("join_lobby")
 }
 
+func (lobby *Lobby) unsit(client *Client) bool {
+	for index, _ := range lobby.Seats {
+		if lobby.Seats[index] == client {
+			lobby.Seats[index] = nil
+			return true
+		}
+	}
+	return false
+}
+
 func (lobby *Lobby) broadcast() {
 	var req = Request{"broadcast", "Lobby", nil, "", nil}
 	req.MarshalData(lobby)
@@ -125,6 +140,16 @@ func (lobby *Lobby) broadcastRequest(request *Request) {
 	for index, _ := range lobby.Clients {
 		if lobby.Clients[index].State.Current() == "lobby" {
 			WriteTextMessage(lobby.Clients[index].Conn, request.Marshal())
+		}
+	}
+}
+
+func (lobby *Lobby) RemoveClient(client *Client) {
+	for index, _ := range lobby.Clients {
+		if lobby.Clients[index] == client {
+			copy(lobby.Clients[index:], lobby.Clients[index+1:])
+			lobby.Clients[len(lobby.Clients)-1] = nil
+			lobby.Clients = lobby.Clients[:len(lobby.Clients)-1]
 		}
 	}
 }

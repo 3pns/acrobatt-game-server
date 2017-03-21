@@ -36,7 +36,10 @@ func NewClient(conn *websocket.Conn) *Client {
 		},
 		fsm.Callbacks{
 			"create_demo": func(e *fsm.Event) { StartDemo(&client) },
-			"quit_demo":   func(e *fsm.Event) { fmt.Println("quiting demo : " + e.FSM.Current()) },
+			"quit_demo":   func(e *fsm.Event) {
+				client.CurrentGame = nil
+				fmt.Println("quiting demo : " + e.FSM.Current()) 
+				},
 			"authenticate":   func(e *fsm.Event) { 
 				fmt.Println("authenticating : " + e.FSM.Current())
 				GetServer().AddClient(&client)
@@ -48,14 +51,17 @@ func NewClient(conn *websocket.Conn) *Client {
 				GetServer().AddLobby(lobby)
 				},
 			"quit_lobby":   func(e *fsm.Event) { 
+				client.CurrentLobby = nil
 				fmt.Println("quiting lobby : " + e.FSM.Current()) 
-
 				},
 			"join_game":   func(e *fsm.Event) { 
 				client.CurrentLobby = nil
 				fmt.Println("joining game : " + e.FSM.Current()) 
 				},
-			"quit_game":   func(e *fsm.Event) { fmt.Println("quiting game : " + e.FSM.Current()) },
+			"quit_game":   func(e *fsm.Event) { 
+				client.CurrentGame = nil
+				fmt.Println("quiting game : " + e.FSM.Current()) 
+				},
 		},
 	)
 

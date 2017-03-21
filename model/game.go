@@ -8,10 +8,10 @@ import (
 )
 
 type Game struct {
-	Id int
-	Clients        []*Client
-	board          *Board
-	RequestChannel chan Request
+	Id int `json:"id"`
+	Clients        []*Client `json:"clients"`
+	board          *Board `json:"-"`
+	RequestChannel chan Request `json:"-"`
 }
 
 type GameFactory struct {
@@ -28,8 +28,8 @@ type GameSlice struct {
 	Games []*Game `json:"games"`
 }
 
-func (factory *GameFactory) NewGame(clients []*Client) *Game {
-	var game = Game{factory.Id, clients, nil, make(chan Request, 100)}
+func (factory *GameFactory) NewGame() *Game {
+	var game = Game{factory.Id, nil, nil, make(chan Request, 100)}
 	factory.Id++
 	return &game
 }
@@ -44,8 +44,8 @@ func StartDemo(client *Client) {
 	var client1 = NewAiClient()
 	var client2 = NewAiClient()
 	var client3 = NewAiClient()
-	clients := []*Client{client0, client1, client2, client3}
-	var game = GetServer().GetGameFactory().NewGame(clients)
+	var game = GetServer().GetGameFactory().NewGame()
+	game.Clients = []*Client{client0, client1, client2, client3}
 	go game.Start()
 	fmt.Println("Client : StartDemo GO !!!")
 }
@@ -120,6 +120,7 @@ func (game *Game) Start() {
 		if game.IsGameOver() {
 			game.BroadcastGameOver()
 			game.DisconnectPlayers()
+			GetServer().RemoveGame(game)
 			return
 		}
 	}
@@ -166,10 +167,8 @@ func (game *Game) DisconnectPlayers() {
 	for index, _ := range game.Clients {
 		if !game.Clients[index].IsAi() {
 			if game.Clients[index].IsAuthenticated() {
-				game.Clients[index].CurrentGame = nil
 				game.Clients[index].State.Event("quit_game")
 			} else {
-				game.Clients[index].CurrentGame = nil
 				game.Clients[index].State.Event("quit_demo")
 			}
 		}
