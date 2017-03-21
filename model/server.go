@@ -10,7 +10,7 @@ import (
 type server struct {
 	currentGames   []*Game
 	clients []*Client
-	lobbies []*Lobby
+	lobbies  map[int]*Lobby
 	lobbyFactory *LobbyFactory
 	gameFactory *GameFactory
 }
@@ -43,10 +43,6 @@ func (serv *server) Start() {
 		time.Sleep(5 * time.Second)
 		serv.broadcastLobbies()
 		serv.broadcastGames()
-		fmt.Println("Lobbies : ")
-		fmt.Println(serv.lobbies)
-		fmt.Println(GetServer().lobbies)
-		fmt.Println(LobbySlice{GetServer().lobbies})
 	}
 }
 
@@ -76,15 +72,19 @@ func (serv *server) RemoveClient(client *Client) {
 }
 
 func (serv *server) AddLobby(lobby *Lobby) {
-	serv.lobbies = append(serv.lobbies, lobby)
+	serv.lobbies[lobby.Id] = lobby
+}
+
+func (serv *server) RemoveLobby(lobby *Lobby) {
+	serv.lobbies[lobby.Id] = nil
 }
 
 func (serv *server) broadcastLobbies() {
 	request := Request{"Broadcast", "[]Lobby", nil, "", nil}
-	lobbyslice := LobbySlice{}
-	lobbyslice.Lobbies = serv.lobbies
-	fmt.Println(lobbyslice)
-	request.MarshalData(lobbyslice)
+	lobbiesSlice := LobbySlice{}
+	lobbiesSlice.Lobbies = serv.lobbiesSlice()
+	fmt.Println(lobbiesSlice)
+	request.MarshalData(lobbiesSlice)
 	serv.broadcastRequest(&request)
 }
 
@@ -100,4 +100,12 @@ func (serv *server) broadcastRequest(request *Request) {
 			WriteTextMessage(serv.clients[index].Conn, request.Marshal())
 		}
 	}
+}
+
+func (serv *server) lobbiesSlice()[]*Lobby{
+	lobbyslice := []*Lobby{}
+  for _,lobby := range serv.lobbies {
+    lobbyslice = append(lobbyslice, lobby)
+  }
+  return lobbyslice
 }

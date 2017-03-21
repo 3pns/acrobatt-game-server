@@ -5,6 +5,7 @@ import (
 	_ "flag"
 	"fmt"
 	_ "github.com/gorilla/websocket"
+	"strconv"
 	_ "io"
 	_ "log"
 	_ "net/http"
@@ -102,6 +103,14 @@ func (request *Request) DataToString() string {
 	return ""
 }
 
+func (request *Request) DataToInt() int {
+	if request.DataType == "int" {
+		res, _ := strconv.Atoi(string(request.Data))
+		return res
+	}
+	return -1
+}
+
 func (request *Request) HasClient() bool {
 	if request.Client != nil {
 		return true
@@ -124,6 +133,8 @@ func (request *Request) Dispatch() {
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
 		fmt.Print("dispatching to lobby request channel")
 		client.CurrentLobby.RequestChannel <- *request
+	} else {
+		fmt.Print("dispatching failed")
 	}
-	fmt.Print("dispatching failed")
+	
 }
