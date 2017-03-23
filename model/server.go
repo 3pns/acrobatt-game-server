@@ -98,7 +98,7 @@ func (serv *server) RemoveLobby(lobby *Lobby) {
 }
 
 func (serv *server) broadcastLobbies() {
-	request := Request{"Broadcast", "[]Lobby", nil, "", nil}
+	request := Request{"Broadcast", "ListLobby", nil, "", nil}
 	lobbiesSlice := LobbySlice{}
 	lobbiesSlice.Lobbies = serv.lobbiesSlice()
 	fmt.Println(lobbiesSlice)
@@ -107,7 +107,7 @@ func (serv *server) broadcastLobbies() {
 }
 
 func (serv *server) broadcastGames() {
-	request := Request{"Broadcast", "[]Game", nil, "", nil}
+	request := Request{"Broadcast", "ListGame", nil, "", nil}
 	gamesSlice := GameSlice{}
 	gamesSlice.Games = serv.gamesSlice()
 	fmt.Println(gamesSlice)

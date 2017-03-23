@@ -49,14 +49,14 @@ myBase64token => "MyToken"
 
 {"type":"JoinLobby","dataType":"int","data":"myInt", "callbackId":""}
 
-{"type":"Broadcast","dataType":"[]Lobby","data":"myBase64Data", "callbackId":""}
+{"type":"Broadcast","dataType":"ListLobby","data":"myBase64Data", "callbackId":""}
 
-{"type":"Broadcast","dataType":"[]Game","data":"myBase64Data", "callbackId":""}
+{"type":"Broadcast","dataType":"ListGame","data":"myBase64Data", "callbackId":""}
 
 ### Depuis l'état lobby
 {"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le Master peut démarre la partie
 
-{"type":"Fetch","dataType":"","data":null, "callbackId":""}  => Attention le message est implémenté mais le data est vide
+{"type":"FetchLobby","dataType":"Lobby","data":null, "callbackId":""}  => Attention le message est implémenté mais le data est vide
 
 {"type":"Sit","dataType":"int","data":"myInt", "callbackId":""}
 
