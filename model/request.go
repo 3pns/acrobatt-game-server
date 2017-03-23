@@ -2,14 +2,9 @@ package model
 
 import (
 	"encoding/json"
-	_ "flag"
 	"fmt"
-	_ "github.com/gorilla/websocket"
 	"strconv"
-	_ "io"
-	_ "log"
-	_ "net/http"
-	_ "strings"
+	. "../utils"
 )
 
 type Request struct {
@@ -72,7 +67,6 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
-	//TODO : detection du type lobby ne fonctionne pas
 	lobby, ok := t.(Lobby)
 	if ok {
 		b, err := json.Marshal(lobby)
@@ -80,6 +74,16 @@ func (request *Request) MarshalData(t interface{}) {
 			fmt.Println(err)
 		}
 		request.DataType = "Lobby"
+		request.Data = b
+		return
+	}
+	client, ok := t.(Client)
+	if ok {
+		b, err := json.Marshal(client)
+		if err != nil {
+			fmt.Println(err)
+		}
+		request.DataType = "Client"
 		request.Data = b
 		return
 	}
@@ -124,6 +128,11 @@ func (request *Request) HasClient() bool {
 func (request *Request) Dispatch() {
 	var client = request.Client
 	fmt.Print("->dispatching")
+	if request.Type == "FetchClient" {
+		var req = Request{"FetchClient", "", nil, request.CallbackId, nil}
+		req.MarshalData(*request.Client)
+		WriteTextMessage(request.Client.Conn, req.Marshal())
+	}
 	if client.State.Current() == "game" && client.CurrentGame != nil {
 		fmt.Print("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request

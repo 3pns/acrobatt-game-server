@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 	"fmt"
+  "github.com/gorilla/websocket"
 )
 
 type server struct {
@@ -72,6 +73,20 @@ func (serv *server) AddClient(client *Client) {
 
 func (serv *server) RemoveClient(client *Client) {
   delete(serv.clients, client.Id)
+}
+
+func (serv *server) CleanClientByConn(conn *websocket.Conn) {
+  for index, _ := range serv.clients {
+    if serv.clients[index].Conn == conn {
+      if serv.clients[index].CurrentGame != nil {
+
+      }
+      if serv.clients[index].CurrentLobby != nil {
+        
+      }
+      delete(serv.clients, serv.clients[index].Id)
+    }
+  }
 }
 
 func (serv *server) AddGame(game *Game) {
