@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	"encoding/json"
 	. "../utils"
 )
 
