@@ -8,8 +8,8 @@ import (
 )
 
 type server struct {
-	currentGames   []*Game
 	clients []*Client
+  currentGames   map[int]*Game
 	lobbies  map[int]*Lobby
 	lobbyFactory *LobbyFactory
 	gameFactory *GameFactory
@@ -23,7 +23,7 @@ var once sync.Once
 func GetServer() *server {
     once.Do(func() {
         instance = &server{}
-        instance.currentGames = []*Game{}
+        instance.currentGames = make(map[int]*Game)
         instance.clients = []*Client{}
         instance.lobbies = make(map[int]*Lobby)
         instance.lobbyFactory = NewLobbyFactory()
@@ -81,17 +81,11 @@ func (serv *server) RemoveClient(client *Client) {
 }
 
 func (serv *server) AddGame(game *Game) {
-	serv.currentGames = append(serv.currentGames, game)
+  serv.currentGames[game.Id] = game
 }
 
 func (serv *server) RemoveGame(game *Game) {
-	for index, _ := range serv.currentGames {
-		if serv.currentGames[index] == game {
-			copy(serv.currentGames[index:], serv.currentGames[index+1:])
-			serv.currentGames[len(serv.currentGames)-1] = nil
-			serv.currentGames = serv.currentGames[:len(serv.currentGames)-1]
-		}
-	}
+  delete(serv.currentGames, game.Id)
 }
 
 func (serv *server) AddLobby(lobby *Lobby) {
