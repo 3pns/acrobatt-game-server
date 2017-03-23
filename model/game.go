@@ -114,7 +114,11 @@ func (game *Game) Start() {
 			game.board.NextTurn()
 			game.BroadcastRefresh()
 		} else if request.Type == "Quit" && !player.HasPlaceabePieces(game.board) {
-			request.Client.State.Event("quit_demo")
+			if game.Clients[index].IsAuthenticated() {
+				game.Clients[index].State.Event("quit_game")
+			} else {
+				game.Clients[index].State.Event("quit_demo")
+			}
 		}
 		if game.IsGameOver() {
 			game.BroadcastGameOver()
