@@ -107,7 +107,7 @@ func (game *Game) Start() {
 			WriteTextMessage(conn, req.Marshal())
 		} else if request.Type == "FetchPlayer" {
 			var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
-			req.MarshalData(player)
+			req.MarshalData(*player)
 			WriteTextMessage(conn, req.Marshal())
 		} else if request.Type == "Concede" && isPlayerTurn {
 			player.Concede()

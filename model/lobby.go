@@ -69,11 +69,12 @@ func (lobby *Lobby) Start() {
 				return
 			}
 		} else if request.Type == "FetchLobby" {
-			b, err := json.Marshal(lobby)
+			/*b, err := json.Marshal(lobby)
 			if err != nil {
 				fmt.Println(err)
-			}
-			var req = Request{"FetchLobby", "", b, request.CallbackId, nil}
+			}*/
+			var req = Request{"FetchLobby", "", nil, request.CallbackId, nil}
+			req.MarshalData(*lobby)
 			WriteTextMessage(conn, req.Marshal())
 		}  else if request.Type == "Sit" {
 			seatNumber := request.DataToInt()
@@ -135,11 +136,8 @@ func (lobby *Lobby) unsit(client *Client) bool {
 }
 
 func (lobby *Lobby) broadcast() {
-	b, err := json.Marshal(lobby)
-	if err != nil {
-		fmt.Println(err)
-	}
-	var req = Request{"Broadcast", "Lobby", b, "", nil}
+	var req = Request{"Broadcast", "Lobby", nil, "", nil}
+	req.MarshalData(*lobby)
 	lobby.broadcastRequest(&req)
 }
 
