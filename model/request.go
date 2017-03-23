@@ -58,7 +58,7 @@ func (request *Request) MarshalData(t interface{}) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		request.DataType = "ListLobby"
+		request.DataType = "ListGame"
 		request.Data = b
 		return
 	}

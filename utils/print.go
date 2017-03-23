@@ -53,7 +53,7 @@ func GetJson(t interface{}) string {
 func WriteTextMessage(conn *websocket.Conn, data []byte) {
 	err := conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
-		log.Println("write:", err)
+		log.Println("write: TEST", err)
 	}
 }
 
