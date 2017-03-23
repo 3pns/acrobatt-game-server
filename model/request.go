@@ -58,7 +58,7 @@ func (request *Request) MarshalData(t interface{}) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		request.DataType = "[]Game"
+		request.DataType = "ListLobby"
 		request.Data = b
 		return
 	}
@@ -68,10 +68,11 @@ func (request *Request) MarshalData(t interface{}) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		request.DataType = "[]Lobby"
+		request.DataType = "ListLobby"
 		request.Data = b
 		return
 	}
+	//TODO : detection du type lobby ne fonctionne pas
 	lobby, ok := t.(Lobby)
 	if ok {
 		b, err := json.Marshal(lobby)
@@ -82,6 +83,7 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
+	fmt.Print("->MarshalDataFailed")
 }
 
 func (request *Request) Marshal() []byte {
@@ -121,20 +123,24 @@ func (request *Request) HasClient() bool {
 
 func (request *Request) Dispatch() {
 	var client = request.Client
-	fmt.Print("dispatching")
+	fmt.Print("->dispatching")
 	if client.State.Current() == "game" && client.CurrentGame != nil {
+		fmt.Print("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {
+		fmt.Print("->toServer->")
 		GetServer().Process(*request)
 	} else if client.State.Current() == "start" && request.Type == "CreateDemo" {
+		fmt.Print("->create_demo->")
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
+		fmt.Print("->Authenticating->")
 		client.Authenticate(request.DataToString())
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
-		fmt.Print("dispatching to lobby request channel")
+		fmt.Print("->toCurrentLobbyRequestChannel->")
 		client.CurrentLobby.RequestChannel <- *request
 	} else {
-		fmt.Print("dispatching failed")
+		fmt.Println("->dispatching_failed")
 	}
 	
 }

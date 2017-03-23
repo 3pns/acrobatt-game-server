@@ -51,6 +51,8 @@ myBase64token => "MyToken"
 
 {"type":"Broadcast","dataType":"ListLobby","data":"myBase64Data", "callbackId":""}
 
+=> {"lobbies":[{"Id":0,"Name":"TEST","clients":[{}],"Master":{},"seats":{}}]}
+
 {"type":"Broadcast","dataType":"ListGame","data":"myBase64Data", "callbackId":""}
 
 ### Depuis l'état lobby

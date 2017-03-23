@@ -13,6 +13,7 @@ type server struct {
 	lobbies  map[int]*Lobby
 	lobbyFactory *LobbyFactory
 	gameFactory *GameFactory
+  clientFactory *ClientFactory
 }
 
 //thread safe singleton pattern
@@ -27,6 +28,7 @@ func GetServer() *server {
         instance.lobbies = make(map[int]*Lobby)
         instance.lobbyFactory = NewLobbyFactory()
         instance.gameFactory = NewGameFactory()
+        instance.clientFactory = NewClientFactory()
     })
     return instance
 }
@@ -37,6 +39,10 @@ func (serv *server) GetLobbyFactory() *LobbyFactory {
 
 func (serv *server) GetGameFactory() *GameFactory {
  	return serv.gameFactory
+}
+
+func (serv *server) GetClientFactory() *ClientFactory {
+  return serv.clientFactory
 }
 
 func (serv *server) Start() {

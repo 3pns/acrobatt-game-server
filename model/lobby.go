@@ -3,17 +3,18 @@ package model
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"encoding/json"
 	. "../utils"
 )
 
 type Lobby struct {
-	Id int
-	Name string
+	Id int `json:"id"`
+	Name string `json:"name"`
 	Clients []*Client `json:"clients"`
 	AIClients map[int]*Client`json:"-"`
-	Master *Client
+	Master *Client `json:"master"`
 	Seats map[int]*Client `json:"seats"`
-	game *Game
+	game *Game `json:"-"`
 	RequestChannel chan Request `json:"-"`
 }
 
@@ -56,7 +57,7 @@ func (lobby *Lobby) Start() {
 	conn := &websocket.Conn{}
 	for {
 		request = <-lobby.RequestChannel
-		fmt.Println("Lobby[" + string(lobby.Id) + "]: new request detected")
+		fmt.Println("Lobby[",lobby.Id,"]->")
 		var client = request.Client
 		conn = request.Client.Conn
 		if request.Type == "Start" && (client == lobby.Master) {
@@ -68,8 +69,11 @@ func (lobby *Lobby) Start() {
 				return
 			}
 		} else if request.Type == "FetchLobby" {
-			var req = Request{"FetchLobby", "", nil, request.CallbackId, nil}
-			req.MarshalData(lobby)
+			b, err := json.Marshal(lobby)
+			if err != nil {
+				fmt.Println(err)
+			}
+			var req = Request{"FetchLobby", "", b, request.CallbackId, nil}
 			WriteTextMessage(conn, req.Marshal())
 		}  else if request.Type == "Sit" {
 			seatNumber := request.DataToInt()
@@ -131,8 +135,11 @@ func (lobby *Lobby) unsit(client *Client) bool {
 }
 
 func (lobby *Lobby) broadcast() {
-	var req = Request{"Broadcast", "Lobby", nil, "", nil}
-	req.MarshalData(lobby)
+	b, err := json.Marshal(lobby)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var req = Request{"Broadcast", "Lobby", b, "", nil}
 	lobby.broadcastRequest(&req)
 }
 

@@ -8,6 +8,7 @@ import (
 )
 
 type Client struct {
+	Id       int `json:"id"`
 	Conn        *websocket.Conn `json:"-"`
 	token       string `json:"-"`
 	State       *fsm.FSM `json:"-"`
@@ -16,11 +17,23 @@ type Client struct {
 	CurrentLobby *Lobby `json:"-"`
 }
 
-func NewClient(conn *websocket.Conn) *Client {
+type ClientFactory struct {
+	id       int
+}
+
+func NewClientFactory() *ClientFactory {
+	var factory = new(ClientFactory)
+	factory.id = 0
+	return factory
+}
+
+func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 	var client Client
+	client.Id = factory.id
+	factory.id++
+	client.Ai = nil
 	client.Conn = conn
 	client.token = ""
-	client.Ai = nil
 
 	client.State = fsm.NewFSM(
 		"start",
@@ -130,7 +143,7 @@ func (client *Client) Start() {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
-			fmt.Print("Client : New Message recieved : " + request.DataType)
+			fmt.Print("Client[",client.Id,"]{" + request.Type +"-"+request.DataType+"}")
 			request.Dispatch()
 		}
 	}
