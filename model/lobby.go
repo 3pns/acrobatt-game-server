@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
-	. "../utils"
 )
 
 type Lobby struct {
@@ -63,6 +62,7 @@ func (lobby *Lobby) Start() {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 				lobby.game.Clients = []*Client{lobby.Seats[0], lobby.Seats[1], lobby.Seats[2], lobby.Seats[3]}
 				go lobby.game.Start()
+				lobby.broadcastStart()
 				GetServer().RemoveLobby(lobby)
 				GetServer().AddGame(lobby.game)
 				return
@@ -137,6 +137,11 @@ func (lobby *Lobby) unsit(client *Client) bool {
 func (lobby *Lobby) broadcast() {
 	var req = Request{"Broadcast", "Lobby", nil, "", nil}
 	req.MarshalData(*lobby)
+	lobby.broadcastRequest(&req)
+}
+
+func (lobby *Lobby) broadcastStart() {
+	var req = Request{"Start", "", nil, "", nil}
 	lobby.broadcastRequest(&req)
 }
 

@@ -3,8 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"log"
 )
 
 func SetWhiteBackground() {
@@ -48,15 +46,6 @@ func GetJson(t interface{}) string {
 		fmt.Print("getJson Marshell Error :", err)
 	}
 	return string(b)
-}
-
-func WriteTextMessage(conn *websocket.Conn, data []byte) {
-	err := conn.WriteMessage(websocket.TextMessage, data)
-	if err != nil {
-		log.Println("write: ", err)
-		log.Println("cleaning broken pipe client: ", err)
-		//GetServer().CleanClientByConn(conn)
-	}
 }
 
 func AllowedCoordinates(x int, y int) bool{

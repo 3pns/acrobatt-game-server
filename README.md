@@ -72,6 +72,10 @@ myBase64token => "MyToken"
 
 myInt => "myInt" | => 0 : "MA==", 1 : "MQ==", 2 : "Mg==", 3 : "Mw=="
 
+#### broadcast à tous les joueurs si la partie démarre:
+
+{"type":"Start","dataType":"","data":null, "callbackId":""}
+
 ### Depuis l'état game
 
 Si vous êtes en mode demo vous serez renvoyé à l'état start, si vous êtes authentifié et avez démarré la game depuis un lobby vous serez renvoyé dans l'état home.

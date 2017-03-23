@@ -1,7 +1,6 @@
 package model
 
 import (
-	. "../utils"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"

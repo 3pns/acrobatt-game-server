@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	. "../utils"
 )
 
 type Request struct {
@@ -132,8 +131,7 @@ func (request *Request) Dispatch() {
 		var req = Request{"FetchClient", "", nil, request.CallbackId, nil}
 		req.MarshalData(*request.Client)
 		WriteTextMessage(request.Client.Conn, req.Marshal())
-	}
-	if client.State.Current() == "game" && client.CurrentGame != nil {
+	} else if client.State.Current() == "game" && client.CurrentGame != nil {
 		fmt.Print("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {

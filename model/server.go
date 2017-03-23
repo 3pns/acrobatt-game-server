@@ -1,11 +1,11 @@
 package model
 
 import (
-	. "../utils"
 	"sync"
 	"time"
 	"fmt"
   "github.com/gorilla/websocket"
+  "log"
 )
 
 type server struct {
@@ -146,4 +146,13 @@ func (serv *server) gamesSlice()[]*Game{
     gamesSlices = append(gamesSlices, game)
   }
   return gamesSlices
+}
+
+func WriteTextMessage(conn *websocket.Conn, data []byte) {
+  err := conn.WriteMessage(websocket.TextMessage, data)
+  if err != nil {
+    log.Println("write: ", err)
+    log.Println("cleaning broken pipe client: ", err)
+    //GetServer().CleanClientByConn(conn)
+  }
 }
