@@ -27,7 +27,7 @@ type GameSlice struct {
 }
 
 func (factory *GameFactory) NewGame() *Game {
-	var game = Game{factory.Id, nil, nil, make(chan Request, 100)}
+	var game = Game{factory.Id, make(map[int]*Client), nil, make(chan Request, 100)}
 	factory.Id++
 	return &game
 }
