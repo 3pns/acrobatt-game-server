@@ -59,7 +59,7 @@ func (game *Game) Start() {
 	board.InitPlayers()
 	game.board = &board
 
-	for index, _ := range game.Clients {
+	for index := range game.Clients {
 		game.Clients[index].CurrentGame = game
 		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.Player = game.board.Players[index]
