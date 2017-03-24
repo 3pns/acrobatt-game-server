@@ -63,7 +63,8 @@ myBase64token => "MyToken"
 ### Depuis l'état lobby
 {"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le Master peut démarre la partie
 
-{"type":"FetchLobby","dataType":"Lobby","data":null, "callbackId":""}  => Attention le message est implémenté mais le data est vide
+{"type":"FetchLobby","dataType":"Lobby","data":myBase64Data, "callbackId":""} | myBase64Data : {"id":0,"name":"TEST","clients":[{"id":0}],"master":{"id":0},"seats":{"1":{"id":0}}}
+=> le client 0 est le master et est assis sur le siège numéro 1
 
 {"type":"Sit","dataType":"int","data":"myInt", "callbackId":""}
 
