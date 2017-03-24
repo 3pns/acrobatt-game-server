@@ -109,11 +109,6 @@ func (client *Client) IsAuthenticated() bool {
 }
 
 func (client *Client) GameId() int {
-	fmt.Println("printing client from GameID")
-	fmt.Println(client)
-	fmt.Println(client.CurrentGame)
-	fmt.Println(client.CurrentGame.Clients)
-
 	for key := range client.CurrentGame.Clients {
 		if client.CurrentGame.Clients[key] == client {
 			return key

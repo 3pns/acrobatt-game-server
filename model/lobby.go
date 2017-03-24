@@ -63,9 +63,8 @@ func (lobby *Lobby) Start() {
 					lobby.game.Clients[key] = lobby.Seats[key]
 					lobby.game.Clients[key].CurrentGame = lobby.game
 				}
-
-				go lobby.game.Start()
 				lobby.broadcastStart()
+				go lobby.game.Start()
 				GetServer().RemoveLobby(lobby)
 				GetServer().AddGame(lobby.game)
 				return
