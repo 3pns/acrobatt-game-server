@@ -58,14 +58,7 @@ func (lobby *Lobby) Start() {
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 		
-				keys := make([]int, len(lobby.Seats))
-				i := 0
-				for k := range lobby.Seats {
-				    keys[i] = k
-				    i++
-
-				}
-				for _, key := range keys {
+				for key := range lobby.Seats {
 					fmt.Println("clé[",key,"]->settings clients in game and current game")
 					lobby.game.Clients[key] = lobby.Seats[key]
 					lobby.game.Clients[key].CurrentGame = lobby.game

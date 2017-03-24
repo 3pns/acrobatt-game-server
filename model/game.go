@@ -73,6 +73,9 @@ func (game *Game) Start() {
 	for {
 		request = <-game.RequestChannel
 		fmt.Println("Game[" + string(game.Id) + "]: new request detected")
+		fmt.Println(request)
+		fmt.Println(request.Client)
+		fmt.Println("afterprint")
 		player := board.Players[request.Client.GameId()]
 		client := request.Client
 		isPlayerTurn := player == board.PlayerTurn
