@@ -66,6 +66,7 @@ func (lobby *Lobby) Start() {
 
 				}
 				for _, key := range keys {
+					fmt.Println("clé[",key,"]->settings clients in game and current game")
 					lobby.game.Clients[key] = lobby.Seats[key]
 					lobby.game.Clients[key].CurrentGame = lobby.game
 				}
