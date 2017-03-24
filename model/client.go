@@ -109,9 +109,16 @@ func (client *Client) IsAuthenticated() bool {
 }
 
 func (client *Client) GameId() int {
-	for index, _ := range client.CurrentGame.Clients {
-		if client == client.CurrentGame.Clients[index] {
-			return index
+	keys := make([]int, len(client.CurrentGame.Clients))
+	i := 0
+	for k := range client.CurrentGame.Clients {
+	    keys[i] = k
+	    i++
+
+	}
+	for _, key := range keys {
+		if client.CurrentGame.Clients[key] == client {
+			return key
 		}
 	}
 	return -1
