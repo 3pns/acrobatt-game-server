@@ -67,6 +67,7 @@ func (lobby *Lobby) Start() {
 				}
 				for _, key := range keys {
 					lobby.game.Clients[key] = lobby.Seats[key]
+					lobby.game.Clients[key].CurrentGame = lobby.game
 				}
 
 				go lobby.game.Start()
