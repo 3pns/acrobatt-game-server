@@ -40,7 +40,7 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 ### Depuis tous les états
 {"type":"FetchClient","dataType":"","data":null, "callbackId":""}
 
-=> {"id":0}
+=> {"type":"FetchClient","dataType":"Client","data":"myBase64Data","callbackId":""} | myBase64Data : {"id":0}
 
 ### Depuis l'état start
 {"type":"CreateDemo","dataType":"","data":null, "callbackId":""}
