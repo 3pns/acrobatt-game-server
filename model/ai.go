@@ -32,8 +32,8 @@ func (ai *AI) Start() {
 			if board.PlayerTurn != nil && board.PlayerTurn.Id == ai.Player.Id {
 				//time.Sleep(time.Millisecond * 750)
 				//var req = Request{"PlaceRandom", "", nil, "", ai.client}
-
 				var req =	NewRequest ("PlaceRandom")
+				req.Client = ai.client
 
 				ai.client.CurrentGame.RequestChannel <- req
 			}
