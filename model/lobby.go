@@ -163,8 +163,10 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 	//si il s'agit du Master, un autre client devient Master, sinon on supprime le lobby
 	if lobby.isMaster(client) && len(lobby.Clients) > 0 {
 		lobby.Master = lobby.Clients[0]
-		return
-	} else {
+	}
+	if len(lobby.Clients) > 0 {
+		lobby.broadcast()
+	} else{
 		GetServer().RemoveLobby(lobby)
 		return
 	}
