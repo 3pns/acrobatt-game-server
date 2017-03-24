@@ -53,7 +53,7 @@ func (lobby *Lobby) Start() {
 	request := Request{}
 	for {
 		request = <-lobby.RequestChannel
-		fmt.Println("Lobby[",lobby.Id,"]->")
+		fmt.Print("Lobby[",lobby.Id,"]->")
 		var client = request.Client
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
@@ -105,6 +105,9 @@ func (lobby *Lobby) Start() {
 				GetServer().RemoveLobby(lobby)
 				return
 			}
+		}  else if request.Kill {
+			fmt.Println("KILL")
+			return
 		}
 	}
 }
@@ -167,6 +170,8 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 	if len(lobby.Clients) > 0 {
 		lobby.broadcast()
 	} else{
+		req := NewKillRequest()
+		lobby.RequestChannel <- req
 		GetServer().RemoveLobby(lobby)
 		return
 	}

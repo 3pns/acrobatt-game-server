@@ -184,10 +184,10 @@ func (game *Game) RemoveClient(client *Client) {
 	for index, _ := range game.Clients {
 		if game.Clients[index] == client {
 			game.board.Players[index].Concede()
+			delete(game.Clients, index)
 			game.BroadcastConcede(game.board.Players[index])
 			game.board.NextTurn()
 			game.BroadcastRefresh()
-			delete(game.Clients, index)
 		}
 	}
 }

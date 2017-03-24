@@ -49,6 +49,7 @@ func (serv *server) GetClientFactory() *ClientFactory {
 func (serv *server) Start() {
 	for {
 		time.Sleep(5 * time.Second)
+    serv.sanetizeClients()
 		serv.broadcastLobbies()
 		serv.broadcastGames()
 	}
@@ -125,8 +126,13 @@ func (serv *server) broadcastGames() {
 }
 
 func (serv *server) sanetizeClients() {
-  for index, _ := range serv.clients {
-    serv.clients[index].Conn = nil
+  for key := range serv.clients {
+    now := time.Now()
+    err := serv.clients[key].Conn.WriteControl(9, []byte("PING"), now.Add(time.Duration(10)*time.Second))
+    if err != nil {
+      log.Println("Server->sanetize->client[",key,"]")
+      serv.CleanClient(serv.clients[key])
+    }
   }
 }
 

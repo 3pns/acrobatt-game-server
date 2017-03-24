@@ -12,7 +12,7 @@ type Request struct {
 	Data       []byte `json:"data"`
 	CallbackId string `json:"callbackId"`
 	Client     *Client `json:"-"`
-	kill bool `json:"-"`
+	Kill bool `json:"-"`
 }
 
 func NewRequest (requestType string) Request{
