@@ -145,9 +145,9 @@ func (lobby *Lobby) broadcastStart() {
 
 func (lobby *Lobby) broadcastRequest(request *Request) {
 	for index, _ := range lobby.Clients {
-		if lobby.Clients[index].State.Current() == "lobby" {
+		//if lobby.Clients[index].State.Current() == "lobby" {
 			WriteTextMessage(lobby.Clients[index], request.Marshal())
-		}
+		//}
 	}
 }
 
