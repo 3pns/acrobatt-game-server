@@ -31,7 +31,10 @@ func (ai *AI) Start() {
 			json.Unmarshal(request.Data, &board)
 			if board.PlayerTurn != nil && board.PlayerTurn.Id == ai.Player.Id {
 				//time.Sleep(time.Millisecond * 750)
-				var req = Request{"PlaceRandom", "", nil, "", ai.client}
+				//var req = Request{"PlaceRandom", "", nil, "", ai.client}
+
+				var req =	NewRequest ("PlaceRandom")
+
 				ai.client.CurrentGame.RequestChannel <- req
 			}
 		} else if request.Type == "GameOver" {

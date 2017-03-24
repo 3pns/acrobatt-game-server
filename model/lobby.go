@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
 )
 
 type Lobby struct {
@@ -52,15 +51,17 @@ func (factory *LobbyFactory)NewLobby(client *Client) *Lobby {
 
 func (lobby *Lobby) Start() {
 	request := Request{}
-	conn := &websocket.Conn{}
 	for {
 		request = <-lobby.RequestChannel
 		fmt.Println("Lobby[",lobby.Id,"]->")
 		var client = request.Client
-		conn = request.Client.Conn
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
-				lobby.game.Clients = []*Client{lobby.Seats[0], lobby.Seats[1], lobby.Seats[2], lobby.Seats[3]}
+				for index, _ := range lobby.Seats {
+					if lobby.Seats[index] == client {
+						lobby.game.Clients[index] = lobby.Seats[index]
+					}
+				}
 				go lobby.game.Start()
 				lobby.broadcastStart()
 				GetServer().RemoveLobby(lobby)
@@ -68,13 +69,9 @@ func (lobby *Lobby) Start() {
 				return
 			}
 		} else if request.Type == "FetchLobby" {
-			/*b, err := json.Marshal(lobby)
-			if err != nil {
-				fmt.Println(err)
-			}*/
-			var req = Request{"FetchLobby", "", nil, request.CallbackId, nil}
+			var req = NewRequestWithCallbackId ("FetchLobby", request.CallbackId)
 			req.MarshalData(*lobby)
-			WriteTextMessage(conn, req.Marshal())
+			WriteTextMessage(client, req.Marshal())
 		}  else if request.Type == "Sit" {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
@@ -135,20 +132,20 @@ func (lobby *Lobby) unsit(client *Client) bool {
 }
 
 func (lobby *Lobby) broadcast() {
-	var req = Request{"Broadcast", "Lobby", nil, "", nil}
+	req := NewRequest ("Broadcast")
 	req.MarshalData(*lobby)
 	lobby.broadcastRequest(&req)
 }
 
 func (lobby *Lobby) broadcastStart() {
-	var req = Request{"Start", "", nil, "", nil}
+	req := NewRequest ("Start")
 	lobby.broadcastRequest(&req)
 }
 
 func (lobby *Lobby) broadcastRequest(request *Request) {
 	for index, _ := range lobby.Clients {
 		if lobby.Clients[index].State.Current() == "lobby" {
-			WriteTextMessage(lobby.Clients[index].Conn, request.Marshal())
+			WriteTextMessage(lobby.Clients[index], request.Marshal())
 		}
 	}
 }
@@ -162,8 +159,11 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 			lobby.Clients = lobby.Clients[:len(lobby.Clients)-1]
 		}
 	}
-	//si il s'agit du Master, un autre client devient Master
-	if lobby.isMaster(client) && len(lobby.Clients) == 0 {
+	//si il s'agit du Master, un autre client devient Master, sinon on supprime le lobby
+	if lobby.isMaster(client) && len(lobby.Clients) > 0 {
+		lobby.Master = lobby.Clients[0]
+		return
+	} else {
 		GetServer().RemoveLobby(lobby)
 		return
 	}

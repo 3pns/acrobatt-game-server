@@ -133,6 +133,7 @@ func (client *Client) Start() {
 		return
 	}
 	var conn = client.Conn
+	defer client.Conn.Close()
 	for {
 		mt, message, err := conn.ReadMessage()
 		if err != nil {

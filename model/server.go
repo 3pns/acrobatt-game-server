@@ -75,14 +75,14 @@ func (serv *server) RemoveClient(client *Client) {
   delete(serv.clients, client.Id)
 }
 
-func (serv *server) CleanClientByConn(conn *websocket.Conn) {
+func (serv *server) CleanClient(client *Client) {
   for index, _ := range serv.clients {
-    if serv.clients[index].Conn == conn {
+    if serv.clients[index] == client {
       if serv.clients[index].CurrentGame != nil {
-
+        serv.clients[index].CurrentGame.RemoveClient(client)
       }
       if serv.clients[index].CurrentLobby != nil {
-        
+        serv.clients[index].CurrentLobby.RemoveClient(client)
       }
       delete(serv.clients, serv.clients[index].Id)
     }
@@ -107,7 +107,7 @@ func (serv *server) RemoveLobby(lobby *Lobby) {
 }
 
 func (serv *server) broadcastLobbies() {
-	request := Request{"Broadcast", "ListLobby", nil, "", nil}
+  request := NewRequest ("Broadcast")
 	lobbiesSlice := LobbySlice{}
 	lobbiesSlice.Lobbies = serv.lobbiesSlice()
 	fmt.Println(lobbiesSlice)
@@ -116,7 +116,7 @@ func (serv *server) broadcastLobbies() {
 }
 
 func (serv *server) broadcastGames() {
-	request := Request{"Broadcast", "ListGame", nil, "", nil}
+	request := NewRequest ("Broadcast")
 	gamesSlice := GameSlice{}
 	gamesSlice.Games = serv.gamesSlice()
 	fmt.Println(gamesSlice)
@@ -124,10 +124,16 @@ func (serv *server) broadcastGames() {
 	serv.broadcastRequest(&request)
 }
 
+func (serv *server) sanetizeClients() {
+  for index, _ := range serv.clients {
+    serv.clients[index].Conn = nil
+  }
+}
+
 func (serv *server) broadcastRequest(request *Request) {
 	for index, _ := range serv.clients {
 		if serv.clients[index].State.Current() == "home" {
-			WriteTextMessage(serv.clients[index].Conn, request.Marshal())
+			WriteTextMessage(serv.clients[index], request.Marshal())
 		}
 	}
 }
@@ -148,11 +154,11 @@ func (serv *server) gamesSlice()[]*Game{
   return gamesSlices
 }
 
-func WriteTextMessage(conn *websocket.Conn, data []byte) {
-  err := conn.WriteMessage(websocket.TextMessage, data)
+func WriteTextMessage(client *Client, data []byte) {
+  err := client.Conn.WriteMessage(websocket.TextMessage, data)
   if err != nil {
     log.Println("write: ", err)
-    log.Println("cleaning broken pipe client: ", err)
-    //GetServer().CleanClientByConn(conn)
+    log.Println("Client is being removed from Server")
+    GetServer().CleanClient(client)
   }
 }

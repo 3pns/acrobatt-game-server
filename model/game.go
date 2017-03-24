@@ -3,12 +3,11 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 )
 
 type Game struct {
 	Id int `json:"id"`
-	Clients        []*Client `json:"clients"`
+	Clients        map[int]*Client `json:"clients"`
 	board          *Board `json:"-"`
 	RequestChannel chan Request `json:"-"`
 }
@@ -44,7 +43,10 @@ func StartDemo(client *Client) {
 	var client2 = NewAiClient()
 	var client3 = NewAiClient()
 	var game = GetServer().GetGameFactory().NewGame()
-	game.Clients = []*Client{client0, client1, client2, client3}
+	game.Clients[0] = client0
+	game.Clients[1] = client1
+	game.Clients[2] = client2
+	game.Clients[3] = client3
 	go game.Start()
 	fmt.Println("Client : StartDemo GO !!!")
 }
@@ -72,11 +74,8 @@ func (game *Game) Start() {
 		request = <-game.RequestChannel
 		fmt.Println("Game[" + string(game.Id) + "]: new request detected")
 		player := board.Players[request.Client.GameId()]
+		client := request.Client
 		isPlayerTurn := player == board.PlayerTurn
-		conn := &websocket.Conn{}
-		if !request.Client.IsAi() {
-			conn = request.Client.Conn
-		}
 		if request.Type == "PlacePiece" && isPlayerTurn {
 			fmt.Println("Message de type PlacePiece detected !")
 			piece := Piece{}
@@ -84,15 +83,15 @@ func (game *Game) Start() {
 			fmt.Println(piece)
 			placed := player.PlacePiece(piece, &board, false)
 			if placed {
-				var req = Request{"PlacementConfirmed", "", nil, request.CallbackId, nil}
-				WriteTextMessage(conn, req.Marshal())
+				var req = NewRequestWithCallbackId ("PlacementConfirmed", request.CallbackId)
+				WriteTextMessage(client, req.Marshal())
 				game.board.NextTurn()
 				game.board.PrintBoard()
 				game.BroadcastRefresh()
 			} else {
 				fmt.Println("PlacementRefused")
-				var req = Request{"PlacementRefused", "", nil, request.CallbackId, nil}
-				WriteTextMessage(conn, req.Marshal())
+				var req = NewRequestWithCallbackId ("PlacementRefused", request.CallbackId)
+				WriteTextMessage(client, req.Marshal())
 			}
 		} else if request.Type == "PlaceRandom" && isPlayerTurn {
 			fmt.Println("Message de type PlaceRandom detected !")
@@ -101,13 +100,13 @@ func (game *Game) Start() {
 			game.board.PrintBoard()
 			game.BroadcastRefresh()
 		} else if request.Type == "Fetch" {
-			var req = Request{"Fetch", "", nil, request.CallbackId, nil}
+			var req = NewRequestWithCallbackId ("Fetch", request.CallbackId)
 			req.MarshalData(game.Board())
-			WriteTextMessage(conn, req.Marshal())
+			WriteTextMessage(client, req.Marshal())
 		} else if request.Type == "FetchPlayer" {
-			var req = Request{"FetchPlayer", "Player", nil, request.CallbackId, nil}
+			var req = NewRequestWithCallbackId ("FetchPlayer", request.CallbackId)
 			req.MarshalData(*player)
-			WriteTextMessage(conn, req.Marshal())
+			WriteTextMessage(client, req.Marshal())
 		} else if request.Type == "Concede" && isPlayerTurn {
 			player.Concede()
 			game.BroadcastConcede(player)
@@ -131,19 +130,19 @@ func (game *Game) Start() {
 }
 
 func (game *Game) BroadcastConcede(player *Player) {
-	var req = Request{"Concede", "", nil, "", nil}
+	var req = NewRequest ("Concede")
 	req.MarshalData(*player)
 	game.BroadCastRequest(req)
 }
 
 func (game *Game) BroadcastRefresh() {
-	var req = Request{"Refresh", "", nil, "", nil}
+	var req = NewRequest ("Refresh")
 	req.MarshalData(game.Board())
 	game.BroadCastRequest(req)
 }
 
 func (game *Game) BroadcastGameOver() {
-	var req = Request{"GameOver", "", nil, "", nil}
+	var req = NewRequest ("GameOver")
 	game.BroadCastRequest(req)
 }
 
@@ -152,7 +151,7 @@ func (game *Game) BroadCastRequest(request Request) {
 		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.RequestChannel <- request
 		} else {
-			WriteTextMessage(game.Clients[index].Conn, request.Marshal())
+			WriteTextMessage(game.Clients[index], request.Marshal())
 		}
 	}
 }
@@ -174,6 +173,15 @@ func (game *Game) DisconnectPlayers() {
 			} else {
 				game.Clients[index].State.Event("quit_demo")
 			}
+		}
+	}
+}
+
+func (game *Game) RemoveClient(client *Client) {
+	for index, _ := range game.Clients {
+		if game.Clients[index] == client {
+			game.board.Players[index].Concede()
+			delete(game.Clients, index)
 		}
 	}
 }

@@ -12,6 +12,23 @@ type Request struct {
 	Data       []byte `json:"data"`
 	CallbackId string `json:"callbackId"`
 	Client     *Client `json:"-"`
+	kill bool `json:"-"`
+}
+
+func NewRequest (requestType string) Request{
+	var req = Request{requestType, "", nil, "", nil, false}
+	return req
+}
+
+func NewRequestWithCallbackId (requestType string, callbackId string) Request{
+	var req = Request{requestType, "", nil, callbackId, nil, false}
+	return req
+}
+
+//request used to kill goroutines
+func NewKillRequest () Request{
+	var req = Request{"KILL", "KILL", nil, "666", nil, true}
+	return req
 }
 
 func (request *Request) MarshalData(t interface{}) {
@@ -128,9 +145,9 @@ func (request *Request) Dispatch() {
 	var client = request.Client
 	fmt.Print("->dispatching")
 	if request.Type == "FetchClient" {
-		var req = Request{"FetchClient", "", nil, request.CallbackId, nil}
+		var req = NewRequestWithCallbackId ("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
-		WriteTextMessage(request.Client.Conn, req.Marshal())
+		WriteTextMessage(request.Client, req.Marshal())
 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
 		fmt.Print("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
