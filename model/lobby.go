@@ -57,11 +57,18 @@ func (lobby *Lobby) Start() {
 		var client = request.Client
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
-				for index, _ := range lobby.Seats {
-					if lobby.Seats[index] == client {
-						lobby.game.Clients[index] = lobby.Seats[index]
-					}
+		
+				keys := make([]int, len(lobby.Seats))
+				i := 0
+				for k := range lobby.Seats {
+				    keys[i] = k
+				    i++
+
 				}
+				for _, key := range keys {
+					lobby.game.Clients[key] = lobby.Seats[key]
+				}
+
 				go lobby.game.Start()
 				lobby.broadcastStart()
 				GetServer().RemoveLobby(lobby)
