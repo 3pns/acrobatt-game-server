@@ -39,7 +39,8 @@ func (factory *LobbyFactory)NewLobby(client *Client) *Lobby {
 	lobby.AIClients[1] = NewAiClient()
 	lobby.AIClients[2] = NewAiClient()
 	lobby.AIClients[3] = NewAiClient()
-	lobby.Clients = []*Client{client}
+	lobby.Clients = []*Client{}
+	lobby.Clients = append(lobby.Clients , client)
 	lobby.Master = client
 	lobby.game = GetServer().GetGameFactory().NewGame()
 	lobby.RequestChannel = make(chan Request, 100)
