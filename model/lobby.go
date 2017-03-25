@@ -158,7 +158,7 @@ func (lobby *Lobby) broadcastRequest(request *Request) {
 func (lobby *Lobby) RemoveClient(client *Client) {
 	lobby.unsit(client)
 	for index, _ := range lobby.Clients {
-		if lobby.Clients[index] == client {
+		if len(lobby.Clients)>index && lobby.Clients[index] == client {
 			copy(lobby.Clients[index:], lobby.Clients[index+1:])
 			lobby.Clients[len(lobby.Clients)-1] = nil
 			lobby.Clients = lobby.Clients[:len(lobby.Clients)-1]
