@@ -87,14 +87,14 @@ func (game *Game) Start() {
 			placed := player.PlacePiece(piece, &board, false)
 			if placed {
 				var req = NewRequestWithCallbackId ("PlacementConfirmed", request.CallbackId)
-				WriteTextMessage(client, req.Marshal())
+				client.RequestChannel <- req
 				game.board.NextTurn()
 				game.board.PrintBoard()
 				game.BroadcastRefresh()
 			} else {
 				fmt.Println("PlacementRefused")
 				var req = NewRequestWithCallbackId ("PlacementRefused", request.CallbackId)
-				WriteTextMessage(client, req.Marshal())
+				client.RequestChannel <- req
 			}
 		} else if request.Type == "PlaceRandom" && isPlayerTurn {
 			fmt.Println("Message de type PlaceRandom detected !")
@@ -105,11 +105,11 @@ func (game *Game) Start() {
 		} else if request.Type == "Fetch" {
 			var req = NewRequestWithCallbackId ("Fetch", request.CallbackId)
 			req.MarshalData(game.Board())
-			WriteTextMessage(client, req.Marshal())
+			client.RequestChannel <- req
 		} else if request.Type == "FetchPlayer" {
 			var req = NewRequestWithCallbackId ("FetchPlayer", request.CallbackId)
 			req.MarshalData(*player)
-			WriteTextMessage(client, req.Marshal())
+			client.RequestChannel <- req
 		} else if request.Type == "Concede" && isPlayerTurn {
 			player.Concede()
 			game.BroadcastConcede(player)
@@ -154,7 +154,7 @@ func (game *Game) BroadCastRequest(request Request) {
 		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.RequestChannel <- request
 		} else {
-			WriteTextMessage(game.Clients[index], request.Marshal())
+			game.Clients[index].RequestChannel <- request
 		}
 	}
 }

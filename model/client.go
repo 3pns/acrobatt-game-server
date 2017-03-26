@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
+	"log"
 )
 
 type Client struct {
@@ -15,6 +16,7 @@ type Client struct {
 	Ai          *AI `json:"-"`
 	CurrentGame *Game `json:"-"`
 	CurrentLobby *Lobby `json:"-"`
+	RequestChannel chan Request `json:"-"`
 }
 
 type ClientFactory struct {
@@ -34,6 +36,7 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 	client.Ai = nil
 	client.Conn = conn
 	client.token = ""
+	client.RequestChannel = make(chan Request, 100)
 
 	client.State = fsm.NewFSM(
 		"start",
@@ -146,6 +149,21 @@ func (client *Client) Start() {
 			request.Client = client
 			fmt.Print("Client[",client.Id,"]{" + request.Type +"-"+request.DataType+"}")
 			request.Dispatch()
+		}
+	}
+}
+
+func (client *Client) StartWriter() {
+	request := Request{}
+	for {
+		request = <-client.RequestChannel
+		fmt.Print("Client[",client.Id,"]->Sending")
+		err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
+		if err != nil {
+		log.Println("write: ", err)
+		log.Println("Client is being removed from Server")
+		GetServer().CleanClient(client)
+		return
 		}
 	}
 }

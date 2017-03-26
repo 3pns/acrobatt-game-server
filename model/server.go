@@ -139,7 +139,7 @@ func (serv *server) sanetizeClients() {
 func (serv *server) broadcastRequest(request *Request) {
 	for index, _ := range serv.clients {
 		if serv.clients[index].State.Current() == "home" {
-			WriteTextMessage(serv.clients[index], request.Marshal())
+			serv.clients[index].RequestChannel <- *request
 		}
 	}
 }
@@ -160,7 +160,7 @@ func (serv *server) gamesSlice()[]*Game{
   return gamesSlices
 }
 
-func WriteTextMessage(client *Client, data []byte) {
+func WriteTextMessage2(client *Client, data []byte) {
   err := client.Conn.WriteMessage(websocket.TextMessage, data)
   if err != nil {
     log.Println("write: ", err)

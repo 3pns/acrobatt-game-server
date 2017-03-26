@@ -40,4 +40,5 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	}
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
+	go client.StartWriter()
 }

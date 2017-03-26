@@ -73,7 +73,7 @@ func (lobby *Lobby) Start() {
 		} else if request.Type == "FetchLobby" {
 			var req = NewRequestWithCallbackId ("FetchLobby", request.CallbackId)
 			req.MarshalData(*lobby)
-			WriteTextMessage(client, req.Marshal())
+			client.RequestChannel <- req
 		}  else if request.Type == "Sit" {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
@@ -150,7 +150,7 @@ func (lobby *Lobby) broadcastStart() {
 func (lobby *Lobby) broadcastRequest(request *Request) {
 	for index, _ := range lobby.Clients {
 		//if lobby.Clients[index].State.Current() == "lobby" {
-			WriteTextMessage(lobby.Clients[index], request.Marshal())
+			lobby.Clients[index].RequestChannel <- *request
 		//}
 	}
 }
