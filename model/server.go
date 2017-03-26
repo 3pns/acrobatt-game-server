@@ -4,7 +4,6 @@ import (
 	"sync"
 	"time"
 	"fmt"
-  "github.com/gorilla/websocket"
   "log"
 )
 
@@ -158,13 +157,4 @@ func (serv *server) gamesSlice()[]*Game{
     gamesSlices = append(gamesSlices, game)
   }
   return gamesSlices
-}
-
-func WriteTextMessage2(client *Client, data []byte) {
-  err := client.Conn.WriteMessage(websocket.TextMessage, data)
-  if err != nil {
-    log.Println("write: ", err)
-    log.Println("Client is being removed from Server")
-    GetServer().CleanClient(client)
-  }
 }
