@@ -147,7 +147,8 @@ func (request *Request) Dispatch() {
 	if request.Type == "FetchClient" {
 		var req = NewRequestWithCallbackId ("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
-		client.RequestChannel <- *request
+		fmt.Print("->")
+		client.RequestChannel <- req
 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
 		fmt.Print("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request

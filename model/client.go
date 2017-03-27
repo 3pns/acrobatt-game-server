@@ -147,6 +147,7 @@ func (client *Client) Start() {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
+			log.Println("")
 			fmt.Print("Client[",client.Id,"]{" + request.Type +"-"+request.DataType+"}")
 			request.Dispatch()
 		}
@@ -157,13 +158,13 @@ func (client *Client) StartWriter() {
 	request := Request{}
 	for {
 		request = <-client.RequestChannel
-		fmt.Print("Client[",client.Id,"]->Sending")
+		fmt.Println("Client[",client.Id,"]->Sending")
 		err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
 		if err != nil {
-		log.Println("write: ", err)
-		log.Println("Client is being removed from Server")
-		GetServer().CleanClient(client)
-		return
+			log.Println("write: ", err)
+			log.Println("Client is being removed from Server")
+			GetServer().CleanClient(client)
+			return
 		}
 	}
 }
