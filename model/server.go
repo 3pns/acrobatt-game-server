@@ -3,8 +3,7 @@ package model
 import (
 	"sync"
 	"time"
-	"fmt"
-  "log"
+  log "github.com/Sirupsen/logrus"
 )
 
 type server struct {
@@ -110,7 +109,7 @@ func (serv *server) broadcastLobbies() {
   request := NewRequest ("Broadcast")
 	lobbiesSlice := LobbySlice{}
 	lobbiesSlice.Lobbies = serv.lobbiesSlice()
-	fmt.Println(lobbiesSlice)
+	log.Info(lobbiesSlice)
 	request.MarshalData(lobbiesSlice)
 	serv.broadcastRequest(&request)
 }
@@ -119,7 +118,7 @@ func (serv *server) broadcastGames() {
 	request := NewRequest ("Broadcast")
 	gamesSlice := GameSlice{}
 	gamesSlice.Games = serv.gamesSlice()
-	fmt.Println(gamesSlice)
+	log.Info(gamesSlice)
 	request.MarshalData(gamesSlice)
 	serv.broadcastRequest(&request)
 }
@@ -129,7 +128,7 @@ func (serv *server) sanetizeClients() {
     now := time.Now()
     err := serv.clients[key].Conn.WriteControl(9, []byte("PING"), now.Add(time.Duration(10)*time.Second))
     if err != nil {
-      log.Println("Server->sanetize->client[",key,"]")
+      log.Info("Server->sanetize->client[",key,"]")
       serv.CleanClient(serv.clients[key])
     }
   }

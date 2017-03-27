@@ -2,13 +2,11 @@ package main
 
 import (
 	. "./model"
-	_ "./utils"
 	"flag"
 	"fmt"
-	"github.com/gorilla/websocket"
-	_ "io"
 	"net/http"
-	_ "strings"
+	"github.com/gorilla/websocket"
+	log "github.com/Sirupsen/logrus"
 )
 
 // standard types
@@ -35,7 +33,7 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	fmt.Print("New Connection Established:")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		//log.Println(err)
+		log.Warn(err)
 		return
 	}
 	var client = GetServer().GetClientFactory().NewClient(conn)
