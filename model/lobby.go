@@ -93,7 +93,7 @@ func (lobby *Lobby) Start() {
 			
 		}  else if request.Type == "UnsitAI" && lobby.isMaster(client) {
 			seatNumber := request.DataToInt()
-			if lobby.Seats[seatNumber].IsAi() {
+			if lobby.Seats[seatNumber] != nil && lobby.Seats[seatNumber].IsAi() {
 				lobby.Seats[seatNumber] = nil
 				lobby.broadcast()
 			}
