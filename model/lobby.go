@@ -1,8 +1,7 @@
 package model
 
 import (
-	"fmt"
-	_ "github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Lobby struct {
@@ -55,16 +54,18 @@ func (lobby *Lobby) Start() {
 	request := Request{}
 	for {
 		request = <-lobby.RequestChannel
-		fmt.Print("Lobby[", lobby.Id, "]->")
 		var client = request.Client
+		if client != nil {
+			client.UpdateTrace("Lobby["+ string(lobby.Id)+ "]->")
+		}
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 
 				for key := range lobby.Seats {
-					fmt.Println("clé[", key, "]->settings clients in game and current game")
 					lobby.game.Clients[key] = lobby.Seats[key]
 					lobby.game.Clients[key].CurrentGame = lobby.game
 				}
+				client.UPTrace("Start")
 				lobby.broadcastStart()
 				go lobby.game.Start()
 				GetServer().RemoveLobby(lobby)
@@ -72,43 +73,64 @@ func (lobby *Lobby) Start() {
 				return
 			}
 		} else if request.Type == "FetchLobby" {
+			client.UPTrace("FetchLobby")
 			var req = NewRequestWithCallbackId("FetchLobby", request.CallbackId)
 			req.MarshalData(*lobby)
 			client.RequestChannel <- req
 		} else if request.Type == "Sit" {
+			client.UpdateTrace("Sit")
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
+				client.UPTrace("->success")
 				lobby.Seats[seatNumber] = client
 				lobby.broadcast()
+			} else {
+				client.UPTrace("->failure")
 			}
 		} else if request.Type == "Unsit" {
+			client.UpdateTrace("Unsit")
 			if lobby.unsit(client) {
+				client.UPTrace("->success")
 				lobby.broadcast()
+			} else {
+				client.UPTrace("->failure")
 			}
 		} else if request.Type == "SitAI" && lobby.isMaster(client) {
+			client.UpdateTrace("SitAI")
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
 				lobby.Seats[seatNumber] = lobby.AIClients[seatNumber]
+				client.UPTrace("->success")
 				lobby.broadcast()
+			} else {
+				client.UPTrace("->failure")
 			}
 
 		} else if request.Type == "UnsitAI" && lobby.isMaster(client) {
+			client.UpdateTrace("UnsitAI")
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] != nil && lobby.Seats[seatNumber].IsAi() {
+				client.UPTrace("->success")
 				lobby.Seats[seatNumber] = nil
 				lobby.broadcast()
+			} else {
+				client.UPTrace("->failure")
 			}
 
 		} else if request.Type == "Quit" {
+			client.UpdateTrace("Quit")
 			lobby.unsit(client)
 			lobby.RemoveClient(client)
 			client.State.Event("quit_lobby")
 			if len(lobby.Clients) == 0 {
+				client.UPTrace("->EmptyLobby->KILL")
 				GetServer().RemoveLobby(lobby)
 				return
+			} else {
+				client.PrintTrace()
 			}
 		} else if request.Kill {
-			fmt.Println("KILL")
+			log.Info("Lobby[", string(lobby.Id), "]->KILL")
 			return
 		}
 	}
