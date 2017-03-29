@@ -75,9 +75,4 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
 	go client.StartWriter()
-
-	lobby := GetServer().GetLobbyFactory().NewLobby(client)
-	if lobby.Clients[777].IsAi() {
-		return
-	}
 }
