@@ -27,7 +27,7 @@ type ClientFactory struct {
 
 func NewClientFactory() *ClientFactory {
 	var factory = new(ClientFactory)
-	factory.id = 0
+	factory.id = 1
 	return factory
 }
 
