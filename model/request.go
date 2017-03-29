@@ -2,31 +2,31 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"strconv"
 )
 
 type Request struct {
-	Type       string `json:"type"`
-	DataType   string `json:"dataType"`
-	Data       []byte `json:"data"`
-	CallbackId string `json:"callbackId"`
+	Type       string  `json:"type"`
+	DataType   string  `json:"dataType"`
+	Data       []byte  `json:"data"`
+	CallbackId string  `json:"callbackId"`
 	Client     *Client `json:"-"`
-	Kill bool `json:"-"`
+	Kill       bool    `json:"-"`
 }
 
-func NewRequest (requestType string) Request{
+func NewRequest(requestType string) Request {
 	var req = Request{requestType, "", nil, "", nil, false}
 	return req
 }
 
-func NewRequestWithCallbackId (requestType string, callbackId string) Request{
+func NewRequestWithCallbackId(requestType string, callbackId string) Request {
 	var req = Request{requestType, "", nil, callbackId, nil, false}
 	return req
 }
 
 //request used to kill goroutines
-func NewKillRequest () Request{
+func NewKillRequest() Request {
 	var req = Request{"KILL", "KILL", nil, "666", nil, true}
 	return req
 }
@@ -37,7 +37,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(board)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Board"
 		request.Data = b
@@ -47,7 +47,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(player)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Player"
 		request.Data = b
@@ -57,7 +57,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(piece)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Piece"
 		request.Data = b
@@ -67,7 +67,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(games)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "ListGame"
 		request.Data = b
@@ -77,7 +77,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(lobbies)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "ListLobby"
 		request.Data = b
@@ -87,7 +87,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(lobby)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Lobby"
 		request.Data = b
@@ -97,25 +97,21 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(client)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Client"
 		request.Data = b
 		return
 	}
-	fmt.Print("->MarshalDataFailed")
+	log.Warn("MarshalData Failed")
 }
 
 func (request *Request) Marshal() []byte {
 	marshaleldrequest, err := json.Marshal(request)
 	if err != nil {
-		fmt.Println(err)
+		log.Warn(err)
 	}
 	return marshaleldrequest
-}
-
-func (request *Request) Unmarshal() {
-	fmt.Print("Unmarshalling")
 }
 
 func (request *Request) DataToString() string {
@@ -143,29 +139,30 @@ func (request *Request) HasClient() bool {
 
 func (request *Request) Dispatch() {
 	var client = request.Client
-	fmt.Print("->dispatching")
+	client.UpdateTrace("->dispatching")
 	if request.Type == "FetchClient" {
-		var req = NewRequestWithCallbackId ("FetchClient", request.CallbackId)
+		var req = NewRequestWithCallbackId("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
-		fmt.Print("->")
+		client.UpdateTrace("->")
 		client.RequestChannel <- req
 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
-		fmt.Print("->toCurrentGameRequestChannel->")
+		client.UpdateTrace("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {
-		fmt.Print("->toServer->")
+		client.UpdateTrace("->toServer->")
 		GetServer().Process(*request)
 	} else if client.State.Current() == "start" && request.Type == "CreateDemo" {
-		fmt.Print("->create_demo->")
+		client.UpdateTrace("->create_demo->")
+		client.PrintTrace()
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
-		fmt.Print("->Authenticating->")
+		client.UpdateTrace("->Authenticating->")
 		client.Authenticate(request.DataToString())
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
-		fmt.Print("->toCurrentLobbyRequestChannel->")
+		client.UpdateTrace("->toCurrentLobbyRequestChannel->")
 		client.CurrentLobby.RequestChannel <- *request
 	} else {
-		fmt.Println("->dispatching_failed")
+		client.UPTrace("->dispatching_failed")
 	}
-	
+
 }

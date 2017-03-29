@@ -2,13 +2,13 @@ package main
 
 import (
 	. "./model"
-	_ "./utils"
 	"flag"
-	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/websocket"
-	_ "io"
+	stdlog "log"
 	"net/http"
-	_ "strings"
+	"os"
+	"strconv"
 )
 
 // standard types
@@ -22,8 +22,37 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	formatter := log.TextFormatter{}
+	formatter.FullTimestamp = true
+	formatter.ForceColors = true
+
+	log.SetFormatter(&formatter)
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	//log.Out(os.Stdout)
+	file, err := os.OpenFile("logs/logrus.log", os.O_RDWR|os.O_APPEND, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	} else {
+		log.Warn("Failed to log to file, using default stderr")
+	}
+
+	stdlog.SetOutput(file)
+
+	//saving server pid
+	pid, err := os.OpenFile("bin/pid", os.O_CREATE|os.O_WRONLY, 0666)
+	pid.WriteString(strconv.Itoa(os.Getpid()))
+	pid.Close()
+
+	// Only log the warning severity or above.
+	//log.SetLevel(log.WarnLevel)
+}
+
 func main() {
-	fmt.Println("Launching server on port 8081...")
+	log.Info("Launching server on port 8081 with PID ", strconv.Itoa(os.Getpid()), "...")
 	go GetServer().Start()
 
 	var addr = flag.String("addr", ":8081", "http service address")
@@ -32,13 +61,18 @@ func main() {
 }
 
 func handleNewConnection(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("New Connection Established:")
+	log.Info("New Connection Established:")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		//log.Println(err)
+		log.Warn(err)
 		return
 	}
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
 	go client.StartWriter()
+
+	lobby := GetServer().GetLobbyFactory().NewLobby(client)
+	if lobby.Clients[777].IsAi() {
+		return
+	}
 }
