@@ -5,6 +5,7 @@ import (
 	"flag"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/websocket"
+	stdlog "log"
 	"net/http"
 	"os"
 	"strconv"
@@ -39,18 +40,19 @@ func init() {
 		log.Warn("Failed to log to file, using default stderr")
 	}
 
+	stdlog.SetOutput(file)
+
 	//saving server pid
 	pid, err := os.OpenFile("bin/pid", os.O_CREATE|os.O_WRONLY, 0666)
-	pid. WriteString(strconv.Itoa(os.Getpid()))
+	pid.WriteString(strconv.Itoa(os.Getpid()))
 	pid.Close()
-
 
 	// Only log the warning severity or above.
 	//log.SetLevel(log.WarnLevel)
 }
 
 func main() {
-	log.Info("Launching server on port 8081 with PID ",strconv.Itoa(os.Getpid()),"...")
+	log.Info("Launching server on port 8081 with PID ", strconv.Itoa(os.Getpid()), "...")
 	go GetServer().Start()
 
 	var addr = flag.String("addr", ":8081", "http service address")
@@ -68,4 +70,9 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
 	go client.StartWriter()
+
+	lobby := GetServer().GetLobbyFactory().NewLobby(client)
+	if lobby.Clients[777].IsAi() {
+		return
+	}
 }

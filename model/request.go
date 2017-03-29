@@ -2,9 +2,8 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
-	"strconv"
 	log "github.com/Sirupsen/logrus"
+	"strconv"
 )
 
 type Request struct {
@@ -38,7 +37,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(board)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Board"
 		request.Data = b
@@ -48,7 +47,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(player)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Player"
 		request.Data = b
@@ -58,7 +57,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(piece)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Piece"
 		request.Data = b
@@ -68,7 +67,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(games)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "ListGame"
 		request.Data = b
@@ -78,7 +77,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(lobbies)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "ListLobby"
 		request.Data = b
@@ -88,7 +87,7 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(lobby)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Lobby"
 		request.Data = b
@@ -98,25 +97,21 @@ func (request *Request) MarshalData(t interface{}) {
 	if ok {
 		b, err := json.Marshal(client)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 		}
 		request.DataType = "Client"
 		request.Data = b
 		return
 	}
-	fmt.Print("->MarshalDataFailed")
+	log.Warn("MarshalData Failed")
 }
 
 func (request *Request) Marshal() []byte {
 	marshaleldrequest, err := json.Marshal(request)
 	if err != nil {
-		fmt.Println(err)
+		log.Warn(err)
 	}
 	return marshaleldrequest
-}
-
-func (request *Request) Unmarshal() {
-	fmt.Print("Unmarshalling")
 }
 
 func (request *Request) DataToString() string {
@@ -164,10 +159,10 @@ func (request *Request) Dispatch() {
 		client.UpdateTrace("->Authenticating->")
 		client.Authenticate(request.DataToString())
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
-		log.Print("->toCurrentLobbyRequestChannel->")
+		client.UpdateTrace("->toCurrentLobbyRequestChannel->")
 		client.CurrentLobby.RequestChannel <- *request
 	} else {
-		log.Print("->dispatching_failed")
+		client.UPTrace("->dispatching_failed")
 	}
 
 }

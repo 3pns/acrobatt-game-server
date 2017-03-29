@@ -1,13 +1,12 @@
 package model
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
-	log "github.com/Sirupsen/logrus"
 	"strconv"
-	"bytes"
 )
 
 type Client struct {
@@ -19,7 +18,7 @@ type Client struct {
 	CurrentGame    *Game           `json:"-"`
 	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
-	trace string						   `json:"-"`
+	trace          string          `json:"-"`
 }
 
 type ClientFactory struct {
@@ -57,29 +56,29 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			"create_demo": func(e *fsm.Event) { StartDemo(&client) },
 			"quit_demo": func(e *fsm.Event) {
 				client.CurrentGame = nil
-				fmt.Println("quiting demo : " + e.FSM.Current())
+				client.UpdateTrace("quiting demo : " + e.FSM.Current())
 			},
 			"authenticate": func(e *fsm.Event) {
-				fmt.Println("authenticating : " + e.FSM.Current())
+				client.UpdateTrace("authenticating : " + e.FSM.Current())
 				GetServer().AddClient(&client)
 			},
-			"join_lobby": func(e *fsm.Event) { fmt.Println("joining lobby : " + e.FSM.Current()) },
+			"join_lobby": func(e *fsm.Event) { client.UpdateTrace("joining lobby : " + e.FSM.Current()) },
 			"create_lobby": func(e *fsm.Event) {
-				fmt.Println("creating lobby : " + e.FSM.Current())
+				client.UpdateTrace("creating lobby : " + e.FSM.Current())
 				lobby := GetServer().GetLobbyFactory().NewLobby(&client)
 				GetServer().AddLobby(lobby)
 			},
 			"quit_lobby": func(e *fsm.Event) {
 				client.CurrentLobby = nil
-				fmt.Println("quiting lobby : " + e.FSM.Current())
+				client.UpdateTrace("quiting lobby : " + e.FSM.Current())
 			},
 			"join_game": func(e *fsm.Event) {
 				client.CurrentLobby = nil
-				fmt.Println("joining game : " + e.FSM.Current())
+				client.UpdateTrace("joining game : " + e.FSM.Current())
 			},
 			"quit_game": func(e *fsm.Event) {
 				client.CurrentGame = nil
-				fmt.Println("quiting game : " + e.FSM.Current())
+				client.UpdateTrace("quiting game : " + e.FSM.Current())
 			},
 		},
 	)
@@ -119,16 +118,15 @@ func (client *Client) UPTrace(trace string) {
 	client.UpdateTrace(trace)
 	client.PrintTrace()
 }
-func (client *Client) Trace() string{
+func (client *Client) Trace() string {
 	return client.trace
 }
-func (client *Client) Tracing() bool{
+func (client *Client) Tracing() bool {
 	if client.trace != "" {
 		return true
 	}
 	return false
 }
-
 
 func (client *Client) IsAi() bool {
 	if client.Ai == nil {
@@ -178,7 +176,8 @@ func (client *Client) Start() {
 	for {
 		mt, message, err := conn.ReadMessage()
 		if err != nil {
-			fmt.Println("read: ", err)
+			log.Warn("read: ", err)
+			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de raison
 			return
 		}
 		if mt == websocket.TextMessage {
@@ -206,7 +205,7 @@ func (client *Client) StartWriter() {
 				client.UpdateTrace("->Client is being removed from Server")
 				client.PrintTrace()
 			} else {
-				log.Info("Server->Writer->",err.Error(),"->Client is being removed from Server")
+				log.Info("Server->Writer->", err.Error(), "->Client is being removed from Server")
 			}
 			GetServer().CleanClient(client)
 			return
