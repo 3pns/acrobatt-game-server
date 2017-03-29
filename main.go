@@ -37,7 +37,12 @@ func init() {
 	if err == nil {
 		log.SetOutput(file)
 	} else {
-		log.Warn("Failed to log to file, using default stderr")
+		file, err := os.OpenFile("logs/logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
+		if err == nil {
+			log.SetOutput(file)
+		} else {
+			log.Warn("Failed to log to file, using default stderr")
+		}
 	}
 
 	stdlog.SetOutput(file)
