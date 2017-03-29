@@ -6,6 +6,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	log "github.com/Sirupsen/logrus"
+	"strconv"
+	"bytes"
 )
 
 type Client struct {
@@ -17,6 +19,7 @@ type Client struct {
 	CurrentGame    *Game           `json:"-"`
 	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
+	trace string						   `json:"-"`
 }
 
 type ClientFactory struct {
@@ -94,6 +97,39 @@ func NewAiClient() *Client {
 	return &client
 }
 
+func (client *Client) StartTrace() {
+	var buffer bytes.Buffer
+	buffer.WriteString("Client[")
+	buffer.WriteString(strconv.Itoa(client.Id))
+	buffer.WriteString("]")
+	client.trace = buffer.String()
+}
+func (client *Client) UpdateTrace(trace string) {
+	var buffer bytes.Buffer
+	buffer.WriteString(client.trace)
+	buffer.WriteString(trace)
+	client.trace = buffer.String()
+}
+func (client *Client) PrintTrace() {
+	log.Info(client.trace)
+	client.trace = ""
+}
+
+func (client *Client) UPTrace(trace string) {
+	client.UpdateTrace(trace)
+	client.PrintTrace()
+}
+func (client *Client) Trace() string{
+	return client.trace
+}
+func (client *Client) Tracing() bool{
+	if client.trace != "" {
+		return true
+	}
+	return false
+}
+
+
 func (client *Client) IsAi() bool {
 	if client.Ai == nil {
 		return false
@@ -122,10 +158,12 @@ func (client *Client) GameId() int {
 
 func (client *Client) Authenticate(token string) bool {
 	if token == "" {
+		client.UPTrace(token)
 		return false
 	} else {
 		client.token = token
 		client.State.Event("authenticate")
+		client.UPTrace("success")
 		return true
 	}
 }
@@ -147,8 +185,7 @@ func (client *Client) Start() {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
-			log.Info("")
-			log.Print("Client[", client.Id, "]{"+request.Type+"-"+request.DataType+"}")
+			client.StartTrace()
 			request.Dispatch()
 		}
 	}
@@ -158,14 +195,27 @@ func (client *Client) StartWriter() {
 	request := Request{}
 	for {
 		request = <-client.RequestChannel
-		log.Info("Client[", client.Id, "]->Sending")
+		if client.Tracing() {
+			client.UpdateTrace("->Writer->Sending")
+		}
 		err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
 		if err != nil {
-			log.Println("write: ", err)
-			log.Println("Client is being removed from Server")
+			if client.Tracing() {
+				client.UpdateTrace("->")
+				client.UpdateTrace(err.Error())
+				client.UpdateTrace("->Client is being removed from Server")
+				client.PrintTrace()
+			} else {
+				log.Info("Server->Writer->",err.Error(),"->Client is being removed from Server")
+			}
 			GetServer().CleanClient(client)
 			return
 		}
+		if client.Tracing() {
+			client.UpdateTrace("->Sent")
+			client.PrintTrace()
+		}
+
 	}
 }
 

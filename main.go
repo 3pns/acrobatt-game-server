@@ -25,13 +25,14 @@ func init() {
 	// Log as JSON instead of the default ASCII formatter.
 	formatter := log.TextFormatter{}
 	formatter.FullTimestamp = true
+	formatter.ForceColors = true
 
 	log.SetFormatter(&formatter)
 
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
 	//log.Out(os.Stdout)
-	file, err := os.OpenFile("logs/logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile("logs/logrus.log", os.O_RDWR|os.O_APPEND, 0666)
 	if err == nil {
 		log.SetOutput(file)
 	} else {

@@ -144,23 +144,24 @@ func (request *Request) HasClient() bool {
 
 func (request *Request) Dispatch() {
 	var client = request.Client
-	log.Print("->dispatching")
+	client.UpdateTrace("->dispatching")
 	if request.Type == "FetchClient" {
 		var req = NewRequestWithCallbackId("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
-		log.Print("->")
+		client.UpdateTrace("->")
 		client.RequestChannel <- req
 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
-		log.Print("->toCurrentGameRequestChannel->")
+		client.UpdateTrace("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {
-		log.Print("->toServer->")
+		client.UpdateTrace("->toServer->")
 		GetServer().Process(*request)
 	} else if client.State.Current() == "start" && request.Type == "CreateDemo" {
-		log.Print("->create_demo->")
+		client.UpdateTrace("->create_demo->")
+		client.PrintTrace()
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
-		log.Print("->Authenticating->")
+		client.UpdateTrace("->Authenticating->")
 		client.Authenticate(request.DataToString())
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
 		log.Print("->toCurrentLobbyRequestChannel->")
