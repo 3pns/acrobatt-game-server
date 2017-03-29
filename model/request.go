@@ -4,29 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Request struct {
-	Type       string `json:"type"`
-	DataType   string `json:"dataType"`
-	Data       []byte `json:"data"`
-	CallbackId string `json:"callbackId"`
+	Type       string  `json:"type"`
+	DataType   string  `json:"dataType"`
+	Data       []byte  `json:"data"`
+	CallbackId string  `json:"callbackId"`
 	Client     *Client `json:"-"`
-	Kill bool `json:"-"`
+	Kill       bool    `json:"-"`
 }
 
-func NewRequest (requestType string) Request{
+func NewRequest(requestType string) Request {
 	var req = Request{requestType, "", nil, "", nil, false}
 	return req
 }
 
-func NewRequestWithCallbackId (requestType string, callbackId string) Request{
+func NewRequestWithCallbackId(requestType string, callbackId string) Request {
 	var req = Request{requestType, "", nil, callbackId, nil, false}
 	return req
 }
 
 //request used to kill goroutines
-func NewKillRequest () Request{
+func NewKillRequest() Request {
 	var req = Request{"KILL", "KILL", nil, "666", nil, true}
 	return req
 }
@@ -143,29 +144,29 @@ func (request *Request) HasClient() bool {
 
 func (request *Request) Dispatch() {
 	var client = request.Client
-	fmt.Print("->dispatching")
+	log.Print("->dispatching")
 	if request.Type == "FetchClient" {
-		var req = NewRequestWithCallbackId ("FetchClient", request.CallbackId)
+		var req = NewRequestWithCallbackId("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
-		fmt.Print("->")
+		log.Print("->")
 		client.RequestChannel <- req
 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
-		fmt.Print("->toCurrentGameRequestChannel->")
+		log.Print("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {
-		fmt.Print("->toServer->")
+		log.Print("->toServer->")
 		GetServer().Process(*request)
 	} else if client.State.Current() == "start" && request.Type == "CreateDemo" {
-		fmt.Print("->create_demo->")
+		log.Print("->create_demo->")
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
-		fmt.Print("->Authenticating->")
+		log.Print("->Authenticating->")
 		client.Authenticate(request.DataToString())
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
-		fmt.Print("->toCurrentLobbyRequestChannel->")
+		log.Print("->toCurrentLobbyRequestChannel->")
 		client.CurrentLobby.RequestChannel <- *request
 	} else {
-		fmt.Println("->dispatching_failed")
+		log.Print("->dispatching_failed")
 	}
-	
+
 }

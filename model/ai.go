@@ -30,7 +30,7 @@ func (ai *AI) Start() {
 		if request.Type == "Refresh" {
 			json.Unmarshal(request.Data, &board)
 			if board.PlayerTurn != nil && board.PlayerTurn.Id == ai.Player.Id {
-				var req =	NewRequest ("PlaceRandom")
+				var req = NewRequest("PlaceRandom")
 				req.Client = ai.client
 				ai.client.CurrentGame.RequestChannel <- req
 			}

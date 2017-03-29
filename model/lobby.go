@@ -2,21 +2,22 @@ package model
 
 import (
 	"fmt"
+	_ "github.com/Sirupsen/logrus"
 )
 
 type Lobby struct {
-	Id int `json:"id"`
-	Name string `json:"name"`
-	Clients []*Client `json:"clients"`
-	AIClients map[int]*Client`json:"-"`
-	Master *Client `json:"master"`
-	Seats map[int]*Client `json:"seats"`
-	game *Game `json:"-"`
-	RequestChannel chan Request `json:"-"`
+	Id             int             `json:"id"`
+	Name           string          `json:"name"`
+	Clients        []*Client       `json:"clients"`
+	AIClients      map[int]*Client `json:"-"`
+	Master         *Client         `json:"master"`
+	Seats          map[int]*Client `json:"seats"`
+	game           *Game           `json:"-"`
+	RequestChannel chan Request    `json:"-"`
 }
 
 type LobbyFactory struct {
-	Id       int
+	Id int
 }
 
 func NewLobbyFactory() *LobbyFactory {
@@ -29,7 +30,7 @@ type LobbySlice struct {
 	Lobbies []*Lobby `json:"lobbies"`
 }
 
-func (factory *LobbyFactory)NewLobby(client *Client) *Lobby {
+func (factory *LobbyFactory) NewLobby(client *Client) *Lobby {
 	var lobby Lobby
 	lobby.Id = factory.Id
 	factory.Id++
@@ -40,7 +41,7 @@ func (factory *LobbyFactory)NewLobby(client *Client) *Lobby {
 	lobby.AIClients[2] = NewAiClient()
 	lobby.AIClients[3] = NewAiClient()
 	lobby.Clients = []*Client{}
-	lobby.Clients = append(lobby.Clients , client)
+	lobby.Clients = append(lobby.Clients, client)
 	lobby.Master = client
 	lobby.game = GetServer().GetGameFactory().NewGame()
 	lobby.RequestChannel = make(chan Request, 100)
@@ -54,13 +55,13 @@ func (lobby *Lobby) Start() {
 	request := Request{}
 	for {
 		request = <-lobby.RequestChannel
-		fmt.Print("Lobby[",lobby.Id,"]->")
+		fmt.Print("Lobby[", lobby.Id, "]->")
 		var client = request.Client
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
-		
+
 				for key := range lobby.Seats {
-					fmt.Println("clé[",key,"]->settings clients in game and current game")
+					fmt.Println("clé[", key, "]->settings clients in game and current game")
 					lobby.game.Clients[key] = lobby.Seats[key]
 					lobby.game.Clients[key].CurrentGame = lobby.game
 				}
@@ -71,34 +72,34 @@ func (lobby *Lobby) Start() {
 				return
 			}
 		} else if request.Type == "FetchLobby" {
-			var req = NewRequestWithCallbackId ("FetchLobby", request.CallbackId)
+			var req = NewRequestWithCallbackId("FetchLobby", request.CallbackId)
 			req.MarshalData(*lobby)
 			client.RequestChannel <- req
-		}  else if request.Type == "Sit" {
+		} else if request.Type == "Sit" {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
 				lobby.Seats[seatNumber] = client
 				lobby.broadcast()
 			}
-		}  else if request.Type == "Unsit" {
-			if lobby.unsit(client){
+		} else if request.Type == "Unsit" {
+			if lobby.unsit(client) {
 				lobby.broadcast()
 			}
-		}  else if request.Type == "SitAI" && lobby.isMaster(client) {
+		} else if request.Type == "SitAI" && lobby.isMaster(client) {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
 				lobby.Seats[seatNumber] = lobby.AIClients[seatNumber]
 				lobby.broadcast()
 			}
-			
-		}  else if request.Type == "UnsitAI" && lobby.isMaster(client) {
+
+		} else if request.Type == "UnsitAI" && lobby.isMaster(client) {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber].IsAi() {
 				lobby.Seats[seatNumber] = nil
 				lobby.broadcast()
 			}
-			
-		}  else if request.Type == "Quit" {
+
+		} else if request.Type == "Quit" {
 			lobby.unsit(client)
 			lobby.RemoveClient(client)
 			client.State.Event("quit_lobby")
@@ -106,7 +107,7 @@ func (lobby *Lobby) Start() {
 				GetServer().RemoveLobby(lobby)
 				return
 			}
-		}  else if request.Kill {
+		} else if request.Kill {
 			fmt.Println("KILL")
 			return
 		}
@@ -137,20 +138,20 @@ func (lobby *Lobby) unsit(client *Client) bool {
 }
 
 func (lobby *Lobby) broadcast() {
-	req := NewRequest ("Broadcast")
+	req := NewRequest("Broadcast")
 	req.MarshalData(*lobby)
 	lobby.broadcastRequest(&req)
 }
 
 func (lobby *Lobby) broadcastStart() {
-	req := NewRequest ("Start")
+	req := NewRequest("Start")
 	lobby.broadcastRequest(&req)
 }
 
 func (lobby *Lobby) broadcastRequest(request *Request) {
 	for index, _ := range lobby.Clients {
 		//if lobby.Clients[index].State.Current() == "lobby" {
-			lobby.Clients[index].RequestChannel <- *request
+		lobby.Clients[index].RequestChannel <- *request
 		//}
 	}
 }
@@ -158,7 +159,7 @@ func (lobby *Lobby) broadcastRequest(request *Request) {
 func (lobby *Lobby) RemoveClient(client *Client) {
 	lobby.unsit(client)
 	for index, _ := range lobby.Clients {
-		if len(lobby.Clients)>index && lobby.Clients[index] == client {
+		if len(lobby.Clients) > index && lobby.Clients[index] == client {
 			copy(lobby.Clients[index:], lobby.Clients[index+1:])
 			lobby.Clients[len(lobby.Clients)-1] = nil
 			lobby.Clients = lobby.Clients[:len(lobby.Clients)-1]
@@ -170,7 +171,7 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 	}
 	if len(lobby.Clients) > 0 {
 		lobby.broadcast()
-	} else{
+	} else {
 		req := NewKillRequest()
 		lobby.RequestChannel <- req
 		GetServer().RemoveLobby(lobby)

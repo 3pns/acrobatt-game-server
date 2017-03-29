@@ -5,22 +5,22 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
-	"log"
+	log "github.com/Sirupsen/logrus"
 )
 
 type Client struct {
-	Id       int `json:"id"`
-	Conn        *websocket.Conn `json:"-"`
-	token       string `json:"-"`
-	State       *fsm.FSM `json:"-"`
-	Ai          *AI `json:"-"`
-	CurrentGame *Game `json:"-"`
-	CurrentLobby *Lobby `json:"-"`
-	RequestChannel chan Request `json:"-"`
+	Id             int             `json:"id"`
+	Conn           *websocket.Conn `json:"-"`
+	token          string          `json:"-"`
+	State          *fsm.FSM        `json:"-"`
+	Ai             *AI             `json:"-"`
+	CurrentGame    *Game           `json:"-"`
+	CurrentLobby   *Lobby          `json:"-"`
+	RequestChannel chan Request    `json:"-"`
 }
 
 type ClientFactory struct {
-	id       int
+	id int
 }
 
 func NewClientFactory() *ClientFactory {
@@ -52,32 +52,32 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 		},
 		fsm.Callbacks{
 			"create_demo": func(e *fsm.Event) { StartDemo(&client) },
-			"quit_demo":   func(e *fsm.Event) {
+			"quit_demo": func(e *fsm.Event) {
 				client.CurrentGame = nil
-				fmt.Println("quiting demo : " + e.FSM.Current()) 
-				},
-			"authenticate":   func(e *fsm.Event) { 
+				fmt.Println("quiting demo : " + e.FSM.Current())
+			},
+			"authenticate": func(e *fsm.Event) {
 				fmt.Println("authenticating : " + e.FSM.Current())
 				GetServer().AddClient(&client)
-				},
-			"join_lobby":   func(e *fsm.Event) { fmt.Println("joining lobby : " + e.FSM.Current()) },
-			"create_lobby":   func(e *fsm.Event) { 
+			},
+			"join_lobby": func(e *fsm.Event) { fmt.Println("joining lobby : " + e.FSM.Current()) },
+			"create_lobby": func(e *fsm.Event) {
 				fmt.Println("creating lobby : " + e.FSM.Current())
 				lobby := GetServer().GetLobbyFactory().NewLobby(&client)
 				GetServer().AddLobby(lobby)
-				},
-			"quit_lobby":   func(e *fsm.Event) { 
+			},
+			"quit_lobby": func(e *fsm.Event) {
 				client.CurrentLobby = nil
-				fmt.Println("quiting lobby : " + e.FSM.Current()) 
-				},
-			"join_game":   func(e *fsm.Event) { 
+				fmt.Println("quiting lobby : " + e.FSM.Current())
+			},
+			"join_game": func(e *fsm.Event) {
 				client.CurrentLobby = nil
-				fmt.Println("joining game : " + e.FSM.Current()) 
-				},
-			"quit_game":   func(e *fsm.Event) { 
+				fmt.Println("joining game : " + e.FSM.Current())
+			},
+			"quit_game": func(e *fsm.Event) {
 				client.CurrentGame = nil
-				fmt.Println("quiting game : " + e.FSM.Current()) 
-				},
+				fmt.Println("quiting game : " + e.FSM.Current())
+			},
 		},
 	)
 
@@ -147,8 +147,8 @@ func (client *Client) Start() {
 			request := Request{}
 			json.Unmarshal(message, &request)
 			request.Client = client
-			log.Println("")
-			fmt.Print("Client[",client.Id,"]{" + request.Type +"-"+request.DataType+"}")
+			log.Info("")
+			log.Print("Client[", client.Id, "]{"+request.Type+"-"+request.DataType+"}")
 			request.Dispatch()
 		}
 	}
@@ -158,7 +158,7 @@ func (client *Client) StartWriter() {
 	request := Request{}
 	for {
 		request = <-client.RequestChannel
-		fmt.Println("Client[",client.Id,"]->Sending")
+		log.Info("Client[", client.Id, "]->Sending")
 		err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
 		if err != nil {
 			log.Println("write: ", err)
@@ -169,11 +169,11 @@ func (client *Client) StartWriter() {
 	}
 }
 
-func (client *Client) JoinLobby (lobby *Lobby) {
+func (client *Client) JoinLobby(lobby *Lobby) {
 	client.CurrentLobby = lobby
 	client.State.Event("join_lobby")
 }
 
-func (client *Client) LeaveLobby () {
+func (client *Client) LeaveLobby() {
 	client.State.Event("quit_lobby")
 }
