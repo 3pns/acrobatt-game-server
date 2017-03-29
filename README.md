@@ -63,8 +63,11 @@ myBase64token => "MyToken"
 ### Depuis l'état lobby
 {"type":"Start","dataType":"","data":null, "callbackId":""}  => Attention seul le Master peut démarre la partie
 
-{"type":"FetchLobby","dataType":"Lobby","data":myBase64Data, "callbackId":""} | myBase64Data : {"id":0,"name":"TEST","clients":[{"id":0}],"master":{"id":0},"seats":{"1":{"id":0}}}
-=> le client 0 est le master et est assis sur le siège numéro 1
+{"type":"FetchLobby","dataType":"Lobby","data":myBase64Data, "callbackId":""} | myBase64Data : {"id":0,"name":"TEST","clients":[{"id":1}],"master":{"id":1},"seats":{"1":{"id":0}}}
+
+=> dans cet exemple le client 1 est le master et est assis sur le siège numéro 1
+
+=> NB : Un Client avec un id 0 est toujours un AI, les vrais client ont un id égale ou supérieur à 1
 
 {"type":"Sit","dataType":"int","data":"myInt", "callbackId":""}
 
