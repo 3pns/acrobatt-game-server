@@ -13,6 +13,7 @@ type server struct {
 	lobbyFactory  *LobbyFactory
 	gameFactory   *GameFactory
 	clientFactory *ClientFactory
+  cleanerChannel chan *Client
 }
 
 //thread safe singleton pattern
@@ -28,6 +29,7 @@ func GetServer() *server {
 		instance.lobbyFactory = NewLobbyFactory()
 		instance.gameFactory = NewGameFactory()
 		instance.clientFactory = NewClientFactory()
+    instance.cleanerChannel = make(chan *Client, 100)
 	})
 	return instance
 }
@@ -75,17 +77,26 @@ func (serv *server) RemoveClient(client *Client) {
 }
 
 func (serv *server) CleanClient(client *Client) {
-	for index, _ := range serv.clients {
-		if serv.clients[index] == client {
-			if serv.clients[index].CurrentGame != nil {
-				serv.clients[index].CurrentGame.RemoveClient(client)
-			}
-			if serv.clients[index].CurrentLobby != nil {
-				serv.clients[index].CurrentLobby.RemoveClient(client)
-			}
-			delete(serv.clients, serv.clients[index].Id)
-		}
-	}
+  serv.cleanerChannel <- client
+}
+
+func (serv *server) StartCleaner() {
+  client := &Client{}
+  for {
+    client = <-serv.cleanerChannel
+
+    if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentGame != nil{
+      serv.clients[client.Id].CurrentGame.RemoveClient(client)
+    }
+    if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentLobby != nil {
+      serv.clients[client.Id].CurrentLobby.RemoveClient(client)
+    }
+    if serv.clients[client.Id] == client {
+      delete(serv.clients, client.Id)
+    }
+
+  }
+    // on vérifie à chaque étape
 }
 
 func (serv *server) AddGame(game *Game) {

@@ -33,18 +33,18 @@ func init() {
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
 	//log.Out(os.Stdout)
-	file, err := os.OpenFile("logs/logrus.log", os.O_RDWR|os.O_APPEND, 0666)
+	file, err := os.OpenFile("logs/access.log", os.O_RDWR|os.O_APPEND, 0666)
 	if err == nil {
 		log.SetOutput(file)
 	} else {
-		file, err := os.OpenFile("logs/logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
+		file, err := os.OpenFile("logs/access.log", os.O_CREATE|os.O_WRONLY, 0666)
 		if err == nil {
 			log.SetOutput(file)
 		} else {
 			log.Warn("Failed to log to file, using default stderr")
 		}
 	}
-
+	//TODO ecrire dans autre fichierfile, err := os.OpenFile("logs/error.log", os.O_RDWR|os.O_APPEND, 0666)
 	stdlog.SetOutput(file)
 
 	//saving server pid
@@ -59,6 +59,7 @@ func init() {
 func main() {
 	log.Info("Launching server on port 8081 with PID ", strconv.Itoa(os.Getpid()), "...")
 	go GetServer().Start()
+	go GetServer().StartCleaner()
 
 	var addr = flag.String("addr", ":8081", "http service address")
 	http.HandleFunc("/", handleNewConnection)
@@ -72,6 +73,7 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 		return
 	}
+
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
 	go client.StartWriter()
