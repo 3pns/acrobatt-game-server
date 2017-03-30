@@ -82,6 +82,7 @@ func (lobby *Lobby) Start() {
 			seatNumber := request.DataToInt()
 			if lobby.Seats[seatNumber] == nil {
 				client.UPTrace("->success")
+				lobby.unsit(client)
 				lobby.Seats[seatNumber] = client
 				lobby.broadcast()
 			} else {
