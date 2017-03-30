@@ -195,7 +195,9 @@ func (game *Game) RemoveClient(client *Client) {
 			game.board.Players[index].Concede()
 			delete(game.Clients, index)
 			game.BroadcastConcede(game.board.Players[index])
-			game.board.NextTurn()
+			if game.board.PlayerTurn == game.board.Players[index] {
+				game.board.NextTurn()
+			}
 			game.BroadcastRefresh()
 		}
 	}
