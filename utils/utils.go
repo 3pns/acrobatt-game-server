@@ -3,6 +3,10 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
+	"bytes"
+	"io/ioutil"
+	"log"
+	"net/http"
 )
 
 func SetWhiteBackground() {
@@ -54,4 +58,33 @@ func AllowedCoordinates(x int, y int) bool{
 	} else {
 		return false
 	}
+}
+
+func apiRequest(verb string, url string, data []byte) (*http.Response, map[string]interface{}) {
+	client := &http.Client{}
+	HOST := "https://acrobatt.brixbyte.com/"
+	USERNAME := "golang"
+	PASSWORD := "8b69c71df014c96d08ae23c11a5f63e3e8a38d75a03cf8728e90518a0c7c8be1e203aae99dce16ee929c1efd7c3deb84e708c43676f8e5b3f951ac129d9eae75"
+
+	req, err := http.NewRequest(verb, HOST+url, bytes.NewBuffer(data))
+	req.SetBasicAuth(USERNAME, PASSWORD)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bodyText, err := ioutil.ReadAll(resp.Body)
+	s := string(bodyText)
+	println(resp.StatusCode) //code exact
+	println(resp.Status)     //text du status
+	println(string(bodyText))
+
+	response := make(map[string]interface{})
+
+	err = json.Unmarshal([]byte(s), &response)
+
+	if err != nil {
+		panic(err)
+	}
+	return resp, response
 }

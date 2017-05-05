@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"syscall"
 )
 
 // standard types
@@ -30,9 +31,7 @@ func init() {
 
 	log.SetFormatter(&formatter)
 
-	// Output to stdout instead of the default stderr
-	// Can be any io.Writer, see below for File example
-	//log.Out(os.Stdout)
+	//normal logs
 	file, err := os.OpenFile("logs/access.log", os.O_RDWR|os.O_APPEND, 0666)
 	if err == nil {
 		log.SetOutput(file)
@@ -44,8 +43,20 @@ func init() {
 			log.Warn("Failed to log to file, using default stderr")
 		}
 	}
-	//TODO ecrire dans autre fichierfile, err := os.OpenFile("logs/error.log", os.O_RDWR|os.O_APPEND, 0666)
 	stdlog.SetOutput(file)
+
+	//panics
+	errorFile, err := os.OpenFile("logs/errors.log", os.O_RDWR|os.O_APPEND, 0666)
+	if err == nil {
+		redirectStderr(errorFile)
+	} else {
+		errorFile, err := os.OpenFile("logs/errors.log", os.O_CREATE|os.O_WRONLY, 0666)
+		if err == nil {
+			redirectStderr(errorFile)
+		} else {
+			log.Warn("Failed to log errors to file, using default stderr")
+		}
+	}
 
 	//saving server pid
 	pid, err := os.OpenFile("bin/pid", os.O_CREATE|os.O_WRONLY, 0666)
@@ -77,4 +88,11 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
 	go client.StartWriter()
+}
+
+func redirectStderr(f *os.File) {
+    err := syscall.Dup2(int(f.Fd()), int(os.Stderr.Fd()))
+    if err != nil {
+        log.Fatalf("Failed to redirect stderr to file: %v", err)
+    }
 }
