@@ -157,7 +157,11 @@ func (client *Client) GameId() int {
 }
 
 func (client *Client) Authenticate(auth AuthenticateJson) bool{
-	marshalledAuth, _ := json.Marshal(auth)
+	marshalledAuth, err := json.Marshal(auth)
+    if err != nil {
+        log.Error("%s\n", err)
+        return false
+    }
 	resp, _ := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
 	if resp.StatusCode == 200 {
 		client.Id = auth.PlayerId
