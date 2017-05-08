@@ -16,6 +16,10 @@ type Player struct {
 	startingSquares   []*Square
 	squares           []*Square
 	hasPlaceabePieces bool
+	apiId int
+	Score int `json:"score"`
+	Time int `json:"time"`
+	
 }
 
 func (player *Player) Init() {
@@ -299,3 +303,13 @@ func (player *Player) HasPlaceabePieces(board *Board) bool {
 func (player *Player) Concede() {
 	player.hasPlaceabePieces = false
 }
+
+func (player *Player) SetApiId(apiId int) {
+	player.apiId = apiId
+}
+
+func (player *Player) ApiId() int{
+	return player.apiId
+}
+
+

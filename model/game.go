@@ -3,6 +3,9 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	. "../jsonapi"
+	. "../utils"
+	"strconv"
 )
 
 type Game struct {
@@ -65,6 +68,7 @@ func (game *Game) Start() {
 			game.Clients[index].Ai.Player = game.board.Players[index]
 			go game.Clients[index].Start()
 		} else {
+			game.board.Players[index].SetApiId(game.Clients[index].Id)
 			game.Clients[index].State.Event("join_game")
 		}
 	}
@@ -133,6 +137,7 @@ func (game *Game) Start() {
 		if game.IsGameOver() {
 			client.UPTrace("GameOverDetected")
 			game.BroadcastGameOver()
+			game.PersistGameHistory()
 			game.DisconnectPlayers()
 			GetServer().RemoveGame(game)
 			return
@@ -199,6 +204,30 @@ func (game *Game) RemoveClient(client *Client) {
 				game.board.NextTurn()
 			}
 			game.BroadcastRefresh()
+		}
+	}
+}
+
+func (game *Game) PersistGameHistory() {
+	//TODO : remplacer bankdata par une list de struct representant un tour/ un coup
+	blankdata := map[string]string{"data": "osef", "asd": "osef", "asdssed": "osef", "asded": "osef", "adedsd": "osef", "aeddsd": "osef", "adesd": "osef"}
+	marshalledData, _ := json.Marshal(blankdata)
+
+	//game example
+	gj := GameJson{marshalledData}
+	marshalledGJ, _ := json.Marshal(gj)
+	_, response := ApiRequest("POST", "manager/game", marshalledGJ)
+
+	game_id, _ := strconv.Atoi(fmt.Sprintf("%v", response["id"]))
+
+	//history example
+	//TODO calculer le vrai tmps et score de chaque joueur
+	for index := range game.board.Players {
+		player := game.board.Players[index]
+		if player.ApiId() != -1 {
+			history := HistoryJson{game_id, player.ApiId(), index, player.Score, player.Time, 7}
+			marshalledHistory, _ := json.Marshal(history)
+			ApiRequest("POST", "manager/history", marshalledHistory)
 		}
 	}
 }

@@ -130,28 +130,28 @@ func (board *Board) InitPlayers() {
 	copy(player0Pieces, board.Pieces)
 
 	var player0StartSquares = []*Square{board.Squares[0][0]}
-	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartSquares, []*Square{}, true}
+	player0 := Player{0, "Joueur", "blue", player0Pieces, player0StartSquares, []*Square{}, true, -1, 0, 0}
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))
 	copy(player1Pieces, board.Pieces)
 
 	var player1StartSquares = []*Square{board.Squares[0][19]}
-	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartSquares, []*Square{}, true}
+	player1 := Player{1, "AI-1", "green", player1Pieces, player1StartSquares, []*Square{}, true, -1, 0, 0}
 
 	//Joueur 2
 	var player2Pieces = make([]Piece, len(board.Pieces))
 	copy(player2Pieces, board.Pieces)
 
 	var player2StartSquares = []*Square{board.Squares[19][0]}
-	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartSquares, []*Square{}, true}
+	player2 := Player{2, "AI-2", "yellow", player2Pieces, player2StartSquares, []*Square{}, true, -1, 0, 0}
 
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
 
 	var player3StartSquares = []*Square{board.Squares[19][19]}
-	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartSquares, []*Square{}, true}
+	player3 := Player{3, "AI-3", "red", player3Pieces, player3StartSquares, []*Square{}, true, -1, 0, 0}
 
 	player0.Init()
 	player1.Init()
