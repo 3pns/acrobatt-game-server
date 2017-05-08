@@ -216,7 +216,7 @@ func (game *Game) PersistGameHistory() {
 	//game example
 	gj := GameJson{marshalledData}
 	marshalledGJ, _ := json.Marshal(gj)
-	_, response := ApiRequest("POST", "manager/game", marshalledGJ)
+	_, response, _ := ApiRequest("POST", "manager/game", marshalledGJ)
 
 	game_id, _ := strconv.Atoi(fmt.Sprintf("%v", response["id"]))
 

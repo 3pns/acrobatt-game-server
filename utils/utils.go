@@ -60,7 +60,7 @@ func AllowedCoordinates(x int, y int) bool{
 	}
 }
 
-func ApiRequest(verb string, url string, data []byte) (*http.Response, map[string]interface{}) {
+func ApiRequest(verb string, url string, data []byte) (*http.Response, map[string]interface{}, error) {
 	client := &http.Client{}
 	HOST := "https://acrobatt.brixbyte.com/"
 	USERNAME := "golang"
@@ -82,7 +82,10 @@ func ApiRequest(verb string, url string, data []byte) (*http.Response, map[strin
 	err = json.Unmarshal([]byte(s), &response)
 
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return resp, response, err
+	} else {
+		return resp, response, nil
 	}
-	return resp, response
+	
 }

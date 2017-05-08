@@ -162,7 +162,10 @@ func (client *Client) Authenticate(auth AuthenticateJson) bool{
         log.Error("%s\n", err)
         return false
     }
-	resp, _ := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
+	resp, _, err := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
+    if err != nil {
+        return false
+    }
 	if resp.StatusCode == 200 {
 		client.Id = auth.PlayerId
 		client.State.Event("authenticate")
