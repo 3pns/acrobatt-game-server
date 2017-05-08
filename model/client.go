@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	"strconv"
+	. "../jsonapi"
+	. "../utils"
 )
 
 type Client struct {
@@ -33,8 +35,8 @@ func NewClientFactory() *ClientFactory {
 
 func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 	var client Client
-	client.Id = factory.id
-	factory.id++
+	client.Id = -1//factory.id
+	//factory.id++
 	client.Ai = nil
 	client.Conn = conn
 	client.token = ""
@@ -154,15 +156,17 @@ func (client *Client) GameId() int {
 	return -1
 }
 
-func (client *Client) Authenticate(token string) bool {
-	if token == "" {
-		client.UPTrace(token)
-		return false
-	} else {
-		client.token = token
+func (client *Client) Authenticate(auth AuthenticateJson) bool{
+	marshalledAuth, _ := json.Marshal(auth)
+	resp, _ := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
+	if resp.StatusCode == 200 {
+		client.Id = auth.PlayerId
 		client.State.Event("authenticate")
 		client.UPTrace("success")
 		return true
+	} else {
+		client.UPTrace("failure:"+strconv.Itoa(auth.PlayerId) + ":" + auth.AccessToken + ":" + auth.Client)
+		return false
 	}
 }
 

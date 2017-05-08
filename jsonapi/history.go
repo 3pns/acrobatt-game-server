@@ -1,3 +1,5 @@
+package jsonapi
+
 type HistoryJson struct {
   GameId   int `json:"game_id"`
   PlayerId int `json:"player_id"`

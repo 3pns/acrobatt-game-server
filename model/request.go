@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"strconv"
+	. "../jsonapi"
 )
 
 type Request struct {
@@ -157,7 +158,9 @@ func (request *Request) Dispatch() {
 		client.State.Event("create_demo")
 	} else if client.State.Current() == "start" && request.Type == "Authenticate" {
 		client.UpdateTrace("->Authenticating->")
-		client.Authenticate(request.DataToString())
+		auth := AuthenticateJson{}
+		json.Unmarshal(request.Data, &auth)
+		client.Authenticate(auth)
 	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
 		client.UpdateTrace("->toCurrentLobbyRequestChannel->")
 		client.CurrentLobby.RequestChannel <- *request

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"bytes"
 	"io/ioutil"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 )
 
@@ -60,7 +60,7 @@ func AllowedCoordinates(x int, y int) bool{
 	}
 }
 
-func apiRequest(verb string, url string, data []byte) (*http.Response, map[string]interface{}) {
+func ApiRequest(verb string, url string, data []byte) (*http.Response, map[string]interface{}) {
 	client := &http.Client{}
 	HOST := "https://acrobatt.brixbyte.com/"
 	USERNAME := "golang"
@@ -75,9 +75,7 @@ func apiRequest(verb string, url string, data []byte) (*http.Response, map[strin
 	}
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	s := string(bodyText)
-	println(resp.StatusCode) //code exact
-	println(resp.Status)     //text du status
-	println(string(bodyText))
+	log.Info(resp.Status + ": " + s)
 
 	response := make(map[string]interface{})
 

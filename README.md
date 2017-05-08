@@ -3,6 +3,10 @@
 Attention, les données contenue dans data doivent être convertis en base64 et mis en tant que string en tant que value pour data
 
 Si le client envois un callbackId lors d'une requête, il sera aussi présent dans la réponse. Les messages Broadcasté par le serveur comme les messages de type Refresh n'ont pas de callbackId
+
+### Depuis l'état game
+
+Attention, Si vous êtes en mode demo, à la fin d'une partie vous serez renvoyé à l'état start, si vous êtes authentifié et avez démarré la game depuis un lobby vous serez renvoyé dans l'état home.
 ### Fetch la board
 #### requête :
 {"type":"Fetch","dataType":"","data":null, "callbackId":""}
@@ -45,9 +49,9 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 ### Depuis l'état start
 {"type":"CreateDemo","dataType":"","data":null, "callbackId":""}
 
-{"type":"Authenticate","dataType":"string","data":"myBase64token", "callbackId":""}
+{"type":"Authenticate","dataType":"string","data":"myBase64Data", "callbackId":""}
 
-myBase64token => "MyToken"
+myBase64token => {"player_id": 123, "access-token": "myAccessToken", "client": "MyClientToken"}
 
 ### Depuis l'état home
 {"type":"CreateLobby","dataType":"","data":null, "callbackId":""}
@@ -85,6 +89,4 @@ myInt => "myInt" | => 0 : "MA==", 1 : "MQ==", 2 : "Mg==", 3 : "Mw=="
 
 {"type":"Start","dataType":"","data":null, "callbackId":""}
 
-### Depuis l'état game
 
-Si vous êtes en mode demo vous serez renvoyé à l'état start, si vous êtes authentifié et avez démarré la game depuis un lobby vous serez renvoyé dans l'état home.
