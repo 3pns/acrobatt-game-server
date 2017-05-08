@@ -139,10 +139,9 @@ func (client *Client) IsAi() bool {
 }
 
 func (client *Client) IsAuthenticated() bool {
-	if client.token == "" {
+	if client.Id == -1 {
 		return false
 	} else {
-		//TODO check token validity
 		return true
 	}
 }
