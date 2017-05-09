@@ -54,6 +54,8 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 myBase64token => {"player_id": 123, "access-token": "myAccessToken", "client": "MyClientToken"}
 
 ### Depuis l'état home
+{"type":"Disconnect","dataType":"","data":"", "callbackId":""}
+
 {"type":"CreateLobby","dataType":"","data":null, "callbackId":""}
 
 {"type":"JoinLobby","dataType":"int","data":"myInt", "callbackId":""}

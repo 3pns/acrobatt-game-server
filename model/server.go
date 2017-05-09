@@ -65,6 +65,8 @@ func (serv *server) Process(request Request) {
 		if serv.lobbies[index] != nil {
 			serv.lobbies[index].Join(client)
 		}
+	} else if request.Type == "Disconnect" {
+		client.State.Event("disconnect")
 	}
 }
 

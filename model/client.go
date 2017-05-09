@@ -48,6 +48,7 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			{Name: "create_demo", Src: []string{"start"}, Dst: "game"},
 			{Name: "quit_demo", Src: []string{"game"}, Dst: "start"},
 			{Name: "authenticate", Src: []string{"start"}, Dst: "home"},
+			{Name: "disconnect", Src: []string{"home"}, Dst: "start"},
 			{Name: "join_lobby", Src: []string{"home"}, Dst: "lobby"},
 			{Name: "create_lobby", Src: []string{"home"}, Dst: "lobby"},
 			{Name: "quit_lobby", Src: []string{"lobby"}, Dst: "home"},
@@ -63,6 +64,11 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			"authenticate": func(e *fsm.Event) {
 				client.UpdateTrace("authenticating : " + e.FSM.Current())
 				GetServer().AddClient(&client)
+			},
+			"disconnect": func(e *fsm.Event) {
+				client.UpdateTrace("disconnecting : " + e.FSM.Current())
+				client.Id = -1
+				GetServer().RemoveClient(&client)
 			},
 			"join_lobby": func(e *fsm.Event) { client.UpdateTrace("joining lobby : " + e.FSM.Current()) },
 			"create_lobby": func(e *fsm.Event) {
