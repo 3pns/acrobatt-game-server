@@ -84,6 +84,16 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
+	clients, ok := t.(ClientSlice)
+	if ok {
+		b, err := json.Marshal(clients)
+		if err != nil {
+			log.Warn(err)
+		}
+		request.DataType = "ListClient"
+		request.Data = b
+		return
+	}
 	lobby, ok := t.(Lobby)
 	if ok {
 		b, err := json.Marshal(lobby)

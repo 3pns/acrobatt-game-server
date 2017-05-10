@@ -23,6 +23,10 @@ type Client struct {
 	trace          string          `json:"-"`
 }
 
+type ClientSlice struct {
+	Clients []*Client `json:"clients"`
+}
+
 type ClientFactory struct {
 	id int
 }
