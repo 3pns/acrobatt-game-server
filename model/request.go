@@ -146,7 +146,7 @@ func (request *Request) Dispatch() {
 		req.MarshalData(*request.Client)
 		client.UpdateTrace("->")
 		client.RequestChannel <- req
-	} else if client.State.Current() == "game" && client.CurrentGame != nil {
+ 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
 		client.UpdateTrace("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {

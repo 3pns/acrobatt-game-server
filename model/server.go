@@ -4,6 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"sync"
 	"time"
+	"encoding/json"
 )
 
 type server struct {
@@ -60,6 +61,18 @@ func (serv *server) Process(request Request) {
 
 	if request.Type == "CreateLobby" {
 		client.State.Event("create_lobby")
+	} else if request.Type == "Invitation" {
+		data := map[string]Client{}
+		if err := json.Unmarshal(request.Data, &data); err != nil {
+		    log.Error(err)
+		    return
+		}
+		if serv.clients[data["recipient"].Id] != nil {
+			serv.clients[data["recipient"].Id].RequestChannel <- request
+		} else {
+			request.Type = "InvitationFailed"
+			client.RequestChannel <- request
+		}
 	} else if request.Type == "JoinLobby" {
 		index := request.DataToInt()
 		if serv.lobbies[index] != nil {
