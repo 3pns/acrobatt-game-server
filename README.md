@@ -70,7 +70,7 @@ myBase64token => {"player_id": 123, "access-token": "myAccessToken", "client": "
 
 {"type":"Invitation","dataType":"","data":"myBase64Data", "callbackId":""} => demande et reception d'invitation
 
-myBase64Data => { "sender" : {"id": 1}, "recipient": {"id": 2} }
+myBase64Data => { "sender" : {"id": 1}, "recipient": {"id": 2}, "lobby": {"id": 3} }
 
 {"type":"InvitationFailed","dataType":"","data":"myBase64Data", "callbackId":""}
 

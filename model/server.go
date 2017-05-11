@@ -153,7 +153,7 @@ func (serv *server) broadcastGames() {
 func (serv *server) broadcastHomeClients() {
 	request := NewRequest("Broadcast")
 	clientsSlice := ClientSlice{}
-	clientsSlice.Clients = serv.homeClientsSlice()
+	clientsSlice.Clients = serv.invitableClientsSlice()
 	log.Info(clientsSlice)
 	request.MarshalData(clientsSlice)
 	serv.broadcastRequest(&request)
@@ -194,10 +194,10 @@ func (serv *server) gamesSlice() []*Game {
 	return gamesSlices
 }
 
-func (serv *server) homeClientsSlice() []*Client {
+func (serv *server) invitableClientsSlice() []*Client {
 	clientsSlices := []*Client{}
 	for _, client := range serv.clients {
-		if client.State.Current() == "home" {
+		if client.State.Current() == "home" || client.State.Current() == "lobby" {
 			clientsSlices = append(clientsSlices, client)
 		}
 	}
