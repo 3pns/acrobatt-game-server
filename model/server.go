@@ -180,7 +180,7 @@ func (serv *server) broadcastRequest(request *Request) {
 
 func (serv *server) broadcastInvitableClientRequest(request *Request) {
 	for index, _ := range serv.clients {
-		if serv.clients[index].State.Current() == "home" || client.State.Current() == "lobby" {
+		if serv.clients[index].State.Current() == "home" || serv.clients[index].State.Current() == "lobby" {
 			serv.clients[index].RequestChannel <- *request
 		}
 	}
