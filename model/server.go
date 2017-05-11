@@ -53,7 +53,7 @@ func (serv *server) Start() {
 		serv.sanetizeClients()
 		serv.broadcastLobbies()
 		serv.broadcastGames()
-		serv.broadcastHomeClients()
+		serv.broadcastInvitableClientRequest()
 	}
 }
 
@@ -173,6 +173,14 @@ func (serv *server) sanetizeClients() {
 func (serv *server) broadcastRequest(request *Request) {
 	for index, _ := range serv.clients {
 		if serv.clients[index].State.Current() == "home" {
+			serv.clients[index].RequestChannel <- *request
+		}
+	}
+}
+
+func (serv *server) broadcastInvitableClientRequest(request *Request) {
+	for index, _ := range serv.clients {
+		if serv.clients[index].State.Current() == "home" || client.State.Current() == "lobby" {
 			serv.clients[index].RequestChannel <- *request
 		}
 	}
