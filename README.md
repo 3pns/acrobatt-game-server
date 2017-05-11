@@ -66,6 +66,8 @@ myBase64token => {"player_id": 123, "access-token": "myAccessToken", "client": "
 
 {"type":"Broadcast","dataType":"ListGame","data":"myBase64Data", "callbackId":""}
 
+{"type":"Broadcast","dataType":"ListClient","data":"myBase64Data", "callbackId":""}
+
 {"type":"Invitation","dataType":"","data":"myBase64Data", "callbackId":""} => demande et reception d'invitation
 
 myBase64Data => { "sender" : {"id": 1}, "recipient": {"id": 2} }
