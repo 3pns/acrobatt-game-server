@@ -53,6 +53,7 @@ func (serv *server) Start() {
 		serv.sanetizeClients()
 		serv.broadcastLobbies()
 		serv.broadcastGames()
+		serv.broadcastHomeClients()
 	}
 }
 
