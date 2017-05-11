@@ -53,7 +53,7 @@ func (serv *server) Start() {
 		serv.sanetizeClients()
 		serv.broadcastLobbies()
 		serv.broadcastGames()
-		serv.broadcastInvitableClientRequest()
+		serv.broadcastHomeClients()
 	}
 }
 
@@ -156,7 +156,7 @@ func (serv *server) broadcastHomeClients() {
 	clientsSlice.Clients = serv.invitableClientsSlice()
 	log.Info(clientsSlice)
 	request.MarshalData(clientsSlice)
-	serv.broadcastRequest(&request)
+	serv.broadcastInvitableClientRequest(&request)
 }
 
 func (serv *server) sanetizeClients() {
