@@ -1,10 +1,10 @@
 package model
 
 import (
+	. "../jsonapi"
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"strconv"
-	. "../jsonapi"
 )
 
 type Request struct {
@@ -106,12 +106,12 @@ func (request *Request) MarshalData(t interface{}) {
 	}
 	client, ok := t.(Client)
 	if ok {
-		client.myState = client.State.Current()
+		client.MyState = client.State.Current()
 		if client.CurrentLobby != nil {
-			client.myLobbyId = client.CurrentLobby.Id
+			client.MyLobbyId = client.CurrentLobby.Id
 		}
 		if client.CurrentGame != nil {
-			client.myGameId = client.CurrentGame.Id
+			client.MyGameId = client.CurrentGame.Id
 		}
 		b, err := json.Marshal(client)
 		if err != nil {
@@ -163,7 +163,7 @@ func (request *Request) Dispatch() {
 		req.MarshalData(*request.Client)
 		client.UpdateTrace("->")
 		client.RequestChannel <- req
- 	} else if client.State.Current() == "game" && client.CurrentGame != nil {
+	} else if client.State.Current() == "game" && client.CurrentGame != nil {
 		client.UpdateTrace("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {

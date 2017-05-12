@@ -1,18 +1,21 @@
 package model
 
 import (
+	. "../jsonapi"
+	. "../utils"
 	"bytes"
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	"strconv"
-	. "../jsonapi"
-	. "../utils"
 )
 
 type Client struct {
 	Id             int             `json:"id"`
+	MyState        string          `json:"state"`
+	MyLobbyId      int             `json:"lobby_id"`
+	MyGameId       int             `json:"game_id"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
 	State          *fsm.FSM        `json:"-"`
@@ -21,9 +24,6 @@ type Client struct {
 	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
 	trace          string          `json:"-"`
-	myState          string        `json:"state"`
-	myLobbyId         int        `json:"lobby_id"`
-	myGameId         int        `json:"game_id"`
 }
 
 type ClientSlice struct {
@@ -42,7 +42,7 @@ func NewClientFactory() *ClientFactory {
 
 func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 	var client Client
-	client.Id = -1//factory.id
+	client.Id = -1 //factory.id
 	//factory.id++
 	client.Ai = nil
 	client.Conn = conn
@@ -168,23 +168,23 @@ func (client *Client) GameId() int {
 	return -1
 }
 
-func (client *Client) Authenticate(auth AuthenticateJson) bool{
+func (client *Client) Authenticate(auth AuthenticateJson) bool {
 	marshalledAuth, err := json.Marshal(auth)
-    if err != nil {
-        log.Error("%s\n", err)
-        return false
-    }
+	if err != nil {
+		log.Error("%s\n", err)
+		return false
+	}
 	resp, _, err := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
-    if err != nil {
-        return false
-    }
+	if err != nil {
+		return false
+	}
 	if resp.StatusCode == 200 {
 		client.Id = auth.PlayerId
 		client.State.Event("authenticate")
 		client.UPTrace("success")
 		return true
 	} else {
-		client.UPTrace("failure:"+strconv.Itoa(auth.PlayerId) + ":" + auth.AccessToken + ":" + auth.Client)
+		client.UPTrace("failure:" + strconv.Itoa(auth.PlayerId) + ":" + auth.AccessToken + ":" + auth.Client)
 		return false
 	}
 }

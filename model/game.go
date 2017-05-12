@@ -1,10 +1,10 @@
 package model
 
 import (
-	"encoding/json"
-	"fmt"
 	. "../jsonapi"
 	. "../utils"
+	"encoding/json"
+	"fmt"
 	"strconv"
 )
 
@@ -21,7 +21,7 @@ type GameFactory struct {
 
 func NewGameFactory() *GameFactory {
 	var factory = new(GameFactory)
-	factory.Id = 0
+	factory.Id = 1
 	return factory
 }
 

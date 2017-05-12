@@ -21,7 +21,7 @@ type LobbyFactory struct {
 
 func NewLobbyFactory() *LobbyFactory {
 	var factory = new(LobbyFactory)
-	factory.Id = 0
+	factory.Id = 1
 	return factory
 }
 
@@ -56,7 +56,7 @@ func (lobby *Lobby) Start() {
 		request = <-lobby.RequestChannel
 		var client = request.Client
 		if client != nil {
-			client.UpdateTrace("Lobby["+ string(lobby.Id)+ "]->")
+			client.UpdateTrace("Lobby[" + string(lobby.Id) + "]->")
 		}
 		if request.Type == "Start" && (client == lobby.Master) {
 			if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {

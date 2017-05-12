@@ -1,20 +1,20 @@
 package model
 
 import (
+	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"sync"
 	"time"
-	"encoding/json"
 )
 
 type server struct {
-	clients       map[int]*Client
-	currentGames  map[int]*Game
-	lobbies       map[int]*Lobby
-	lobbyFactory  *LobbyFactory
-	gameFactory   *GameFactory
-	clientFactory *ClientFactory
-  cleanerChannel chan *Client
+	clients        map[int]*Client
+	currentGames   map[int]*Game
+	lobbies        map[int]*Lobby
+	lobbyFactory   *LobbyFactory
+	gameFactory    *GameFactory
+	clientFactory  *ClientFactory
+	cleanerChannel chan *Client
 }
 
 //thread safe singleton pattern
@@ -30,7 +30,7 @@ func GetServer() *server {
 		instance.lobbyFactory = NewLobbyFactory()
 		instance.gameFactory = NewGameFactory()
 		instance.clientFactory = NewClientFactory()
-    instance.cleanerChannel = make(chan *Client, 100)
+		instance.cleanerChannel = make(chan *Client, 100)
 	})
 	return instance
 }
@@ -65,8 +65,8 @@ func (serv *server) Process(request Request) {
 	} else if request.Type == "Invitation" {
 		data := map[string]Client{}
 		if err := json.Unmarshal(request.Data, &data); err != nil {
-		    log.Error(err)
-		    return
+			log.Error(err)
+			return
 		}
 		if serv.clients[data["recipient"].Id] != nil {
 			serv.clients[data["recipient"].Id].RequestChannel <- request
@@ -93,26 +93,26 @@ func (serv *server) RemoveClient(client *Client) {
 }
 
 func (serv *server) CleanClient(client *Client) {
-  serv.cleanerChannel <- client
+	serv.cleanerChannel <- client
 }
 
 func (serv *server) StartCleaner() {
-  client := &Client{}
-  for {
-    client = <-serv.cleanerChannel
+	client := &Client{}
+	for {
+		client = <-serv.cleanerChannel
 
-    if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentGame != nil{
-      serv.clients[client.Id].CurrentGame.RemoveClient(client)
-    }
-    if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentLobby != nil {
-      serv.clients[client.Id].CurrentLobby.RemoveClient(client)
-    }
-    if serv.clients[client.Id] == client {
-      delete(serv.clients, client.Id)
-    }
+		if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentGame != nil {
+			serv.clients[client.Id].CurrentGame.RemoveClient(client)
+		}
+		if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentLobby != nil {
+			serv.clients[client.Id].CurrentLobby.RemoveClient(client)
+		}
+		if serv.clients[client.Id] == client {
+			delete(serv.clients, client.Id)
+		}
 
-  }
-    // on vérifie à chaque étape
+	}
+	// on vérifie à chaque étape
 }
 
 func (serv *server) AddGame(game *Game) {
