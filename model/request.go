@@ -106,6 +106,13 @@ func (request *Request) MarshalData(t interface{}) {
 	}
 	client, ok := t.(Client)
 	if ok {
+		client.myState = client.State.Current()
+		if client.CurrentLobby != nil {
+			client.myLobbyId = client.CurrentLobby.Id
+		}
+		if client.CurrentGame != nil {
+			client.myGameId = client.CurrentGame.Id
+		}
 		b, err := json.Marshal(client)
 		if err != nil {
 			log.Warn(err)

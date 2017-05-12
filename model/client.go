@@ -15,12 +15,15 @@ type Client struct {
 	Id             int             `json:"id"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
-	State          *fsm.FSM        `json:"state"`
+	State          *fsm.FSM        `json:"-"`
 	Ai             *AI             `json:"-"`
-	CurrentGame    *Game           `json:"currentGame"`
-	CurrentLobby   *Lobby          `json:"currentLobby"`
+	CurrentGame    *Game           `json:"-"`
+	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
 	trace          string          `json:"-"`
+	myState          string        `json:"state"`
+	myLobbyId         int        `json:"lobby_id"`
+	myGameId         int        `json:"game_id"`
 }
 
 type ClientSlice struct {
