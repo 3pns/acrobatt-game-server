@@ -62,7 +62,7 @@ func AllowedCoordinates(x int, y int) bool{
 
 func ApiRequest(verb string, url string, data []byte) (*http.Response, map[string]interface{}, error) {
 	client := &http.Client{}
-	HOST := "https://acrobatt.brixbyte.com/"
+	HOST := "https://acrobatt.brixbyte.com/api/"
 	USERNAME := "golang"
 	PASSWORD := "8b69c71df014c96d08ae23c11a5f63e3e8a38d75a03cf8728e90518a0c7c8be1e203aae99dce16ee929c1efd7c3deb84e708c43676f8e5b3f951ac129d9eae75"
 
