@@ -16,7 +16,7 @@ type Player struct {
 	startingSquares   []*Square
 	squares           []*Square
 	hasPlaceabePieces bool
-	apiId             int
+	ClientId             int `json:"client_id"`
 	Score             int `json:"score"`
 	Time              int `json:"time"`
 }
@@ -304,9 +304,9 @@ func (player *Player) Concede() {
 }
 
 func (player *Player) SetApiId(apiId int) {
-	player.apiId = apiId
+	player.ClientId = apiId
 }
 
 func (player *Player) ApiId() int {
-	return player.apiId
+	return player.ClientId
 }
