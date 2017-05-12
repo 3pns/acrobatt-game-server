@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	"strconv"
+	"fmt"
 )
 
 type Client struct {
@@ -16,6 +17,7 @@ type Client struct {
 	MyState        string          `json:"state"`
 	MyLobbyId      int             `json:"lobby_id"`
 	MyGameId       int             `json:"game_id"`
+	Pseudo string `json:"pseudo"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
 	State          *fsm.FSM        `json:"-"`
@@ -174,12 +176,14 @@ func (client *Client) Authenticate(auth AuthenticateJson) bool {
 		log.Error("%s\n", err)
 		return false
 	}
-	resp, _, err := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
+	resp, response, err := ApiRequest("POST", "manager/authenticate_player", marshalledAuth)
 	if err != nil {
 		return false
 	}
+
 	if resp.StatusCode == 200 {
 		client.Id = auth.PlayerId
+		client.Pseudo = fmt.Sprintf("%s", response["pseudo"])
 		client.State.Event("authenticate")
 		client.UPTrace("success")
 		return true
