@@ -31,3 +31,4 @@ bin/
 log.txt
 app
 logs/
+bin_backup/
