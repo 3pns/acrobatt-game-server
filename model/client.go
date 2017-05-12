@@ -15,10 +15,10 @@ type Client struct {
 	Id             int             `json:"id"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
-	State          *fsm.FSM        `json:"-"`
+	State          *fsm.FSM        `json:"state"`
 	Ai             *AI             `json:"-"`
-	CurrentGame    *Game           `json:"-"`
-	CurrentLobby   *Lobby          `json:"-"`
+	CurrentGame    *Game           `json:"currentGame"`
+	CurrentLobby   *Lobby          `json:"currentLobby"`
 	RequestChannel chan Request    `json:"-"`
 	trace          string          `json:"-"`
 }
