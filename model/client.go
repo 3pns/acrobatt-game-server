@@ -5,11 +5,11 @@ import (
 	. "../utils"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	"strconv"
-	"fmt"
 )
 
 type Client struct {
@@ -17,7 +17,7 @@ type Client struct {
 	MyState        string          `json:"state"`
 	MyLobbyId      int             `json:"lobby_id"`
 	MyGameId       int             `json:"game_id"`
-	Pseudo string `json:"pseudo"`
+	Pseudo         string          `json:"pseudo"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
 	State          *fsm.FSM        `json:"-"`
@@ -204,7 +204,7 @@ func (client *Client) Start() {
 		mt, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Warn("read: ", err)
-			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de raison
+			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
 			return
 		}
 		if mt == websocket.TextMessage {

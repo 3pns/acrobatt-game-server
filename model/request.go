@@ -13,22 +13,15 @@ type Request struct {
 	Data       []byte  `json:"data"`
 	CallbackId string  `json:"callbackId"`
 	Client     *Client `json:"-"`
-	Kill       bool    `json:"-"`
 }
 
 func NewRequest(requestType string) Request {
-	var req = Request{requestType, "", nil, "", nil, false}
+	var req = Request{requestType, "", nil, "", nil}
 	return req
 }
 
 func NewRequestWithCallbackId(requestType string, callbackId string) Request {
-	var req = Request{requestType, "", nil, callbackId, nil, false}
-	return req
-}
-
-//request used to kill goroutines
-func NewKillRequest() Request {
-	var req = Request{"KILL", "KILL", nil, "666", nil, true}
+	var req = Request{requestType, "", nil, callbackId, nil}
 	return req
 }
 

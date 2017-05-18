@@ -16,7 +16,7 @@ type Player struct {
 	startingSquares   []*Square
 	squares           []*Square
 	hasPlaceabePieces bool
-	ClientId             int `json:"client_id"`
+	ClientId          int `json:"client_id"`
 	Score             int `json:"score"`
 	Time              int `json:"time"`
 }
