@@ -123,18 +123,13 @@ func (lobby *Lobby) Start() {
 			} else if request.Type == "Quit" {
 				client.UpdateTrace("Quit")
 				lobby.unsit(client)
-				lobby.RemoveClient(client)
 				client.State.Event("quit_lobby")
-				if len(lobby.Clients) == 0 {
-					client.UPTrace("->EmptyLobby->KILL")
-					GetServer().RemoveLobby(lobby)
-					return
+				lobby.RemoveClient(client)
 				} else {
 					client.PrintTrace()
 				}
 			}
 		} else {
-
 			log.Info("Closing Lobby[", string(lobby.Id), "] RequestChannel")
 			lobby.done <- true
 			return
