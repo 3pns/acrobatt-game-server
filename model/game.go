@@ -116,11 +116,13 @@ func (game *Game) Start() {
 			var req = NewRequestWithCallbackId("FetchPlayer", request.CallbackId)
 			req.MarshalData(*player)
 			client.RequestChannel <- req
-		} else if request.Type == "Concede" && isPlayerTurn {
+		} else if request.Type == "Concede" {
 			client.UPTrace("Concede")
 			player.Concede()
 			game.BroadcastConcede(player)
-			game.board.NextTurn()
+			if isPlayerTurn {
+				game.board.NextTurn()
+			}
 			game.BroadcastRefresh()
 		} else if request.Type == "Quit" && !player.HasPlaceabePieces(game.board) {
 			client.UpdateTrace("Quit->")
