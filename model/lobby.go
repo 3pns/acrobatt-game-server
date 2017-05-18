@@ -125,14 +125,13 @@ func (lobby *Lobby) Start() {
 				lobby.unsit(client)
 				client.State.Event("quit_lobby")
 				lobby.RemoveClient(client)
-				} else {
+			} else {
 					client.PrintTrace()
-				}
 			}
 		} else {
-			log.Info("Closing Lobby[", string(lobby.Id), "] RequestChannel")
-			lobby.done <- true
-			return
+				log.Info("Closing Lobby[", string(lobby.Id), "] RequestChannel")
+				lobby.done <- true
+				return
 		}
 	}
 }
