@@ -148,6 +148,7 @@ func (lobby *Lobby) Join(client *Client) {
 	lobby.Clients = append(lobby.Clients, client)
 	client.CurrentLobby = lobby
 	client.State.Event("join_lobby")
+	lobby.broadcast()
 }
 
 func (lobby *Lobby) unsit(client *Client) bool {
