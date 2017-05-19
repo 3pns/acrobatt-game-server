@@ -2,6 +2,7 @@ package model
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"encoding/json"
 )
 
 type Lobby struct {
@@ -79,7 +80,23 @@ func (lobby *Lobby) Start() {
 				var req = NewRequestWithCallbackId("FetchLobby", request.CallbackId)
 				req.MarshalData(*lobby)
 				client.RequestChannel <- req
-			} else if request.Type == "Sit" {
+			} else if request.Type == "Invitation" {
+		client.UpdateTrace("Invitation->")
+		data := map[string]Client{}
+		if err := json.Unmarshal(request.Data, &data); err != nil {
+			client.UPTrace("UnmarshallError")
+			log.Error(err)
+			return
+		}
+		if GetServer().clients[data["recipient"].Id] != nil {
+			client.UPTrace("Sent")
+			GetServer().clients[data["recipient"].Id].RequestChannel <- request
+		} else {
+			client.UpdateTrace("InvitationFailed->")
+			request.Type = "InvitationFailed"
+			client.RequestChannel <- request
+		}
+	}  else if request.Type == "Sit" {
 				client.UpdateTrace("Sit")
 				seatNumber := request.DataToInt()
 				if lobby.Seats[seatNumber] == nil {

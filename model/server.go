@@ -1,7 +1,7 @@
 package model
 
 import (
-	"encoding/json"
+	_ "encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"sync"
 	"time"
@@ -62,22 +62,6 @@ func (serv *server) Process(request Request) {
 
 	if request.Type == "CreateLobby" {
 		client.State.Event("create_lobby")
-	} else if request.Type == "Invitation" {
-		client.UpdateTrace("Invitation->")
-		data := map[string]Client{}
-		if err := json.Unmarshal(request.Data, &data); err != nil {
-			client.UPTrace("UnmarshallError")
-			log.Error(err)
-			return
-		}
-		if serv.clients[data["recipient"].Id] != nil {
-			client.UPTrace("Sent")
-			serv.clients[data["recipient"].Id].RequestChannel <- request
-		} else {
-			client.UpdateTrace("InvitationFailed->")
-			request.Type = "InvitationFailed"
-			client.RequestChannel <- request
-		}
 	} else if request.Type == "JoinLobby" {
 		index := request.DataToInt()
 		if serv.lobbies[index] != nil {
