@@ -18,6 +18,8 @@ type Client struct {
 	MyLobbyId      int             `json:"lobby_id"`
 	MyGameId       int             `json:"game_id"`
 	Pseudo         string          `json:"pseudo"`
+	Ping					string `json:"ping"`
+	retry int `json:"-"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
 	State          *fsm.FSM        `json:"-"`
