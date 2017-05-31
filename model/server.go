@@ -50,7 +50,7 @@ func (serv *server) GetClientFactory() *ClientFactory {
 func (serv *server) Start() {
 	for {
 		time.Sleep(5 * time.Second)
-		serv.sanetizeClients()
+		//serv.sanetizeClients()
 		serv.broadcastLobbies()
 		serv.broadcastGames()
 		serv.broadcastHomeClients()

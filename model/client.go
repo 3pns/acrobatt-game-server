@@ -19,7 +19,7 @@ type Client struct {
 	MyLobbyId      int             `json:"lobby_id"`
 	MyGameId       int             `json:"game_id"`
 	Pseudo         string          `json:"pseudo"`
-	Ping           string          `json:"ping"`
+	Ping           int64         `json:"ping"`
 	retry          int             `json:"-"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
@@ -205,9 +205,6 @@ func (client *Client) Start() {
 	defer client.Conn.Close()
 	for {
 		mt, message, err := conn.ReadMessage()
-		log.Info(mt)
-		log.Info(message)
-		log.Info(err)
 		if err != nil {
 			log.Warn("read: ", err)
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
@@ -219,12 +216,39 @@ func (client *Client) Start() {
 			request.Client = client
 			client.StartTrace()
 			request.Dispatch()
+		} else if mt == websocket.PongMessage {
+			log.Info("pong detected !!!")
+		} else if mt == websocket.PongMessage {
+			log.Info("pong detected !!!")
 		}
 	}
 }
 
-func (client *Client) StartWriter(pingChan chan int) {
+func (client *Client) StartWriter() {
 	request := Request{}
+	retryLimit := 10
+	pingInterval := time.Second * 1
+	c := time.Tick(pingInterval)
+	var sendTime time.Time
+
+	//ping the client
+	pingChan := make(chan int)
+	go func() {
+		for _ = range c {
+			pingChan <- 1
+			if client.retry > retryLimit{
+				return
+			}
+		}
+	}()
+
+	client.Conn.SetPongHandler(func(test string) error {
+		recieveTime := time.Now().Add(time.Second * 20)
+		//log.Info("ms:", int64(recieveTime.Sub(sendTime)/time.Millisecond)) // ms: 100
+		client.Ping = int64(recieveTime.Sub(sendTime)/time.Millisecond)
+		return client.Conn.SetReadDeadline(recieveTime)
+	})
+
 	for {
 		select {
 		case request = <-client.RequestChannel:
@@ -233,15 +257,16 @@ func (client *Client) StartWriter(pingChan chan int) {
 			}
 			err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
 			if err != nil {
-				if client.Tracing() {
-					client.UpdateTrace("->")
-					client.UpdateTrace(err.Error())
-					client.UpdateTrace("->Client is being removed from Server")
-					client.PrintTrace()
-				} else {
-					log.Info("Server->Writer->", err.Error(), "->Client is being removed from Server")
-				}
-				GetServer().CleanClient(client)
+				log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
+				//if client.Tracing() {
+				//	client.UpdateTrace("->")
+				//	client.UpdateTrace(err.Error())
+				//	client.UpdateTrace("->Client is being removed from Server")
+				//	client.PrintTrace()
+				//} else {
+				//	log.Info("Server->Writer->", err.Error(), "->Client is being removed from Server")
+				//}
+				//GetServer().CleanClient(client)
 				return
 			}
 			if client.Tracing() {
@@ -249,11 +274,18 @@ func (client *Client) StartWriter(pingChan chan int) {
 				client.PrintTrace()
 			}
 		case _ = <-pingChan:
-			if err := client.Conn.WriteControl(9, []byte("test"), time.Now().Add(time.Second*20)); err != nil {
-				log.Warn("Premier func error")
+			sendTime = time.Now().Add(time.Second*20)
+			if err := client.Conn.WriteControl(websocket.PingMessage, []byte("test"), sendTime); err != nil {
+				log.Warn("pinging error")
+				client.retry += 1
+				log.Warn(client.retry)
 				log.Warn(err)
+				if client.retry > retryLimit {
+					log.Info("Client[" + strconv.Itoa(client.Id) + "] is being removed from Server")
+					GetServer().CleanClient(client)
+				}
 			} else {
-				log.Info("ping success")
+				client.retry = 0
 			}
 		}
 	}
