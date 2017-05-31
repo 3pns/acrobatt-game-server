@@ -22,7 +22,6 @@ type Client struct {
 	Ping           int64         `json:"ping"`
 	retry          int             `json:"-"`
 	Conn           *websocket.Conn `json:"-"`
-	token          string          `json:"-"`
 	State          *fsm.FSM        `json:"-"`
 	Ai             *AI             `json:"-"`
 	CurrentGame    *Game           `json:"-"`
@@ -51,7 +50,6 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 	//factory.id++
 	client.Ai = nil
 	client.Conn = conn
-	client.token = ""
 	client.RequestChannel = make(chan Request, 100)
 
 	client.State = fsm.NewFSM(
@@ -109,7 +107,6 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 func NewAiClient() *Client {
 	var client Client
 	client.Conn = nil
-	client.token = ""
 	client.State = nil
 	ai := NewIA(&client)
 	client.Ai = &ai
@@ -187,8 +184,13 @@ func (client *Client) Authenticate(auth AuthenticateJson) bool {
 	if resp.StatusCode == 200 {
 		client.Id = auth.PlayerId
 		client.Pseudo = fmt.Sprintf("%s", response["pseudo"])
-		client.State.Event("authenticate")
-		client.UPTrace("success")
+		if GetServer().reconnectClient(client){
+			client.UPTrace("succefully reconnected Client[" +strconv.Itoa(client.Id)+"] to state " + client.State.Current())
+		} else {
+			client.State.Event("authenticate")
+			client.UPTrace("success")
+		}
+
 		return true
 	} else {
 		client.UPTrace("failure:" + strconv.Itoa(auth.PlayerId) + ":" + auth.AccessToken + ":" + auth.Client)
@@ -226,7 +228,7 @@ func (client *Client) Start() {
 
 func (client *Client) StartWriter() {
 	request := Request{}
-	retryLimit := 10
+	retryLimit := 30
 	pingInterval := time.Second * 1
 	c := time.Tick(pingInterval)
 	var sendTime time.Time
@@ -278,6 +280,7 @@ func (client *Client) StartWriter() {
 			if err := client.Conn.WriteControl(websocket.PingMessage, []byte("test"), sendTime); err != nil {
 				log.Warn("pinging error")
 				client.retry += 1
+				client.Ping = 1000
 				log.Warn(client.retry)
 				log.Warn(err)
 				if client.retry > retryLimit {

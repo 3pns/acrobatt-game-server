@@ -199,3 +199,20 @@ func (serv *server) invitableClientsSlice() []*Client {
 	}
 	return clientsSlices
 }
+
+func (serv *server) reconnectClient(client *Client) bool {
+	if serv.clients[client.Id] != nil {
+		//copie des données de l'ancien client vers le nouveau
+		client.MyState = client.MyState
+		client.MyLobbyId = serv.clients[client.Id].MyLobbyId
+		client.MyGameId = serv.clients[client.Id].MyGameId
+		client.State = serv.clients[client.Id].State
+		client.CurrentGame = serv.clients[client.Id].CurrentGame
+		client.CurrentLobby = serv.clients[client.Id].CurrentLobby
+		//l'ancien pointeur pointe sur le nouveau client
+		*serv.clients[client.Id] = *client
+		return true
+	} else {
+		return false
+	}
+}
