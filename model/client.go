@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	"strconv"
+	"time"
 )
 
 type Client struct {
@@ -18,8 +19,8 @@ type Client struct {
 	MyLobbyId      int             `json:"lobby_id"`
 	MyGameId       int             `json:"game_id"`
 	Pseudo         string          `json:"pseudo"`
-	Ping					string `json:"ping"`
-	retry int `json:"-"`
+	Ping           string          `json:"ping"`
+	retry          int             `json:"-"`
 	Conn           *websocket.Conn `json:"-"`
 	token          string          `json:"-"`
 	State          *fsm.FSM        `json:"-"`
@@ -204,6 +205,9 @@ func (client *Client) Start() {
 	defer client.Conn.Close()
 	for {
 		mt, message, err := conn.ReadMessage()
+		log.Info(mt)
+		log.Info(message)
+		log.Info(err)
 		if err != nil {
 			log.Warn("read: ", err)
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
@@ -219,32 +223,41 @@ func (client *Client) Start() {
 	}
 }
 
-func (client *Client) StartWriter() {
+func (client *Client) StartWriter(pingChan chan int) {
 	request := Request{}
 	for {
-		request = <-client.RequestChannel
-		if client.Tracing() {
-			client.UpdateTrace("->Writer->Sending")
-		}
-		err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
-		if err != nil {
+		select {
+		case request = <-client.RequestChannel:
 			if client.Tracing() {
-				client.UpdateTrace("->")
-				client.UpdateTrace(err.Error())
-				client.UpdateTrace("->Client is being removed from Server")
-				client.PrintTrace()
-			} else {
-				log.Info("Server->Writer->", err.Error(), "->Client is being removed from Server")
+				client.UpdateTrace("->Writer->Sending")
 			}
-			GetServer().CleanClient(client)
-			return
+			err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
+			if err != nil {
+				if client.Tracing() {
+					client.UpdateTrace("->")
+					client.UpdateTrace(err.Error())
+					client.UpdateTrace("->Client is being removed from Server")
+					client.PrintTrace()
+				} else {
+					log.Info("Server->Writer->", err.Error(), "->Client is being removed from Server")
+				}
+				GetServer().CleanClient(client)
+				return
+			}
+			if client.Tracing() {
+				client.UpdateTrace("->Sent")
+				client.PrintTrace()
+			}
+		case _ = <-pingChan:
+			if err := client.Conn.WriteControl(9, []byte("test"), time.Now().Add(time.Second*20)); err != nil {
+				log.Warn("Premier func error")
+				log.Warn(err)
+			} else {
+				log.Info("ping success")
+			}
 		}
-		if client.Tracing() {
-			client.UpdateTrace("->Sent")
-			client.PrintTrace()
-		}
-
 	}
+
 }
 
 func (client *Client) JoinLobby(lobby *Lobby) {

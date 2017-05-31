@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"syscall"
+	"time"
 )
 
 // standard types
@@ -85,9 +86,23 @@ func handleNewConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pingInterval := time.Second * 1
+	c := time.Tick(pingInterval)
+
+	pingChan := make(chan int)
+	
+	go func(){
+	   for  _ = range c {
+	   		pingChan <- 1
+	  }
+	}()
+
+	conn.SetPongHandler(func(string) error { return conn.SetReadDeadline(time.Now().Add(time.Second * 20)) })
+
+
 	var client = GetServer().GetClientFactory().NewClient(conn)
 	go client.Start()
-	go client.StartWriter()
+	go client.StartWriter(pingChan)
 }
 
 func redirectStderr(f *os.File) {
