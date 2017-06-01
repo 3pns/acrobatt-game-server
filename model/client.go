@@ -28,6 +28,7 @@ type Client struct {
 	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
 	trace          string          `json:"-"`
+	listening      bool          `json:"-"`
 }
 
 type ClientSlice struct {
@@ -204,11 +205,13 @@ func (client *Client) Start() {
 		return
 	}
 	var conn = client.Conn
+	client.listening = true
 	defer client.Conn.Close()
 	for {
 		mt, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Warn("read: ", err)
+			client.listening = false
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
 			return
 		}
@@ -235,8 +238,15 @@ func (client *Client) StartWriter() {
 
 	//ping the client
 	pingChan := make(chan int)
+	quit := make(chan int)
 	go func() {
 		for _ = range c {
+			// Si le client n'est plus le même on le deco
+			if GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn {
+				quit <- 1
+				return
+			}
+
 			pingChan <- 1
 			if client.retry > retryLimit{
 				return
@@ -253,43 +263,44 @@ func (client *Client) StartWriter() {
 
 	for {
 		select {
-		case request = <-client.RequestChannel:
-			if client.Tracing() {
-				client.UpdateTrace("->Writer->Sending")
-			}
-			err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
-			if err != nil {
-				log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
-				//if client.Tracing() {
-				//	client.UpdateTrace("->")
-				//	client.UpdateTrace(err.Error())
-				//	client.UpdateTrace("->Client is being removed from Server")
-				//	client.PrintTrace()
-				//} else {
-				//	log.Info("Server->Writer->", err.Error(), "->Client is being removed from Server")
-				//}
-				//GetServer().CleanClient(client)
-				return
-			}
-			if client.Tracing() {
-				client.UpdateTrace("->Sent")
-				client.PrintTrace()
-			}
-		case _ = <-pingChan:
-			sendTime = time.Now().Add(time.Second*20)
-			if err := client.Conn.WriteControl(websocket.PingMessage, []byte("test"), sendTime); err != nil {
-				log.Warn("pinging error")
-				client.retry += 1
-				client.Ping = 1000
-				log.Warn(client.retry)
-				log.Warn(err)
-				if client.retry > retryLimit {
-					log.Info("Client[" + strconv.Itoa(client.Id) + "] is being removed from Server")
-					GetServer().CleanClient(client)
+			case request = <-client.RequestChannel:
+				if client.Tracing() {
+					client.UpdateTrace("->Writer->Sending")
 				}
-			} else {
-				client.retry = 0
-			}
+				if client.retry > 0 {
+					break
+				}
+				err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
+				if err != nil {
+					log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
+				} else if client.Tracing() {
+					client.UpdateTrace("->Sent")
+					client.PrintTrace()
+				}
+			case _ = <-pingChan:
+				sendTime = time.Now().Add(time.Second*20)
+				if err := client.Conn.WriteControl(websocket.PingMessage, []byte("test"), sendTime); err != nil {
+					log.Warn("pinging error")
+					client.retry += 1
+					client.Ping = 1000
+					log.Warn(client.retry)
+					log.Warn(err)
+					if client.retry > retryLimit {
+						log.Info("Client[" + strconv.Itoa(client.Id) + "] is being removed from Server")
+						GetServer().CleanClient(client)
+					}
+				} else {
+					client.retry = 0
+					if !client.listening {
+						go client.Start()
+					}
+				}
+			case _ = <-quit:
+				return
+		}
+
+		if client.retry >retryLimit {
+			return
 		}
 	}
 
