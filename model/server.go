@@ -210,7 +210,7 @@ func (serv *server) reconnectClient(client *Client) bool {
 		client.CurrentGame = serv.clients[client.Id].CurrentGame
 		client.CurrentLobby = serv.clients[client.Id].CurrentLobby
 		//l'ancien pointeur pointe sur le nouveau client
-		*serv.clients[client.Id] = *client
+		serv.clients[client.Id] = client
 		return true
 	} else {
 		return false

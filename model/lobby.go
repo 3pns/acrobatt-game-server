@@ -3,6 +3,8 @@ package model
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
+	"strconv"
+	"fmt"
 )
 
 type Lobby struct {
@@ -59,7 +61,7 @@ func (lobby *Lobby) Start() {
 		if more {
 			var client = request.Client
 			if client != nil {
-				client.UpdateTrace("Lobby[" + string(lobby.Id) + "]->")
+				client.UpdateTrace("Lobby[" + strconv.Itoa(lobby.Id) + "]->")
 			}
 			if request.Type == "Start" && (client == lobby.Master) {
 				if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
@@ -150,6 +152,15 @@ func (lobby *Lobby) Start() {
 			lobby.done <- true
 			return
 		}
+		fmt.Println("#################### PRINTING SEATS ##########################")
+		fmt.Println("seat 0 : ")
+		fmt.Println(lobby.Seats[0])
+		fmt.Println("seat 1 : ")
+		fmt.Println(lobby.Seats[1])
+		fmt.Println("seat 2 : ")
+		fmt.Println(lobby.Seats[2])
+		fmt.Println("seat 3 : ")
+		fmt.Println(lobby.Seats[3])
 	}
 }
 
