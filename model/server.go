@@ -124,6 +124,7 @@ func (serv *server) broadcastLobbies() {
 	request := NewRequest("Broadcast")
 	lobbiesSlice := LobbySlice{}
 	lobbiesSlice.Lobbies = serv.lobbiesSlice()
+	log.Info("lobbiesSlice : ")
 	log.Info(lobbiesSlice)
 	request.MarshalData(lobbiesSlice)
 	serv.broadcastRequest(&request)
@@ -133,6 +134,7 @@ func (serv *server) broadcastGames() {
 	request := NewRequest("Broadcast")
 	gamesSlice := GameSlice{}
 	gamesSlice.Games = serv.gamesSlice()
+	log.Info("gamesSlice : ")
 	log.Info(gamesSlice)
 	request.MarshalData(gamesSlice)
 	serv.broadcastRequest(&request)
@@ -142,6 +144,7 @@ func (serv *server) broadcastHomeClients() {
 	request := NewRequest("Broadcast")
 	clientsSlice := ClientSlice{}
 	clientsSlice.Clients = serv.invitableClientsSlice()
+	log.Info("HomeClients : ")
 	log.Info(clientsSlice)
 	request.MarshalData(clientsSlice)
 	serv.broadcastInvitableClientRequest(&request)
@@ -203,14 +206,19 @@ func (serv *server) invitableClientsSlice() []*Client {
 func (serv *server) reconnectClient(client *Client) bool {
 	if serv.clients[client.Id] != nil {
 		//copie des données de l'ancien client vers le nouveau
-		client.MyState = client.MyState
+		/*client.MyState = client.MyState
 		client.MyLobbyId = serv.clients[client.Id].MyLobbyId
 		client.MyGameId = serv.clients[client.Id].MyGameId
 		client.State = serv.clients[client.Id].State
 		client.CurrentGame = serv.clients[client.Id].CurrentGame
 		client.CurrentLobby = serv.clients[client.Id].CurrentLobby
 		//l'ancien pointeur pointe sur le nouveau client
-		serv.clients[client.Id] = client
+		serv.clients[client.Id] = client*/
+		serv.clients[client.Id].Stop()
+		serv.clients[client.Id].Conn = client.Conn
+		serv.clients[client.Id].Pseudo = client.Pseudo
+		client.Destroy()
+		serv.clients[client.Id].Restart()
 		return true
 	} else {
 		return false

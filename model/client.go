@@ -29,6 +29,7 @@ type Client struct {
 	RequestChannel chan Request    `json:"-"`
 	trace          string          `json:"-"`
 	listening      bool          `json:"-"`
+	terminating      bool          `json:"-"`
 }
 
 type ClientSlice struct {
@@ -186,7 +187,7 @@ func (client *Client) Authenticate(auth AuthenticateJson) bool {
 		client.Id = auth.PlayerId
 		client.Pseudo = fmt.Sprintf("%s", response["pseudo"])
 		if GetServer().reconnectClient(client){
-			client.UPTrace("succefully reconnected Client[" +strconv.Itoa(client.Id)+"] to state " + client.State.Current())
+			log.Info("succefully reconnected Client[" +strconv.Itoa(GetServer().clients[client.Id].Id)+"] to state " + GetServer().clients[client.Id].State.Current())
 		} else {
 			client.State.Event("authenticate")
 			client.UPTrace("success")
@@ -204,11 +205,10 @@ func (client *Client) Start() {
 		go client.Ai.Start()
 		return
 	}
-	var conn = client.Conn
 	client.listening = true
-	defer client.Conn.Close()
+	//defer client.Conn.Close()
 	for {
-		mt, message, err := conn.ReadMessage()
+		mt, message, err := client.Conn.ReadMessage()
 		if err != nil {
 			log.Warn("read: ", err)
 			client.listening = false
@@ -230,7 +230,7 @@ func (client *Client) Start() {
 }
 
 func (client *Client) StartWriter() {
-	request := Request{}
+	//request := Request{}
 	retryLimit := 30
 	pingInterval := time.Second * 1
 	c := time.Tick(pingInterval)
@@ -242,11 +242,14 @@ func (client *Client) StartWriter() {
 	go func() {
 		for _ = range c {
 			// Si le client n'est plus le même on le deco
+			if client.terminating {
+				quit <- 1
+				return
+			}
 			if GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn {
 				quit <- 1
 				return
 			}
-
 			pingChan <- 1
 			if client.retry > retryLimit{
 				return
@@ -262,20 +265,28 @@ func (client *Client) StartWriter() {
 	})
 
 	for {
+		if client.terminating {
+			return
+		}
 		select {
-			case request = <-client.RequestChannel:
-				if client.Tracing() {
-					client.UpdateTrace("->Writer->Sending")
-				}
-				if client.retry > 0 {
-					break
-				}
-				err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
-				if err != nil {
-					log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
-				} else if client.Tracing() {
-					client.UpdateTrace("->Sent")
-					client.PrintTrace()
+			case request, more := <-client.RequestChannel:
+				if more {
+					if client.Tracing() {
+						client.UpdateTrace("->Writer->Sending")
+					}
+					if client.retry > 0 {
+						break
+					}
+					err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
+					if err != nil {
+						log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
+					} else if client.Tracing() {
+						client.UpdateTrace("->Sent")
+						client.PrintTrace()
+					}
+				} else {
+					fmt.Println("terminating client")
+					return
 				}
 			case _ = <-pingChan:
 				sendTime = time.Now().Add(time.Second*20)
@@ -297,6 +308,7 @@ func (client *Client) StartWriter() {
 				}
 			case _ = <-quit:
 				return
+
 		}
 
 		if client.retry >retryLimit {
@@ -313,4 +325,20 @@ func (client *Client) JoinLobby(lobby *Lobby) {
 
 func (client *Client) LeaveLobby() {
 	client.State.Event("quit_lobby")
+}
+
+func (client *Client) Stop() {
+	client.terminating = true
+	client.listening = false
+}
+
+func (client *Client) Destroy() {
+	//duration := time.Duration(10)*time.Second // Pause for 10 seconds
+	client.terminating = true
+}
+
+func (client *Client) Restart() {
+	client.terminating = false
+	go client.Start()
+	go client.StartWriter()
 }
