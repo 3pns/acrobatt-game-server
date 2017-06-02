@@ -156,7 +156,11 @@ func (request *Request) Dispatch() {
 		req.MarshalData(*request.Client)
 		client.UpdateTrace("->")
 		client.RequestChannel <- req
-	} else if client.State.Current() == "game" && client.CurrentGame != nil {
+	} else if request.Type == "DestroyClient" {
+		client.UPTrace("->destroying_client["+strconv.Itoa(GetServer().clients[client.Id].Id)+"]")
+		GetServer().CleanClient(GetServer().clients[client.Id])
+		client.Stop()
+	}  else if client.State.Current() == "game" && client.CurrentGame != nil {
 		client.UpdateTrace("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {

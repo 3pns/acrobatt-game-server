@@ -332,12 +332,6 @@ func (client *Client) Stop() {
 	client.listening = false
 }
 
-func (client *Client) Destroy() {
-	//duration := time.Duration(10)*time.Second // Pause for 10 seconds
-	client.Stop()
-	//client.Conn.Close()
-}
-
 func (client *Client) stopReader() {
 	//duration := time.Duration(10)*time.Second // Pause for 10 seconds
 	client.terminating = true
