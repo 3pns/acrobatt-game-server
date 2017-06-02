@@ -217,7 +217,12 @@ func (client *Client) Start() {
 			log.Warn("read: ", err)
 			client.listening = false
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
-			return
+			time.Sleep(1 * time.Second)
+			if client.terminating {
+				return
+			} else {
+				continue
+			}
 		}
 		if mt == websocket.TextMessage {
 			request := Request{}
@@ -246,7 +251,7 @@ func (client *Client) StartWriter() {
 					return
 				case <-time.After(pingInterval):
 					// Si le client n'est plus le même on le deco
-					if client.terminating || client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
+					if client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
 						return
 					}
 					pingChan <- 1
