@@ -338,6 +338,7 @@ func (client *Client) stopReader() {
 
 func (client *Client) Restart() {
 	client.terminating = false
+	client.retry = 0
 	go client.Start()
 	go client.StartWriter()
 }
