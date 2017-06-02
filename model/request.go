@@ -154,7 +154,7 @@ func (request *Request) Dispatch() {
 	if request.Type == "FetchClient" {
 		var req = NewRequestWithCallbackId("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
-		client.UpdateTrace("->")
+		client.UpdateTrace("->FetchClient->")
 		client.RequestChannel <- req
 	} else if request.Type == "DestroyClient" {
 		client.UPTrace("->destroying_client["+strconv.Itoa(client.Id)+"]")
