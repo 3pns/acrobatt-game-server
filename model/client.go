@@ -81,7 +81,7 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 				GetServer().AddClient(&client)
 			},
 			"disconnect": func(e *fsm.Event) {
-				client.UpdateTrace("disconnecting : " + e.FSM.Current())
+				client.UPTrace("disconnecting : " + e.FSM.Current())
 				client.Id = -1
 				GetServer().RemoveClient(&client)
 			},
