@@ -63,7 +63,7 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			{Name: "create_demo", Src: []string{"start"}, Dst: "game"},
 			{Name: "quit_demo", Src: []string{"game"}, Dst: "start"},
 			{Name: "authenticate", Src: []string{"start"}, Dst: "home"},
-			{Name: "disconnect", Src: []string{"home"}, Dst: "start"},
+			{Name: "disconnect", Src: []string{"home", "lobby", "game"}, Dst: "start"},
 			{Name: "join_lobby", Src: []string{"home"}, Dst: "lobby"},
 			{Name: "create_lobby", Src: []string{"home"}, Dst: "lobby"},
 			{Name: "quit_lobby", Src: []string{"lobby"}, Dst: "home"},
