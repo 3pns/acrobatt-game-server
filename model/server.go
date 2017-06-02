@@ -217,7 +217,7 @@ func (serv *server) reconnectClient(client *Client) bool {
 		serv.clients[client.Id].Stop()
 		serv.clients[client.Id].Conn = client.Conn
 		serv.clients[client.Id].Pseudo = client.Pseudo
-		client.Destroy()
+		client.Stop()
 		serv.clients[client.Id].Restart()
 		return true
 	} else {

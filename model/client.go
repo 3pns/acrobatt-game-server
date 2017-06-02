@@ -30,6 +30,9 @@ type Client struct {
 	trace          string          `json:"-"`
 	listening      bool          `json:"-"`
 	terminating      bool          `json:"-"`
+	quitReader chan int       `json:"-"`
+	quitWriter chan int       `json:"-"`
+	quitPing chan int `json:"-"`
 }
 
 type ClientSlice struct {
@@ -192,7 +195,6 @@ func (client *Client) Authenticate(auth AuthenticateJson) bool {
 			client.State.Event("authenticate")
 			client.UPTrace("success")
 		}
-
 		return true
 	} else {
 		client.UPTrace("failure:" + strconv.Itoa(auth.PlayerId) + ":" + auth.AccessToken + ":" + auth.Client)
@@ -206,6 +208,7 @@ func (client *Client) Start() {
 		return
 	}
 	client.listening = true
+	client.quitReader = make(chan int) 
 	//defer client.Conn.Close()
 	for {
 		mt, message, err := client.Conn.ReadMessage()
@@ -221,10 +224,6 @@ func (client *Client) Start() {
 			request.Client = client
 			client.StartTrace()
 			request.Dispatch()
-		} else if mt == websocket.PongMessage {
-			log.Info("pong detected !!!")
-		} else if mt == websocket.PongMessage {
-			log.Info("pong detected !!!")
 		}
 	}
 }
@@ -235,24 +234,21 @@ func (client *Client) StartWriter() {
 	pingInterval := time.Second * 1
 	c := time.Tick(pingInterval)
 	var sendTime time.Time
-
+	client.quitWriter = make(chan int)
+	client.quitPing = make(chan int)
 	//ping the client
 	pingChan := make(chan int)
-	quit := make(chan int)
 	go func() {
 		for _ = range c {
-			// Si le client n'est plus le même on le deco
-			if client.terminating {
-				quit <- 1
-				return
-			}
-			if GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn {
-				quit <- 1
-				return
-			}
-			pingChan <- 1
-			if client.retry > retryLimit{
-				return
+			select {
+				case _ = <- client.quitPing:
+					return
+				case <-time.After(pingInterval):
+					// Si le client n'est plus le même on le deco
+					if client.terminating || client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
+						return
+					}
+					pingChan <- 1
 			}
 		}
 	}()
@@ -306,7 +302,7 @@ func (client *Client) StartWriter() {
 						go client.Start()
 					}
 				}
-			case _ = <-quit:
+			case _ = <-client.quitWriter:
 				return
 
 		}
@@ -329,10 +325,19 @@ func (client *Client) LeaveLobby() {
 
 func (client *Client) Stop() {
 	client.terminating = true
+	client.quitPing <- 1
+	client.quitWriter <- 1
 	client.listening = false
+	
 }
 
 func (client *Client) Destroy() {
+	//duration := time.Duration(10)*time.Second // Pause for 10 seconds
+	client.Stop()
+	//client.Conn.Close()
+}
+
+func (client *Client) stopReader() {
 	//duration := time.Duration(10)*time.Second // Pause for 10 seconds
 	client.terminating = true
 }
