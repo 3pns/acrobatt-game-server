@@ -157,8 +157,8 @@ func (request *Request) Dispatch() {
 		client.UpdateTrace("->")
 		client.RequestChannel <- req
 	} else if request.Type == "DestroyClient" {
-		client.UPTrace("->destroying_client["+strconv.Itoa(GetServer().clients[client.Id].Id)+"]")
-		GetServer().CleanClient(GetServer().clients[client.Id])
+		client.UPTrace("->destroying_client["+strconv.Itoa(client.Id])+"]")
+		GetServer().CleanClient(client.Id)
 		client.Stop()
 	} else if request.Type == "Disconnect" {
 		client.State.Event("disconnect")
