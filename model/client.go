@@ -82,9 +82,9 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			},
 			"disconnect": func(e *fsm.Event) {
 				client.UPTrace("disconnecting : " + e.FSM.Current())
-				client.Id = -1
+				//client.Id = -1
 				//GetServer().RemoveClient(&client)
-				serv.CleanClient(serv.clients[key])
+				GetServer().CleanClient(GetServer().clients[client.Id])
 				client.Stop()
 			},
 			"join_lobby": func(e *fsm.Event) { client.UpdateTrace("joining lobby : " + e.FSM.Current()) },
