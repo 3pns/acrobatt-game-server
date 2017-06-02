@@ -96,7 +96,7 @@ func (serv *server) StartCleaner() {
 		if serv.clients[client.Id] == client {
 			delete(serv.clients, client.Id)
 		}
-
+		client.Id = -1
 	}
 	// on vérifie à chaque étape
 }
