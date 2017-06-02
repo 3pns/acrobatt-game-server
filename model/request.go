@@ -160,6 +160,7 @@ func (request *Request) Dispatch() {
 		client.UPTrace("->destroying_client["+strconv.Itoa(client.Id)+"]")
 		GetServer().CleanClient(client)
 		client.Stop()
+		client.Conn.Close()
 	} else if request.Type == "Disconnect" {
 		client.State.Event("disconnect")
 	}  else if client.State.Current() == "game" && client.CurrentGame != nil {
