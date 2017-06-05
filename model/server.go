@@ -218,6 +218,7 @@ func (serv *server) reconnectClient(client *Client) bool {
 		client.State = serv.clients[client.Id].State
 		client.CurrentGame = serv.clients[client.Id].CurrentGame
 		client.CurrentLobby = serv.clients[client.Id].CurrentLobby
+		client.RequestChannel = serv.clients[client.Id].RequestChannel
 		serv.SwapClients(serv.clients[client.Id], client)
 		return true
 	} else {
