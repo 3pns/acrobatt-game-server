@@ -213,12 +213,24 @@ func (serv *server) reconnectClient(client *Client) bool {
 		//l'ancien pointeur pointe sur le nouveau client
 		serv.clients[client.Id] = client*/
 		serv.clients[client.Id].Stop()
-		client.Stop()
-		serv.clients[client.Id].Conn = client.Conn
-		serv.clients[client.Id].Pseudo = client.Pseudo
-		serv.clients[client.Id].Restart()
+		client.MyLobbyId = serv.clients[client.Id].MyLobbyId
+		client.MyGameId = serv.clients[client.Id].MyGameId
+		client.State = serv.clients[client.Id].State
+		client.CurrentGame = serv.clients[client.Id].CurrentGame
+		client.CurrentLobby = serv.clients[client.Id].CurrentLobby
+		serv.SwapClients(serv.clients[client.Id], client)
 		return true
 	} else {
 		return false
 	}
+}
+
+func (serv *server) SwapClients(oldClient *Client, newClient *Client) bool {
+	if serv.clients[newClient.Id] != nil {
+		serv.clients[newClient.Id] = newClient
+	}
+	if newClient.CurrentLobby != nil {
+		newClient.CurrentLobby.SwapClients(oldClient, newClient)
+	}
+	return true
 }

@@ -229,3 +229,27 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 	}
 	return
 }
+
+func (lobby *Lobby) SwapClients(oldClient *Client, newClient *Client) bool {
+
+	// swap seats
+	for index, _ := range lobby.Seats {
+		if lobby.Seats[index] == oldClient {
+			lobby.Seats[index] = newClient
+		}
+	}
+
+	//swap list des clients
+	for index, _ := range lobby.Clients {
+		if len(lobby.Clients) > index && lobby.Clients[index] == oldClient {
+			lobby.Clients[index] = newClient
+		}
+	}
+
+	//swap Master
+	if lobby.isMaster(oldClient){
+		lobby.Master = newClient
+	}
+
+	return true
+}
