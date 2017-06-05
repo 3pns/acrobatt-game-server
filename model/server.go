@@ -232,5 +232,8 @@ func (serv *server) SwapClients(oldClient *Client, newClient *Client) bool {
 	if newClient.CurrentLobby != nil {
 		newClient.CurrentLobby.SwapClients(oldClient, newClient)
 	}
+	if newClient.CurrentGame != nil {
+		newClient.CurrentGame.SwapClients(oldClient, newClient)
+	}
 	return true
 }

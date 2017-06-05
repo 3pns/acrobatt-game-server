@@ -233,3 +233,12 @@ func (game *Game) PersistGameHistory() {
 		}
 	}
 }
+
+func (game *Game) SwapClients(oldClient *Client, newClient *Client) bool {
+	for index, _ := range game.Clients {
+		if game.Clients[index] == oldClient {
+			game.Clients[index] = newClient
+		}
+	}
+	return true
+}
