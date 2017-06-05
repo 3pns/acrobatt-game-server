@@ -213,9 +213,9 @@ func (serv *server) reconnectClient(client *Client) bool {
 		//l'ancien pointeur pointe sur le nouveau client
 		serv.clients[client.Id] = client*/
 		serv.clients[client.Id].Stop()
+		client.Stop()
 		serv.clients[client.Id].Conn = client.Conn
 		serv.clients[client.Id].Pseudo = client.Pseudo
-		client.Stop()
 		serv.clients[client.Id].Restart()
 		return true
 	} else {

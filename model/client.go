@@ -11,6 +11,7 @@ import (
 	"github.com/looplab/fsm"
 	"strconv"
 	"time"
+	"strings"
 )
 
 type Client struct {
@@ -216,12 +217,13 @@ func (client *Client) Start() {
 		if err != nil {
 			log.Warn("read: ", err)
 			client.listening = false
+			if strings.Contains(err.Error(), "1001") {
+				return
+			}
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
 			time.Sleep(1 * time.Second)
 			if client.terminating {
 				return
-			} else {
-				continue
 			}
 		}
 		if mt == websocket.TextMessage {
@@ -251,7 +253,7 @@ func (client *Client) StartWriter() {
 					return
 				case <-time.After(pingInterval):
 					// Si le client n'est plus le même on le deco
-					if client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
+					if client.terminating || client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
 						return
 					}
 					pingChan <- 1
@@ -302,7 +304,7 @@ func (client *Client) StartWriter() {
 						log.Info("Client[" + strconv.Itoa(client.Id) + "] is being removed from Server")
 						GetServer().CleanClient(client)
 					}
-				} else {
+				} else if client.Ping < 1000 {
 					client.retry = 0
 					if !client.listening {
 						go client.Start()

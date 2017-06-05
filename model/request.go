@@ -154,6 +154,13 @@ func (request *Request) Dispatch() {
 	if request.Type == "FetchClient" {
 		var req = NewRequestWithCallbackId("FetchClient", request.CallbackId)
 		req.MarshalData(*request.Client)
+
+		b, _ := json.Marshal(client)
+		log.Info(string (b))
+		log.Info(client.State.Current())
+		log.Info(client.CurrentGame)
+		log.Info(client.CurrentLobby)
+
 		client.UpdateTrace("->FetchClient->")
 		client.RequestChannel <- req
 	} else if request.Type == "DestroyClient" {
