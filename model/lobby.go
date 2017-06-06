@@ -2,9 +2,9 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"strconv"
-	"fmt"
 )
 
 type Lobby struct {
@@ -145,7 +145,7 @@ func (lobby *Lobby) Start() {
 				client.PrintTrace()
 			}
 		} else {
-			log.Info("Destroy Lobby["+ strconv.Itoa(lobby.Id) + "] RequestChannel")
+			log.Info("Destroy Lobby[" + strconv.Itoa(lobby.Id) + "] RequestChannel")
 			return
 		}
 		fmt.Println("#################### PRINTING SEATS ##########################")
@@ -246,7 +246,7 @@ func (lobby *Lobby) SwapClients(oldClient *Client, newClient *Client) bool {
 	}
 
 	//swap Master
-	if lobby.isMaster(oldClient){
+	if lobby.isMaster(oldClient) {
 		lobby.Master = newClient
 	}
 

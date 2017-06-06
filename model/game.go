@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	_ "github.com/Sirupsen/logrus"
+
 )
 
 type Game struct {
@@ -14,6 +16,7 @@ type Game struct {
 	Clients        map[int]*Client `json:"clients"`
 	board          *Board          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
+	Moves map[int]Move `json:"-"`
 }
 
 type GameFactory struct {
@@ -31,7 +34,12 @@ type GameSlice struct {
 }
 
 func (factory *GameFactory) NewGame() *Game {
-	var game = Game{factory.Id, make(map[int]*Client), nil, make(chan Request, 100)}
+	var game Game 
+	game.Id = factory.Id
+	game.Clients = make(map[int]*Client)
+	game.board = nil
+	game.RequestChannel = make(chan Request, 100)
+	game.Moves = make(map[int]Move)
 	factory.Id++
 	return &game
 }
@@ -93,6 +101,10 @@ func (game *Game) Start() {
 				var req = NewRequestWithCallbackId("PlacementConfirmed", request.CallbackId)
 				client.UpdateTrace("PlacementConfirmed->")
 				client.RequestChannel <- req
+				game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
+				move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), &piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
+				game.Moves[game.board.PlayerTurn.Id] = move
+				game.board.PlayerTurn.UpdateScore(move)
 				game.board.NextTurn()
 				game.board.PrintBoard()
 				game.BroadcastRefresh()
@@ -103,7 +115,11 @@ func (game *Game) Start() {
 			}
 		} else if request.Type == "PlaceRandom" && isPlayerTurn {
 			client.UPTrace("PlaceRandom")
-			player.PlaceRandomPieceWithIAEasy(&board, false)
+			piece := player.PlaceRandomPieceWithIAEasy(&board, false)
+			game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
+			move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
+			game.Moves[game.board.PlayerTurn.Id] = move
+			game.board.PlayerTurn.UpdateScore(move)
 			game.board.NextTurn()
 			game.board.PrintBoard()
 			game.BroadcastRefresh()
@@ -122,6 +138,7 @@ func (game *Game) Start() {
 			player.Concede()
 			game.BroadcastConcede(player)
 			if isPlayerTurn {
+				game.board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
 				game.board.NextTurn()
 			}
 			game.BroadcastRefresh()
@@ -230,7 +247,8 @@ func (game *Game) PersistGameHistory() {
 	for index := range game.board.Players {
 		player := game.board.Players[index]
 		if player.ApiId() != -1 {
-			history := HistoryJson{game_id, player.ApiId(), index, player.Score, int(player.Time / time.Millisecond), 7}
+			rank := game.board.GetRankByPlayer(player)
+			history := HistoryJson{game_id, player.ApiId(), player.Id, player.Score, int(player.Time / time.Millisecond), rank}
 			marshalledHistory, _ := json.Marshal(history)
 			ApiRequest("POST", "manager/history", marshalledHistory)
 		}

@@ -16,10 +16,10 @@ type Player struct {
 	startingSquares   []*Square
 	squares           []*Square
 	hasPlaceabePieces bool
-	ClientId          int `json:"client_id"`
-	Score             int `json:"score"`
+	ClientId          int           `json:"client_id"`
+	Score             int           `json:"score"`
 	Time              time.Duration `json:"time"`
-	TurnStartTime time.Time `json:"-"`
+	TurnStartTime     time.Time     `json:"-"`
 }
 
 func (player *Player) Init() {
@@ -186,7 +186,7 @@ func (player Player) PrintStartingSquares() string {
 	return string(b)
 }
 
-func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) bool {
+func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) *Piece {
 	//TODO attacher le rand à la game lors du refactoring
 	rand.Seed(time.Now().UTC().UnixNano())
 	//on récupère les pièces restantes à placer
@@ -203,7 +203,7 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) 
 		index = rand.Intn(len(remainingPieces))
 	} else {
 		//le joueur a placé toutes ses pièces !
-		return false
+		return nil
 	}
 	//si le joueur a encore toutes ses pièces le square cible est son square de départ
 	if len(remainingPieces) == 21 {
@@ -224,7 +224,7 @@ tryagain:
 	index = rand.Intn(len(remainingPieces))
 	piece := remainingPieces[index]
 	if player.TryPlacePieceOnSquares(board, piece, targetSquares, simulation) {
-		return true
+		return piece
 	} else if len(remainingPieces) > 1 {
 		//on enlève la pièce du slience
 		remainingPieces = append(remainingPieces[:index], remainingPieces[index+1:]...)
@@ -233,7 +233,7 @@ tryagain:
 
 	//TODO Remove targetSquares duplicates in slice !
 	//le joueur ne peut placer aucune pièce !
-	return false
+	return nil
 }
 
 func (player *Player) TryPlacePieceOnSquares(board *Board, piece *Piece, squares []*Square, simulation bool) bool {
@@ -302,7 +302,7 @@ func (player *Player) TryPlacePieceOnSquareWithOrientation(board *Board, piece P
 func (player *Player) HasPlaceabePieces(board *Board) bool {
 	if player.hasPlaceabePieces {
 		res := player.PlaceRandomPieceWithIAEasy(board, true)
-		if res {
+		if res != nil {
 			return true
 		} else {
 			player.hasPlaceabePieces = false
@@ -331,6 +331,24 @@ func (player *Player) StartTimer() {
 func (player *Player) GetTurnTime() time.Duration {
 	return time.Since(player.TurnStartTime)
 }
-
+func (player *Player) UpdateScore(move Move) {
+	points := len(move.Piece.Cubes)
+	if player.PlacedPieceCount() == 21 {
+		points += 15
+		if len(move.Piece.Cubes) == 1 {
+			points += 20
+		}
+	}
+	player.Score += points
+}
+func (player *Player) PlacedPieceCount() int {
+	count := 0
+	for index, _ := range player.Pieces {
+		if player.Pieces[index].Origin != nil {
+			count++
+		}
+	}
+	return count
+}
 
 

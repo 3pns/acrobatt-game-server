@@ -156,7 +156,7 @@ func (request *Request) Dispatch() {
 		req.MarshalData(*request.Client)
 
 		b, _ := json.Marshal(client)
-		log.Info(string (b))
+		log.Info(string(b))
 		log.Info(client.State.Current())
 		log.Info(client.CurrentGame)
 		log.Info(client.CurrentLobby)
@@ -164,13 +164,13 @@ func (request *Request) Dispatch() {
 		client.UpdateTrace("->FetchClient->")
 		client.RequestChannel <- req
 	} else if request.Type == "DestroyClient" {
-		client.UPTrace("->destroying_client["+strconv.Itoa(client.Id)+"]")
+		client.UPTrace("->destroying_client[" + strconv.Itoa(client.Id) + "]")
 		GetServer().CleanClient(client)
 		client.Stop()
 		client.Conn.Close()
 	} else if request.Type == "Disconnect" {
 		client.State.Event("disconnect")
-	}  else if client.State.Current() == "game" && client.CurrentGame != nil {
+	} else if client.State.Current() == "game" && client.CurrentGame != nil {
 		client.UpdateTrace("->toCurrentGameRequestChannel->")
 		client.CurrentGame.RequestChannel <- *request
 	} else if client.State.Current() == "home" {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	_ "strconv"
+	"sort"
 )
 
 type Board struct {
@@ -130,28 +131,28 @@ func (board *Board) InitPlayers() {
 	copy(player0Pieces, board.Pieces)
 
 	var player0StartSquares = []*Square{board.Squares[0][0]}
-	player0 := NewPlayer(0, "Joueur", "blue", player0Pieces, player0StartSquares) 
+	player0 := NewPlayer(0, "Joueur", "blue", player0Pieces, player0StartSquares)
 
 	//Joueur 1
 	var player1Pieces = make([]Piece, len(board.Pieces))
 	copy(player1Pieces, board.Pieces)
 
 	var player1StartSquares = []*Square{board.Squares[0][19]}
-	player1 := NewPlayer(1, "AI-1", "green", player1Pieces, player1StartSquares) 
+	player1 := NewPlayer(1, "AI-1", "green", player1Pieces, player1StartSquares)
 
 	//Joueur 2
 	var player2Pieces = make([]Piece, len(board.Pieces))
 	copy(player2Pieces, board.Pieces)
 
 	var player2StartSquares = []*Square{board.Squares[19][0]}
-	player2 := NewPlayer(2, "AI-2", "yellow", player2Pieces, player2StartSquares) 
+	player2 := NewPlayer(2, "AI-2", "yellow", player2Pieces, player2StartSquares)
 
 	//Joueur 3
 	var player3Pieces = make([]Piece, len(board.Pieces))
 	copy(player3Pieces, board.Pieces)
 
 	var player3StartSquares = []*Square{board.Squares[19][19]}
-	player3 := NewPlayer(3, "AI-3", "red", player3Pieces, player3StartSquares) 
+	player3 := NewPlayer(3, "AI-3", "red", player3Pieces, player3StartSquares)
 
 	player0.Init()
 	player1.Init()
@@ -212,7 +213,6 @@ func (board *Board) SquareExistsAndBelongsTo(x int, y int, player Player) bool {
 }
 
 func (board *Board) NextTurn() {
-	board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
 	if board.Players[len(board.Players)-1] == board.PlayerTurn {
 		board.Turn++
 	}
@@ -224,4 +224,29 @@ func (board *Board) NextTurn() {
 		}
 	}
 	return
+}
+
+func (board *Board) GetRankByPlayer(player *Player) int{
+	ranking := make(map[*Player]int)
+	for index, _ := range board.Players {
+		ranking[board.Players[index]] = board.Players[index].Score
+	}
+	type kv struct {
+		Key   *Player
+		Value int
+	}
+	var ss []kv
+	for k, v := range ranking {
+		ss = append(ss, kv{k, v})
+	}
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Value > ss[j].Value
+	})
+
+	for index, kv := range ss {
+		if kv.Key == player {
+			return index + 1
+		}
+	}
+	return 777
 }

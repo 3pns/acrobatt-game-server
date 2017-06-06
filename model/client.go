@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/looplab/fsm"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 )
 
 type Client struct {
@@ -20,7 +20,7 @@ type Client struct {
 	MyLobbyId      int             `json:"lobby_id"`
 	MyGameId       int             `json:"game_id"`
 	Pseudo         string          `json:"pseudo"`
-	Ping           int64         `json:"ping"`
+	Ping           int64           `json:"ping"`
 	retry          int             `json:"-"`
 	Conn           *websocket.Conn `json:"-"`
 	State          *fsm.FSM        `json:"-"`
@@ -29,11 +29,11 @@ type Client struct {
 	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
 	trace          string          `json:"-"`
-	listening      bool          `json:"-"`
-	terminating      bool          `json:"-"`
-	quitReader chan int       `json:"-"`
-	quitWriter chan int       `json:"-"`
-	quitPing chan int `json:"-"`
+	listening      bool            `json:"-"`
+	terminating    bool            `json:"-"`
+	quitReader     chan int        `json:"-"`
+	quitWriter     chan int        `json:"-"`
+	quitPing       chan int        `json:"-"`
 }
 
 type ClientSlice struct {
@@ -189,8 +189,8 @@ func (client *Client) Authenticate(auth AuthenticateJson) bool {
 	if resp.StatusCode == 200 {
 		client.Id = auth.PlayerId
 		client.Pseudo = fmt.Sprintf("%s", response["pseudo"])
-		if GetServer().reconnectClient(client){
-			log.Info("succefully reconnected Client[" +strconv.Itoa(GetServer().clients[client.Id].Id)+"] to state " + GetServer().clients[client.Id].State.Current())
+		if GetServer().reconnectClient(client) {
+			log.Info("succefully reconnected Client[" + strconv.Itoa(GetServer().clients[client.Id].Id) + "] to state " + GetServer().clients[client.Id].State.Current())
 		} else {
 			client.State.Event("authenticate")
 			client.UPTrace("success")
@@ -208,7 +208,7 @@ func (client *Client) Start() {
 		return
 	}
 	client.listening = true
-	client.quitReader = make(chan int) 
+	client.quitReader = make(chan int)
 	//defer client.Conn.Close()
 	for {
 		mt, message, err := client.Conn.ReadMessage()
@@ -247,14 +247,14 @@ func (client *Client) StartWriter() {
 	go func() {
 		for _ = range c {
 			select {
-				case _ = <- client.quitPing:
+			case _ = <-client.quitPing:
+				return
+			case <-time.After(pingInterval):
+				// Si le client n'est plus le même on le deco
+				if client.terminating || client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
 					return
-				case <-time.After(pingInterval):
-					// Si le client n'est plus le même on le deco
-					if client.terminating || client.retry > retryLimit || (GetServer().clients[client.Id] != nil && GetServer().clients[client.Id].Conn != client.Conn) {
-						return
-					}
-					pingChan <- 1
+				}
+				pingChan <- 1
 			}
 		}
 	}()
@@ -262,7 +262,7 @@ func (client *Client) StartWriter() {
 	client.Conn.SetPongHandler(func(test string) error {
 		recieveTime := time.Now().Add(time.Second * 20)
 		//log.Info("ms:", int64(recieveTime.Sub(sendTime)/time.Millisecond)) // ms: 100
-		client.Ping = int64(recieveTime.Sub(sendTime)/time.Millisecond)
+		client.Ping = int64(recieveTime.Sub(sendTime) / time.Millisecond)
 		if !client.listening {
 			go client.Start()
 		}
@@ -274,49 +274,49 @@ func (client *Client) StartWriter() {
 			return
 		}
 		select {
-			case request, more := <-client.RequestChannel:
-				if more {
-					if client.Tracing() {
-						client.UpdateTrace("->Writer->Sending")
-					}
-					if client.retry > 0 {
-						break
-					}
-					err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
-					if err != nil {
-						log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
-					} else if client.Tracing() {
-						client.UpdateTrace("->Sent")
-						client.PrintTrace()
-					}
-				} else {
-					fmt.Println("terminating client")
-					return
+		case request, more := <-client.RequestChannel:
+			if more {
+				if client.Tracing() {
+					client.UpdateTrace("->Writer->Sending")
 				}
-			case _ = <-pingChan:
-				sendTime = time.Now().Add(time.Second*20)
-				if err := client.Conn.WriteControl(websocket.PingMessage, []byte("test"), sendTime); err != nil {
-					log.Warn("pinging error")
-					client.retry += 1
-					client.Ping = 1000
-					log.Warn(client.retry)
-					log.Warn(err)
-					if client.retry > retryLimit {
-						log.Info("Client[" + strconv.Itoa(client.Id) + "] is being removed from Server")
-						GetServer().CleanClient(client)
-					}
-				} else if client.Ping < 1000 {
-					client.retry = 0
-					if !client.listening {
-						go client.Start()
-					}
+				if client.retry > 0 {
+					break
 				}
-			case _ = <-client.quitWriter:
+				err := client.Conn.WriteMessage(websocket.TextMessage, request.Marshal())
+				if err != nil {
+					log.Warn("Client[" + strconv.Itoa(client.Id) + "] " + err.Error())
+				} else if client.Tracing() {
+					client.UpdateTrace("->Sent")
+					client.PrintTrace()
+				}
+			} else {
+				fmt.Println("terminating client")
 				return
+			}
+		case _ = <-pingChan:
+			sendTime = time.Now().Add(time.Second * 20)
+			if err := client.Conn.WriteControl(websocket.PingMessage, []byte("test"), sendTime); err != nil {
+				log.Warn("pinging error")
+				client.retry += 1
+				client.Ping = 1000
+				log.Warn(client.retry)
+				log.Warn(err)
+				if client.retry > retryLimit {
+					log.Info("Client[" + strconv.Itoa(client.Id) + "] is being removed from Server")
+					GetServer().CleanClient(client)
+				}
+			} else if client.Ping < 1000 {
+				client.retry = 0
+				if !client.listening {
+					go client.Start()
+				}
+			}
+		case _ = <-client.quitWriter:
+			return
 
 		}
 
-		if client.retry >retryLimit {
+		if client.retry > retryLimit {
 			return
 		}
 	}
