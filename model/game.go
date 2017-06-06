@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type Game struct {
@@ -138,6 +139,7 @@ func (game *Game) Start() {
 		}
 		if game.IsGameOver() {
 			client.UPTrace("GameOverDetected")
+			game.board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
 			game.BroadcastGameOver()
 			game.PersistGameHistory()
 			game.DisconnectPlayers()
@@ -221,13 +223,14 @@ func (game *Game) PersistGameHistory() {
 	_, response, _ := ApiRequest("POST", "manager/game", marshalledGJ)
 
 	game_id, _ := strconv.Atoi(fmt.Sprintf("%v", response["id"]))
+	fmt.Println(game_id)
 
 	//history example
 	//TODO calculer le vrai tmps et score de chaque joueur
 	for index := range game.board.Players {
 		player := game.board.Players[index]
 		if player.ApiId() != -1 {
-			history := HistoryJson{game_id, player.ApiId(), index, player.Score, player.Time, 7}
+			history := HistoryJson{game_id, player.ApiId(), index, player.Score, int(player.Time / time.Millisecond), 7}
 			marshalledHistory, _ := json.Marshal(history)
 			ApiRequest("POST", "manager/history", marshalledHistory)
 		}
