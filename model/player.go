@@ -18,7 +18,8 @@ type Player struct {
 	hasPlaceabePieces bool
 	ClientId          int `json:"client_id"`
 	Score             int `json:"score"`
-	Time              int `json:"time"`
+	Time              time.Duration `json:"time"`
+	TurnStartTime time.Time `json:"-"`
 }
 
 func (player *Player) Init() {
@@ -27,6 +28,19 @@ func (player *Player) Init() {
 		player.Pieces[index].PlayerId = &player.Id
 	}
 	fmt.Println("init player pieces")
+}
+
+func NewPlayer(id int, name string, color string, pieces []Piece, startingSquares []*Square) *Player {
+	var player Player
+	player.Id = id
+	player.Name = name
+	player.Color = color
+	player.Pieces = pieces
+	player.startingSquares = startingSquares
+	player.squares = []*Square{}
+	player.hasPlaceabePieces = true
+	player.ClientId = -1
+	return &player
 }
 
 func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) bool {
@@ -310,3 +324,13 @@ func (player *Player) SetApiId(apiId int) {
 func (player *Player) ApiId() int {
 	return player.ClientId
 }
+
+func (player *Player) StartTimer() {
+	player.TurnStartTime = time.Now()
+}
+func (player *Player) GetTurnTime() time.Duration {
+	return time.Since(player.TurnStartTime)
+}
+
+
+
