@@ -16,7 +16,6 @@ type Lobby struct {
 	Seats          map[int]*Client `json:"seats"`
 	game           *Game           `json:"-"`
 	RequestChannel chan Request    `json:"-"`
-	done           chan bool       `json:"-"`
 }
 
 type LobbyFactory struct {
@@ -49,13 +48,11 @@ func (factory *LobbyFactory) NewLobby(client *Client) *Lobby {
 	lobby.game = GetServer().GetGameFactory().NewGame()
 	lobby.RequestChannel = make(chan Request, 100)
 	lobby.Seats = make(map[int]*Client)
-	client.CurrentLobby = &lobby
 	go lobby.Start()
 	return &lobby
 }
 
 func (lobby *Lobby) Start() {
-	lobby.done = make(chan bool)
 	for {
 		request, more := <-lobby.RequestChannel
 		if more {
@@ -140,7 +137,7 @@ func (lobby *Lobby) Start() {
 				}
 
 			} else if request.Type == "Quit" {
-				client.UpdateTrace("Quit")
+				client.UPTrace("->Quit")
 				lobby.unsit(client)
 				client.State.Event("quit_lobby")
 				lobby.RemoveClient(client)
@@ -148,8 +145,7 @@ func (lobby *Lobby) Start() {
 				client.PrintTrace()
 			}
 		} else {
-			log.Info("Closing Lobby[", string(lobby.Id), "] RequestChannel")
-			lobby.done <- true
+			log.Info("Destroy Lobby["+ strconv.Itoa(lobby.Id) + "] RequestChannel")
 			return
 		}
 		fmt.Println("#################### PRINTING SEATS ##########################")
@@ -223,11 +219,14 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 	if len(lobby.Clients) > 0 {
 		lobby.broadcast()
 	} else {
-		GetServer().RemoveLobby(lobby)
-		close(lobby.RequestChannel)
-		<-lobby.done
+		lobby.Destroy()
 	}
 	return
+}
+
+func (lobby *Lobby) Destroy() {
+	GetServer().RemoveLobby(lobby)
+	close(lobby.RequestChannel)
 }
 
 func (lobby *Lobby) SwapClients(oldClient *Client, newClient *Client) bool {

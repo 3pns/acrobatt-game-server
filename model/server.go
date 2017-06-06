@@ -62,6 +62,9 @@ func (serv *server) Process(request Request) {
 
 	if request.Type == "CreateLobby" {
 		client.State.Event("create_lobby")
+		lobby := GetServer().GetLobbyFactory().NewLobby(client)
+		GetServer().AddLobby(lobby)
+		client.CurrentLobby = lobby
 	} else if request.Type == "JoinLobby" {
 		index := request.DataToInt()
 		if serv.lobbies[index] != nil {

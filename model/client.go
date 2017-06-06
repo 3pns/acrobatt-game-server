@@ -90,8 +90,6 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			"join_lobby": func(e *fsm.Event) { client.UpdateTrace("joining lobby : " + e.FSM.Current()) },
 			"create_lobby": func(e *fsm.Event) {
 				client.UpdateTrace("creating lobby : " + e.FSM.Current())
-				lobby := GetServer().GetLobbyFactory().NewLobby(&client)
-				GetServer().AddLobby(lobby)
 			},
 			"quit_lobby": func(e *fsm.Event) {
 				client.CurrentLobby = nil
@@ -265,6 +263,9 @@ func (client *Client) StartWriter() {
 		recieveTime := time.Now().Add(time.Second * 20)
 		//log.Info("ms:", int64(recieveTime.Sub(sendTime)/time.Millisecond)) // ms: 100
 		client.Ping = int64(recieveTime.Sub(sendTime)/time.Millisecond)
+		if !client.listening {
+			go client.Start()
+		}
 		return client.Conn.SetReadDeadline(recieveTime)
 	})
 
