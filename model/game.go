@@ -85,8 +85,6 @@ func (game *Game) Start() {
 	request := Request{}
 	for {
 		request = <-game.RequestChannel
-		//fmt.Println(request)
-		//fmt.Println(request.Client)
 		player := board.Players[request.Client.GameId()]
 		client := request.Client
 		client.UpdateTrace("Game[" + string(game.Id) + "]->")
@@ -106,7 +104,7 @@ func (game *Game) Start() {
 				game.Moves[game.board.PlayerTurn.Id] = move
 				game.board.PlayerTurn.UpdateScore(move)
 				game.board.NextTurn()
-				game.board.PrintBoard()
+				//game.board.PrintBoard()
 				game.BroadcastRefresh()
 			} else {
 				var req = NewRequestWithCallbackId("PlacementRefused", request.CallbackId)
@@ -121,7 +119,7 @@ func (game *Game) Start() {
 			game.Moves[game.board.PlayerTurn.Id] = move
 			game.board.PlayerTurn.UpdateScore(move)
 			game.board.NextTurn()
-			game.board.PrintBoard()
+			//game.board.PrintBoard()
 			game.BroadcastRefresh()
 		} else if request.Type == "Fetch" {
 			client.UpdateTrace("Fetch->")
@@ -138,7 +136,7 @@ func (game *Game) Start() {
 			player.Concede()
 			game.BroadcastConcede(player)
 			if isPlayerTurn {
-				game.board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
+				game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
 				game.board.NextTurn()
 			}
 			game.BroadcastRefresh()
@@ -230,28 +228,30 @@ func (game *Game) RemoveClient(client *Client) {
 }
 
 func (game *Game) PersistGameHistory() {
-	//TODO : remplacer bankdata par une list de struct representant un tour/ un coup
-	blankdata := map[string]string{"data": "osef", "asd": "osef", "asdssed": "osef", "asded": "osef", "adedsd": "osef", "aeddsd": "osef", "adesd": "osef"}
-	marshalledData, _ := json.Marshal(blankdata)
-
-	//game example
+	//game 
+	marshalledData, _ := json.Marshal(game.Moves)
 	gj := GameJson{marshalledData}
 	marshalledGJ, _ := json.Marshal(gj)
 	_, response, _ := ApiRequest("POST", "manager/game", marshalledGJ)
 
 	game_id, _ := strconv.Atoi(fmt.Sprintf("%v", response["id"]))
-	fmt.Println(game_id)
 
 	//history example
 	//TODO calculer le vrai tmps et score de chaque joueur
 	for index := range game.board.Players {
 		player := game.board.Players[index]
-		if player.ApiId() != -1 {
-			rank := game.board.GetRankByPlayer(player)
-			history := HistoryJson{game_id, player.ApiId(), player.Id, player.Score, int(player.Time / time.Millisecond), rank}
-			marshalledHistory, _ := json.Marshal(history)
-			ApiRequest("POST", "manager/history", marshalledHistory)
+		rank := game.board.GetRankByPlayer(player)
+		fmt.Println("inb4 save")
+		fmt.Println(player.Time)
+		var history HistoryJson
+		if player.ApiId() == -1 {
+			history = HistoryJson{game_id, -(player.Id + 1), player.Id, player.Score, int(player.Time / time.Millisecond), rank}
+		} else {
+			history = HistoryJson{game_id, player.ApiId(), player.Id, player.Score, int(player.Time / time.Millisecond), rank}
 		}
+		
+		marshalledHistory, _ := json.Marshal(history)
+		ApiRequest("POST", "manager/history", marshalledHistory)
 	}
 }
 

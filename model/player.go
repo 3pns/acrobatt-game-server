@@ -40,6 +40,7 @@ func NewPlayer(id int, name string, color string, pieces []Piece, startingSquare
 	player.squares = []*Square{}
 	player.hasPlaceabePieces = true
 	player.ClientId = -1
+	player.StartTimer()
 	return &player
 }
 
