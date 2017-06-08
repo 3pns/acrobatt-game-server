@@ -215,7 +215,8 @@ func (client *Client) Start() {
 		if err != nil {
 			log.Warn("read: ", err)
 			client.listening = false
-			if strings.Contains(err.Error(), "1001") {
+			// Si client going away ou abnormal closure on stop le reader
+			if strings.Contains(err.Error(), "1001") || strings.Contains(err.Error(), "1006") {
 				return
 			}
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
