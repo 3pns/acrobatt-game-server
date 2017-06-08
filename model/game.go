@@ -85,10 +85,11 @@ func (game *Game) Start() {
 	request := Request{}
 	for {
 		request = <-game.RequestChannel
+		var player *Player
 		if request.Client.GameId() >= 0 {
-			player := board.Players[request.Client.GameId()]
+			player = board.Players[request.Client.GameId()]
 		} else {
-			return
+			continue
 		}
 		
 		client := request.Client
