@@ -85,7 +85,12 @@ func (game *Game) Start() {
 	request := Request{}
 	for {
 		request = <-game.RequestChannel
-		player := board.Players[request.Client.GameId()]
+		if request.Client.GameId() >= 0 {
+			player := board.Players[request.Client.GameId()]
+		} else {
+			return
+		}
+		
 		client := request.Client
 		client.UpdateTrace("Game[" + string(game.Id) + "]->")
 		isPlayerTurn := player == board.PlayerTurn
