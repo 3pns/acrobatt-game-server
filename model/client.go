@@ -215,7 +215,7 @@ func (client *Client) Start() {
 		if err != nil {
 			log.Warn("read: ", err)
 			client.listening = false
-			// Si client going away ou abnormal closure on stop le reader
+			// Si client going away ou abnormal closure on stop le reader, si timeout ça relit un message tous les 1 secondes
 			if strings.Contains(err.Error(), "1001") || strings.Contains(err.Error(), "1006") || strings.Contains(err.Error(), "timeout") {
 				return
 			}
@@ -267,6 +267,8 @@ func (client *Client) StartWriter() {
 		if !client.listening {
 			go client.Start()
 		}
+		client.Conn.SetReadDeadline(time.Now().Add(time.Second * 30))
+		client.Conn.SetWriteDeadline(time.Now().Add(time.Second * 30))
 		return client.Conn.SetReadDeadline(recieveTime)
 	})
 
