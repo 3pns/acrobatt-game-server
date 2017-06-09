@@ -148,6 +148,7 @@ func (lobby *Lobby) Start() {
 			log.Info("Destroy Lobby[" + strconv.Itoa(lobby.Id) + "] RequestChannel")
 			return
 		}
+		/*
 		fmt.Println("#################### PRINTING SEATS ##########################")
 		fmt.Println("seat 0 : ")
 		fmt.Println(lobby.Seats[0])
@@ -156,7 +157,7 @@ func (lobby *Lobby) Start() {
 		fmt.Println("seat 2 : ")
 		fmt.Println(lobby.Seats[2])
 		fmt.Println("seat 3 : ")
-		fmt.Println(lobby.Seats[3])
+		fmt.Println(lobby.Seats[3])*/
 	}
 }
 
