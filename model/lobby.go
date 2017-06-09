@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
+	_ "fmt"
 	log "github.com/Sirupsen/logrus"
 	"strconv"
 )
