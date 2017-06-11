@@ -114,6 +114,16 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
+	message, ok := t.(Message)
+	if ok {
+		b, err := json.Marshal(message)
+		if err != nil {
+			log.Warn(err)
+		}
+		request.DataType = "Message"
+		request.Data = b
+		return
+	}
 	log.Warn("MarshalData Failed")
 }
 

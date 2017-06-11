@@ -14,7 +14,9 @@ type server struct {
 	lobbyFactory   *LobbyFactory
 	gameFactory    *GameFactory
 	clientFactory  *ClientFactory
+	hubFactory *HubFactory
 	cleanerChannel chan *Client
+	hub *Hub
 }
 
 //thread safe singleton pattern
@@ -30,6 +32,7 @@ func GetServer() *server {
 		instance.lobbyFactory = NewLobbyFactory()
 		instance.gameFactory = NewGameFactory()
 		instance.clientFactory = NewClientFactory()
+		instance.hubFactory = NewHubFactory()
 		instance.cleanerChannel = make(chan *Client, 100)
 	})
 	return instance
@@ -47,7 +50,17 @@ func (serv *server) GetClientFactory() *ClientFactory {
 	return serv.clientFactory
 }
 
+func (serv *server) GetHubFactory() *HubFactory {
+	return serv.hubFactory
+}
+
 func (serv *server) Start() {
+	//Démarrage du Chat Hub DU Serveur
+	hub := GetServer().GetHubFactory().NewHub()
+	hub.Clients = serv.clients
+	hub.HolderType = "server"
+	hub.HolderId = -1
+	go hub.Start()
 	for {
 		time.Sleep(5 * time.Second)
 		serv.broadcastLobbies()
@@ -74,6 +87,8 @@ func (serv *server) Process(request Request) {
 		if serv.currentGames[index] != nil {
 			serv.currentGames[index].JoinAsObserver(client)
 		}
+	}else if request.Type == "BroadcastMessage" {
+		serv.hub.RequestChannel <-request
 	}
 }
 
