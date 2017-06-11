@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	_ "fmt"
 	log "github.com/Sirupsen/logrus"
 	"strconv"
 )
@@ -10,12 +9,13 @@ import (
 type Lobby struct {
 	Id             int             `json:"id"`
 	Name           string          `json:"name"`
-	Clients        []*Client       `json:"clients"`
+	Clients        map[int]*Client      `json:"clients"`
 	AIClients      map[int]*Client `json:"-"`
 	Master         *Client         `json:"master"`
 	Seats          map[int]*Client `json:"seats"`
 	game           *Game           `json:"-"`
 	RequestChannel chan Request    `json:"-"`
+	hub *Hub `json:"-"`
 }
 
 type LobbyFactory struct {
@@ -42,8 +42,8 @@ func (factory *LobbyFactory) NewLobby(client *Client) *Lobby {
 	lobby.AIClients[1] = NewAiClient()
 	lobby.AIClients[2] = NewAiClient()
 	lobby.AIClients[3] = NewAiClient()
-	lobby.Clients = []*Client{}
-	lobby.Clients = append(lobby.Clients, client)
+	lobby.Clients = make(map[int]*Client)
+	lobby.Clients[client.Id] = client //append(lobby.Clients, client)
 	lobby.Master = client
 	lobby.game = GetServer().GetGameFactory().NewGame()
 	lobby.RequestChannel = make(chan Request, 100)
@@ -53,6 +53,12 @@ func (factory *LobbyFactory) NewLobby(client *Client) *Lobby {
 }
 
 func (lobby *Lobby) Start() {
+	hub := GetServer().GetHubFactory().NewHub()
+	hub.Clients = lobby.Clients
+	hub.HolderType = "lobby"
+	hub.HolderId = lobby.Id
+	go hub.Start()
+	lobby.hub = hub
 	for {
 		request, more := <-lobby.RequestChannel
 		if more {
@@ -60,7 +66,9 @@ func (lobby *Lobby) Start() {
 			if client != nil {
 				client.UpdateTrace("Lobby[" + strconv.Itoa(lobby.Id) + "]->")
 			}
-			if request.Type == "Start" && (client == lobby.Master) {
+			if request.Type == "BroadcastMessage" {
+					lobby.hub.RequestChannel <-request
+			} else if request.Type == "Start" && (client == lobby.Master) {
 				if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 
 					//Ajout des players
@@ -79,6 +87,7 @@ func (lobby *Lobby) Start() {
 					lobby.broadcastStart()
 					go lobby.game.Start()
 					GetServer().RemoveLobby(lobby)
+					lobby.hub.Stop()
 					GetServer().AddGame(lobby.game)
 					return
 				}
@@ -177,7 +186,7 @@ func (lobby *Lobby) isMaster(client *Client) bool {
 }
 
 func (lobby *Lobby) Join(client *Client) {
-	lobby.Clients = append(lobby.Clients, client)
+	lobby.Clients[client.Id] = client
 	client.CurrentLobby = lobby
 	client.State.Event("join_lobby")
 	lobby.broadcast()
@@ -214,13 +223,7 @@ func (lobby *Lobby) broadcastRequest(request *Request) {
 
 func (lobby *Lobby) RemoveClient(client *Client) {
 	lobby.unsit(client)
-	for index, _ := range lobby.Clients {
-		if len(lobby.Clients) > index && lobby.Clients[index] == client {
-			copy(lobby.Clients[index:], lobby.Clients[index+1:])
-			lobby.Clients[len(lobby.Clients)-1] = nil
-			lobby.Clients = lobby.Clients[:len(lobby.Clients)-1]
-		}
-	}
+	delete(lobby.Clients, client.Id)
 	//si il s'agit du Master, un autre client devient Master, sinon on supprime le lobby
 	if lobby.isMaster(client) && len(lobby.Clients) > 0 {
 		lobby.Master = lobby.Clients[0]
@@ -238,6 +241,7 @@ func (lobby *Lobby) Destroy() {
 	if lobby.RequestChannel != nil {
 		close(lobby.RequestChannel)
 		lobby.RequestChannel = nil
+		lobby.hub.Stop()
 	}
 
 }

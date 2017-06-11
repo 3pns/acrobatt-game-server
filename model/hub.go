@@ -48,10 +48,10 @@ func (hub *Hub) Start() {
 	for {
 		request, more := <-hub.RequestChannel
 		client := request.Client
-		if hub.Clients[client.Id] == nil {
-			return
-		}
 		if more {
+			if hub.Clients[client.Id] == nil {
+				return
+			}
 			message := Message{}
 			json.Unmarshal(request.Data, &message)
 			message.ClientId = client.Id

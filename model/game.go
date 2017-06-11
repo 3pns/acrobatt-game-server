@@ -15,9 +15,11 @@ type Game struct {
 	Id             int             `json:"id"`
 	Clients        map[int]*Client `json:"clients"`
 	Observers        map[int]*Client `json:"observers"`
+	HubClients        map[int]*Client `json:"-"`
 	board          *Board          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
 	Moves map[int]Move `json:"-"`
+	hub *Hub `json:"-"`
 }
 
 type GameFactory struct {
@@ -98,17 +100,22 @@ func (game *Game) Start() {
 			player = board.Players[request.Client.GameId()]
 		} else if request.Client.ObserverId() >= 0 {
 			if request.Type == "Quit" {
+				game.RemoveClient(client)
 				client.UpdateTrace("QuitingGame->")
 				request.Client.State.Event("quit_game")
 				client.PrintTrace()
-			}
+			} else if request.Type == "BroadcastMessage" {
+					game.hub.RequestChannel <-request
+			} 
 			continue // fin des action observateurs, on attend une nouvelle request
 		} else {
 			continue
 		}
 
 		isPlayerTurn := player == board.PlayerTurn
-		if request.Type == "PlacePiece" && isPlayerTurn {
+		if request.Type == "BroadcastMessage" {
+			game.hub.RequestChannel <-request
+		} else if request.Type == "PlacePiece" && isPlayerTurn {
 			client.UpdateTrace("PlacePiece->")
 			piece := Piece{}
 			json.Unmarshal(request.Data, &piece)
@@ -250,14 +257,16 @@ func (game *Game) RemoveClient(client *Client) {
 				game.board.NextTurn()
 			}
 			game.BroadcastRefresh()
-			return
 		}
 	}
-
 	for index, _ := range game.Observers {
 		if game.Observers[index] == client {
 			delete(game.Observers, index)
-			return
+		}
+	}
+	for index, _ := range game.HubClients {
+		if game.HubClients[index] == client {
+			delete(game.HubClients, index)
 		}
 	}
 }
@@ -271,8 +280,6 @@ func (game *Game) PersistGameHistory() {
 
 	game_id, _ := strconv.Atoi(fmt.Sprintf("%v", response["id"]))
 
-	//history example
-	//TODO calculer le vrai tmps et score de chaque joueur
 	for index := range game.board.Players {
 		player := game.board.Players[index]
 		rank := game.board.GetRankByPlayer(player)
@@ -297,4 +304,23 @@ func (game *Game) SwapClients(oldClient *Client, newClient *Client) bool {
 		}
 	}
 	return true
+}
+
+func (game *Game) StartHub() {
+	for index, _ := range game.Clients {
+		if game.Clients[index] != nil {
+			game.HubClients[index] = game.Clients[index]
+		}
+	}
+	for index, _ := range game.Observers {
+		if game.Observers[index] != nil {
+			game.HubClients[index] = game.Observers[index]
+		}
+	}
+	hub := GetServer().GetHubFactory().NewHub()
+	hub.Clients = game.HubClients
+	hub.HolderType = "game"
+	hub.HolderId = game.Id
+	go hub.Start()
+	game.hub = hub
 }
