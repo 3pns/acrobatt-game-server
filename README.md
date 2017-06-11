@@ -40,6 +40,9 @@ myBase64Data => {"id":18,"cubes":[{"X":0,"Y":0},{"X":0,"Y":1},{"X":1,"Y":1},{"X"
 
 {"type":"Quit","dataType":"","data":null, "callbackId":""}
 
+### Depuis l'état game en tant qu'observateur
+
+{"type":"Quit","dataType":"","data":null, "callbackId":""}
 
 ### Depuis tous les états
 {"type":"FetchClient","dataType":"","data":null, "callbackId":""}
@@ -61,6 +64,8 @@ myBase64token => {"player_id": 123, "access-token": "myAccessToken", "client": "
 {"type":"CreateLobby","dataType":"","data":null, "callbackId":""}
 
 {"type":"JoinLobby","dataType":"int","data":"myInt", "callbackId":""}
+
+{"type":"ObserveGame","dataType":"int","data":"myInt", "callbackId":""}
 
 {"type":"Broadcast","dataType":"ListLobby","data":"myBase64Data", "callbackId":""}
 

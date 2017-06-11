@@ -14,6 +14,7 @@ import (
 type Game struct {
 	Id             int             `json:"id"`
 	Clients        map[int]*Client `json:"clients"`
+	Observers        map[int]*Client `json:"observers"`
 	board          *Board          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
 	Moves map[int]Move `json:"-"`
@@ -37,6 +38,7 @@ func (factory *GameFactory) NewGame() *Game {
 	var game Game 
 	game.Id = factory.Id
 	game.Clients = make(map[int]*Client)
+	game.Observers = make(map[int]*Client)
 	game.board = nil
 	game.RequestChannel = make(chan Request, 100)
 	game.Moves = make(map[int]Move)
@@ -81,19 +83,30 @@ func (game *Game) Start() {
 			game.Clients[index].State.Event("join_game")
 		}
 	}
+	//join game observers
+	for index := range game.Observers {
+		game.Observers[index].State.Event("join_game")
+	}
 	game.BroadcastRefresh()
 	request := Request{}
 	for {
 		request = <-game.RequestChannel
 		var player *Player
+		client := request.Client
+		client.UpdateTrace("Game[" + strconv.Itoa(game.Id) + "]->")
 		if request.Client.GameId() >= 0 {
 			player = board.Players[request.Client.GameId()]
+		} else if request.Client.ObserverId() >= 0 {
+			if request.Type == "Quit" {
+				client.UpdateTrace("QuitingGame->")
+				request.Client.State.Event("quit_game")
+				client.PrintTrace()
+			}
+			continue // fin des action observateurs, on attend une nouvelle request
 		} else {
 			continue
 		}
-		
-		client := request.Client
-		client.UpdateTrace("Game[" + string(game.Id) + "]->")
+
 		isPlayerTurn := player == board.PlayerTurn
 		if request.Type == "PlacePiece" && isPlayerTurn {
 			client.UpdateTrace("PlacePiece->")
@@ -196,6 +209,9 @@ func (game *Game) BroadCastRequest(request Request) {
 			game.Clients[index].RequestChannel <- request
 		}
 	}
+	for index, _ := range game.Observers {
+		game.Observers[index].RequestChannel <- request
+	}
 }
 
 func (game *Game) IsGameOver() bool {
@@ -219,6 +235,11 @@ func (game *Game) DisconnectPlayers() {
 	}
 }
 
+func (game *Game) JoinAsObserver(client *Client) {
+	game.Observers[client.Id] = client
+	client.State.Event("join_game")
+}
+
 func (game *Game) RemoveClient(client *Client) {
 	for index, _ := range game.Clients {
 		if game.Clients[index] == client {
@@ -229,6 +250,14 @@ func (game *Game) RemoveClient(client *Client) {
 				game.board.NextTurn()
 			}
 			game.BroadcastRefresh()
+			return
+		}
+	}
+
+	for index, _ := range game.Observers {
+		if game.Observers[index] == client {
+			delete(game.Observers, index)
+			return
 		}
 	}
 }

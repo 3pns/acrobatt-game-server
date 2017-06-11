@@ -68,7 +68,7 @@ func (factory *ClientFactory) NewClient(conn *websocket.Conn) *Client {
 			{Name: "join_lobby", Src: []string{"home"}, Dst: "lobby"},
 			{Name: "create_lobby", Src: []string{"home"}, Dst: "lobby"},
 			{Name: "quit_lobby", Src: []string{"lobby"}, Dst: "home"},
-			{Name: "join_game", Src: []string{"lobby"}, Dst: "game"},
+			{Name: "join_game", Src: []string{"home", "lobby"}, Dst: "game"},
 			{Name: "quit_game", Src: []string{"game"}, Dst: "home"},
 		},
 		fsm.Callbacks{
@@ -169,6 +169,15 @@ func (client *Client) IsAuthenticated() bool {
 func (client *Client) GameId() int {
 	for key := range client.CurrentGame.Clients {
 		if client.CurrentGame.Clients[key] == client {
+			return key
+		}
+	}
+	return -1
+}
+
+func (client *Client) ObserverId() int {
+	for key := range client.CurrentGame.Observers {
+		if client.CurrentGame.Observers[key] == client {
 			return key
 		}
 	}
