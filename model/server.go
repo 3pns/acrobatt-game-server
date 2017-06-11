@@ -50,7 +50,6 @@ func (serv *server) GetClientFactory() *ClientFactory {
 func (serv *server) Start() {
 	for {
 		time.Sleep(5 * time.Second)
-		//serv.sanetizeClients()
 		serv.broadcastLobbies()
 		serv.broadcastGames()
 		serv.broadcastHomeClients()
@@ -69,6 +68,11 @@ func (serv *server) Process(request Request) {
 		index := request.DataToInt()
 		if serv.lobbies[index] != nil {
 			serv.lobbies[index].Join(client)
+		}
+	} else if request.Type == "ObserveGame" {
+		index := request.DataToInt()
+		if serv.currentGames[index] != nil {
+			serv.currentGames[index].JoinAsObserver(client)
 		}
 	}
 }

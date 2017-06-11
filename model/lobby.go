@@ -63,11 +63,19 @@ func (lobby *Lobby) Start() {
 			if request.Type == "Start" && (client == lobby.Master) {
 				if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 
+					//Ajout des players
 					for key := range lobby.Seats {
 						lobby.game.Clients[key] = lobby.Seats[key]
 						lobby.game.Clients[key].CurrentGame = lobby.game
 					}
-					client.UPTrace("Start")
+
+					//Ajout des observateurs
+					for key := range lobby.Clients {
+						if lobby.ClientIsObservater(lobby.Clients[key]){
+							lobby.game.Observers[key] = lobby.Clients[key]
+						}
+					}
+										client.UPTrace("Start")
 					lobby.broadcastStart()
 					go lobby.game.Start()
 					GetServer().RemoveLobby(lobby)
@@ -255,5 +263,14 @@ func (lobby *Lobby) SwapClients(oldClient *Client, newClient *Client) bool {
 		lobby.Master = newClient
 	}
 
+	return true
+}
+
+func (lobby *Lobby) ClientIsObservater(client *Client) bool {
+	for key := range lobby.Seats {
+		if lobby.Seats[key] == client {
+			return false
+		}
+	}
 	return true
 }
