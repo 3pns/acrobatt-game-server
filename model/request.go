@@ -185,7 +185,7 @@ func (request *Request) Dispatch() {
 		auth := AuthenticateJson{}
 		json.Unmarshal(request.Data, &auth)
 		client.Authenticate(auth)
-	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil {
+	} else if client.State.Current() == "lobby" && client.CurrentLobby != nil && client.CurrentLobby.RequestChannel != nil {
 		client.UpdateTrace("->toCurrentLobbyRequestChannel->")
 		client.CurrentLobby.RequestChannel <- *request
 	} else {

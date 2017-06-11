@@ -227,7 +227,11 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 
 func (lobby *Lobby) Destroy() {
 	GetServer().RemoveLobby(lobby)
-	close(lobby.RequestChannel)
+	if lobby.RequestChannel != nil {
+		close(lobby.RequestChannel)
+		lobby.RequestChannel = nil
+	}
+
 }
 
 func (lobby *Lobby) SwapClients(oldClient *Client, newClient *Client) bool {
