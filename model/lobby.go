@@ -163,6 +163,7 @@ func (lobby *Lobby) Start() {
 				client.PrintTrace()
 			}
 		} else {
+			lobby.hub.Stop()
 			log.Info("Destroy Lobby[" + strconv.Itoa(lobby.Id) + "] RequestChannel")
 			return
 		}
@@ -242,7 +243,6 @@ func (lobby *Lobby) Destroy() {
 	if lobby.RequestChannel != nil {
 		close(lobby.RequestChannel)
 		lobby.RequestChannel = nil
-		//lobby.hub.Stop()
 	}
 
 }

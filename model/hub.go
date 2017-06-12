@@ -70,6 +70,7 @@ func (hub *Hub) Start() {
 				return 
 			}
 		} else {
+			hub.RequestChannel = nil
 			return
 		}
 	}
@@ -83,5 +84,4 @@ func (hub *Hub) broadcastRequest(request *Request) {
 
 func (hub *Hub) Stop() {
 	close(hub.RequestChannel)
-	hub.RequestChannel = nil
 }
