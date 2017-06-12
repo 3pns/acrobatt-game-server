@@ -44,14 +44,14 @@ func NewPlayer(id int, name string, color string, pieces []Piece, startingSquare
 	return &player
 }
 
-func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) bool {
+func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) *Piece {
 	if piece.Origin == nil {
 		fmt.Println("Fatal Error piece to place has no Origin")
-		return false
+		return nil
 	}
 	if player.Pieces[piece.Id].Origin != nil {
 		fmt.Println("Fatal Error piece has already been used")
-		return false
+		return nil
 	}
 	piece.PlayerId = &player.Id
 	piece.Cubes = board.Pieces[piece.Id].Cubes
@@ -66,20 +66,20 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 		if projectedCube.X < 0 || projectedCube.X > 19 || projectedCube.Y < 0 || projectedCube.Y > 19 {
 			//fmt.Println("SIGSEV Placement Out of Board Exception")
 			placementAuthorized = false
-			return false
+			return nil
 		}
 		//si le cube occupe un square occupé le placement est interdit
 		if board.Squares[projectedCube.X][projectedCube.Y].PlayerId != nil {
 			//fmt.Println("StackOverflow Board Exception le square est déjà occupé")
 			placementAuthorized = false
-			return false
+			return nil
 		}
 		// si le cube en bas est dans la board et appartient au joueur le placement est interdit
 		if projectedCube.Y+1 >= 0 && projectedCube.Y+1 < 20 {
 			if board.Squares[projectedCube.X][projectedCube.Y+1].GetPlayerId() == player.Id {
 				//fmt.Println("Placement Unauthorized Exceptio.cuz cube en bas appartient au joueur")
 				placementAuthorized = false
-				return false
+				return nil
 			}
 		}
 		// si le cube en haut est dans la board et appartient au joueur le placement est interdit
@@ -87,7 +87,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			if board.Squares[projectedCube.X][projectedCube.Y-1].GetPlayerId() == player.Id {
 				//fmt.Println("Placement Unauthorized Exceptio.cuz cube en haut appartient au joueur")
 				placementAuthorized = false
-				return false
+				return nil
 			}
 		}
 		// si le cube à gauche est dans la board et appartient au joueur le placement est interdit
@@ -95,7 +95,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			if board.Squares[projectedCube.X-1][projectedCube.Y].GetPlayerId() == player.Id {
 				//fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
 				placementAuthorized = false
-				return false
+				return nil
 			}
 		}
 		// si le cube à droite est dans la board et appartient au joueur le placement est interdit
@@ -103,7 +103,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 			if board.Squares[projectedCube.X+1][projectedCube.Y].GetPlayerId() == player.Id {
 				//fmt.Println("Placement Unauthorized Exceptio.cuz cube à gauche appartient au joueur")
 				placementAuthorized = false
-				return false
+				return nil
 			}
 		}
 		// si le cube est le cube de départ du joueur le placement est autorisé
@@ -142,12 +142,12 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 	}
 	if !placementAuthorized {
 		//fmt.Println("----- BADDIES Placement Unauthorized Exception -----")
-		return false
+		return nil
 	} else {
 		fmt.Println("----- Placement Authorized -----")
 		if simulation {
 			fmt.Println("returning true because simulation")
-			return true
+			return &piece
 		}
 		fmt.Println(piece)
 		for _, cube := range projectedCubes {
@@ -158,7 +158,7 @@ func (player *Player) PlacePiece(piece Piece, board *Board, simulation bool) boo
 		player.Pieces[piece.Id].Rotation = piece.Rotation
 		player.Pieces[piece.Id].Flipped = piece.Flipped
 		fmt.Println("returning true because piece placé")
-		return true
+		return &player.Pieces[piece.Id]
 	}
 }
 
@@ -289,7 +289,7 @@ func (player *Player) TryPlacePieceOnSquareWithOrientation(board *Board, piece P
 	for _, cube := range piece.Cubes {
 		if AllowedCoordinates(square.X-cube.X, square.Y-cube.Y) {
 			piece.Origin = board.Squares[square.X-cube.X][square.Y-cube.Y]
-			if player.PlacePiece(piece, board, simulation) {
+			if player.PlacePiece(piece, board, simulation)!= nil {
 				return true
 			} else {
 				piece.Origin = nil

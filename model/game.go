@@ -105,7 +105,6 @@ func (game *Game) Start() {
 				request.Client.State.Event("quit_game")
 				client.PrintTrace()
 			}
-		//Drop
 		}
 
 		// Pour les Joueurs et Observateurs
@@ -134,13 +133,13 @@ func (game *Game) Start() {
 				piece := Piece{}
 				json.Unmarshal(request.Data, &piece)
 				fmt.Println(piece)
-				placed := player.PlacePiece(piece, &board, false)
-				if placed {
+				placedPiece := player.PlacePiece(piece, &board, false)
+				if placedPiece != nil {
 					var req = NewRequestWithCallbackId("PlacementConfirmed", request.CallbackId)
 					client.UpdateTrace("PlacementConfirmed->")
 					client.RequestChannel <- req
 					game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
-					move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), &piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
+					move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), placedPiece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
 					game.Moves[game.board.PlayerTurn.Id] = move
 					game.board.PlayerTurn.UpdateScore(move)
 					game.board.NextTurn()
