@@ -59,9 +59,17 @@ Envoyé :
 
 myBase64Data => { "message":"MyMessage" }
 
+{"type":"SendMessage","dataType":"Message","data":"myBase64Data", "callbackId":""}
+
+myBase64Data => { "message":"MyMessage", "recipientId":0 }
+
 Broadcast reçu :
 
 {"type":"BroadcastMessage","dataType":"Message","data":"myBase64Data", "callbackId":""}
+
+myBase64Data => {"clientId":0, "hubId":0, "holderType":"myType", "holderId":0, "message":"MyMessage"}
+
+{"type":"SendMessage","dataType":"Message","data":"myBase64Data", "callbackId":""}
 
 myBase64Data => {"clientId":0, "hubId":0, "holderType":"myType", "holderId":0, "message":"MyMessage"}
 

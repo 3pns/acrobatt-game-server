@@ -66,8 +66,12 @@ func (hub *Hub) Start() {
 					}
 				}
 			} else if request.Type == "SendMessage" {
-				//TODO Privates Messages
-				return 
+				if message.RecipientId > 0 && hub.Clients[message.RecipientId] != nil && hub.Clients[message.RecipientId].RequestChannel != nil {
+					message.RecipientPseudo = hub.Clients[message.RecipientId].Pseudo
+					var req = NewRequest("SendMessage")
+					req.MarshalData(message)
+					hub.Clients[message.RecipientId].RequestChannel <- req
+				}
 			}
 		} else {
 			hub.RequestChannel = nil
