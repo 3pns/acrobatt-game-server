@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	_ "github.com/Sirupsen/logrus"
 )
 
 type Hub struct {

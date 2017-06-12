@@ -61,6 +61,7 @@ func (serv *server) Start() {
 	hub.HolderType = "server"
 	hub.HolderId = -1
 	go hub.Start()
+	serv.hub = hub
 	for {
 		time.Sleep(5 * time.Second)
 		serv.broadcastLobbies()
@@ -90,7 +91,7 @@ func (serv *server) Process(request Request) {
 		}
 		client.UPTrace("ObserveGame")
 	}else if request.Type == "BroadcastMessage" {
-		serv.hub.RequestChannel <-request
+		serv.hub.RequestChannel <- request
 		client.UPTrace("BroadcastMessage")
 	}
 }
