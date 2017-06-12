@@ -2,10 +2,10 @@ package model
 
 type Message struct {
 	Id             int             `json:"id"`
-	ClientId             int        `json:"client_id"`
-	HubId             int             `json:"hub_id"`
-	HolderType             string             `json:"holder_type"`
-	HolderId             int             `json:"holder_id"`
-	RecipientId             int             `json:"recipient_id"`
+	ClientId             int        `json:"clientId"`
+	HubId             int             `json:"hubId"`
+	HolderType             string             `json:"holderType"`
+	HolderId             int             `json:"holderId"`
+	RecipientId             int             `json:"recipientId"`
 	Message        string 	`json:"message"`
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type Hub struct {
-	Id int `json:"hub_id"`
+	Id int `json:"id"`
 	RequestChannel chan Request    `json:"-"`
 	Clients        map[int]*Client `json:"-"`
 	HolderType string `json:"-"`
