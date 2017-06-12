@@ -70,25 +70,28 @@ func (serv *server) Start() {
 }
 
 func (serv *server) Process(request Request) {
-	var client = request.Client
-
+	var client = request.ClientZ
 	if request.Type == "CreateLobby" {
 		client.State.Event("create_lobby")
 		lobby := GetServer().GetLobbyFactory().NewLobby(client)
 		GetServer().AddLobby(lobby)
 		client.CurrentLobby = lobby
+		client.UPTrace("CreateLobby")
 	} else if request.Type == "JoinLobby" {
 		index := request.DataToInt()
 		if serv.lobbies[index] != nil {
 			serv.lobbies[index].Join(client)
+			client.UPTrace("JoinLobby")
 		}
 	} else if request.Type == "ObserveGame" {
 		index := request.DataToInt()
 		if serv.currentGames[index] != nil {
 			serv.currentGames[index].JoinAsObserver(client)
 		}
+		client.UPTrace("ObserveGame")
 	}else if request.Type == "BroadcastMessage" {
 		serv.hub.RequestChannel <-request
+		client.UPTrace("BroadcastMessage")
 	}
 }
 

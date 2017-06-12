@@ -259,6 +259,7 @@ func (game *Game) DisconnectObservers() {
 func (game *Game) JoinAsObserver(client *Client) {
 	game.Observers[client.Id] = client
 	client.State.Event("join_game")
+	client.CurrentGame = game
 }
 
 func (game *Game) RemoveClient(client *Client) {
