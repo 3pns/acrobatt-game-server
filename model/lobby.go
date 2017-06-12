@@ -242,7 +242,7 @@ func (lobby *Lobby) Destroy() {
 	if lobby.RequestChannel != nil {
 		close(lobby.RequestChannel)
 		lobby.RequestChannel = nil
-		lobby.hub.Stop()
+		//lobby.hub.Stop()
 	}
 
 }
