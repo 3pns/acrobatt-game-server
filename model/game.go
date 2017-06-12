@@ -257,6 +257,7 @@ func (game *Game) DisconnectObservers() {
 
 func (game *Game) JoinAsObserver(client *Client) {
 	game.Observers[client.Id] = client
+	game.HubClients[client.Id] = client
 	client.State.Event("join_game")
 	client.CurrentGame = game
 }
@@ -273,15 +274,11 @@ func (game *Game) RemoveClient(client *Client) {
 			game.BroadcastRefresh()
 		}
 	}
-	for index, _ := range game.Observers {
-		if game.Observers[index] == client {
-			delete(game.Observers, index)
-		}
+	if game.Observers[client.Id] != nil {
+		delete(game.Observers, client.Id)
 	}
-	for index, _ := range game.HubClients {
-		if game.HubClients[index] == client {
-			delete(game.HubClients, index)
-		}
+	if game.HubClients[client.Id] != nil {
+		delete(game.HubClients, client.Id)
 	}
 }
 
