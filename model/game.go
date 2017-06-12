@@ -250,8 +250,8 @@ func (game *Game) DisconnectPlayers() {
 
 func (game *Game) DisconnectObservers() {
 	for index, _ := range game.Observers {
-				game.Clients[index].State.Event("quit_game")
-				delete(game.Clients, index)
+				game.Observers[index].State.Event("quit_game")
+				delete(game.Observers, index)
 	}
 }
 
