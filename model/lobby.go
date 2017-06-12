@@ -81,6 +81,7 @@ func (lobby *Lobby) Start() {
 					for key := range lobby.Clients {
 						if lobby.ClientIsObservater(lobby.Clients[key]){
 							lobby.game.Observers[key] = lobby.Clients[key]
+							lobby.game.Observers[key].CurrentGame = lobby.game
 						}
 					}
 										client.UPTrace("Start")
