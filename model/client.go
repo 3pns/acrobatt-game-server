@@ -176,9 +176,9 @@ func (client *Client) GameId() int {
 }
 
 func (client *Client) ObserverId() int {
-	for key := range client.CurrentGame.Observers {
-		if client.CurrentGame.Observers[key] == client {
-			return key
+	for index, _ := range game.Observers {
+		if client.CurrentGame.Observers[index] == client {
+			return index
 		}
 	}
 	return -1
