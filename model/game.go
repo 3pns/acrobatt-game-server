@@ -319,6 +319,7 @@ func (game *Game) SwapClients(oldClient *Client, newClient *Client) bool {
 }
 
 func (game *Game) StartHub() {
+	game.HubClients = make(map[int]*Client)
 	for index, _ := range game.Clients {
 		if game.Clients[index] != nil {
 			game.HubClients[index] = game.Clients[index]
