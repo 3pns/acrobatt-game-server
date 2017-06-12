@@ -106,9 +106,6 @@ func (game *Game) Start() {
 				client.PrintTrace()
 			}
 		//Drop
-		} else {
-			client.UPTrace("->dispatching_failed")
-			continue
 		}
 
 		// Pour les Joueurs et Observateurs
