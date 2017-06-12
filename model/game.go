@@ -188,6 +188,7 @@ func (game *Game) Start() {
 				game.BroadcastGameOver()
 				game.PersistGameHistory()
 				game.DisconnectPlayers()
+				game.DisconnectObservers()
 				GetServer().RemoveGame(game)
 				return
 			}
@@ -244,6 +245,13 @@ func (game *Game) DisconnectPlayers() {
 				game.Clients[index].State.Event("quit_demo")
 			}
 		}
+	}
+}
+
+func (game *Game) DisconnectObservers() {
+	for index, _ := range game.Observers {
+				game.Clients[index].State.Event("quit_game")
+				delete(game.Clients, index)
 	}
 }
 
