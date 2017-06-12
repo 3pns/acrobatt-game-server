@@ -57,7 +57,7 @@ Envoyé :
 
 {"type":"BroadcastMessage","dataType":"Message","data":"myBase64Data", "callbackId":""}
 
-myBase64Data => {"clientId":0, "message":"MyMessage"}
+myBase64Data => { "message":"MyMessage" }
 
 Broadcast reçu :
 
