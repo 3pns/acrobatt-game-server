@@ -187,6 +187,7 @@ func (game *Game) Start() {
 				game.board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
 				game.BroadcastGameOver()
 				game.PersistGameHistory()
+				lobby.hub.Stop()
 				game.DisconnectPlayers()
 				game.DisconnectObservers()
 				GetServer().RemoveGame(game)
