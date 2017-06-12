@@ -70,7 +70,7 @@ func (serv *server) Start() {
 }
 
 func (serv *server) Process(request Request) {
-	var client = request.ClientZ
+	var client = request.Client
 	if request.Type == "CreateLobby" {
 		client.State.Event("create_lobby")
 		lobby := GetServer().GetLobbyFactory().NewLobby(client)
