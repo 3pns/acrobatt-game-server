@@ -96,96 +96,104 @@ func (game *Game) Start() {
 		var player *Player
 		client := request.Client
 		client.UpdateTrace("Game[" + strconv.Itoa(game.Id) + "]->")
-		if request.Client.GameId() >= 0 {
-			player = board.Players[request.Client.GameId()]
-		} else if request.Client.ObserverId() >= 0 {
+
+		//Pour les Observateurs
+		if request.Client.ObserverId() >= 0 {
 			if request.Type == "Quit" {
 				game.RemoveClient(client)
 				client.UpdateTrace("QuitingGame->")
 				request.Client.State.Event("quit_game")
 				client.PrintTrace()
-			} else if request.Client.IsAuthenticated() && request.Type == "BroadcastMessage" {
-					game.hub.RequestChannel <-request
-			} 
-			continue // fin des action observateurs, on attend une nouvelle request
+			}
+		//Drop
 		} else {
+			client.UPTrace("->dispatching_failed")
 			continue
 		}
 
-		isPlayerTurn := player == board.PlayerTurn
-		if request.Type == "BroadcastMessage" {
-			game.hub.RequestChannel <-request
-		} else if request.Type == "PlacePiece" && isPlayerTurn {
-			client.UpdateTrace("PlacePiece->")
-			piece := Piece{}
-			json.Unmarshal(request.Data, &piece)
-			fmt.Println(piece)
-			placed := player.PlacePiece(piece, &board, false)
-			if placed {
-				var req = NewRequestWithCallbackId("PlacementConfirmed", request.CallbackId)
-				client.UpdateTrace("PlacementConfirmed->")
+		// Pour les Joueurs et Observateurs
+		if request.Client.GameId() >= 0 || request.Client.ObserverId() >= 0 {
+			if request.Type == "Fetch" {
+				client.UpdateTrace("Fetch->")
+				var req = NewRequestWithCallbackId("Fetch", request.CallbackId)
+				req.MarshalData(game.Board())
 				client.RequestChannel <- req
+			} else if request.Type == "BroadcastMessage" {
+				game.hub.RequestChannel <-request
+			}
+		}
+
+		//Pour les Joeurs
+		if request.Client.GameId() >= 0 {
+			player = board.Players[request.Client.GameId()]
+			isPlayerTurn := player == board.PlayerTurn
+			 if request.Type == "FetchPlayer" {
+				client.UpdateTrace("FetchPlayer->")
+				var req = NewRequestWithCallbackId("FetchPlayer", request.CallbackId)
+				req.MarshalData(*player)
+				client.RequestChannel <- req
+			} else if request.Type == "PlacePiece" && isPlayerTurn {
+				client.UpdateTrace("PlacePiece->")
+				piece := Piece{}
+				json.Unmarshal(request.Data, &piece)
+				fmt.Println(piece)
+				placed := player.PlacePiece(piece, &board, false)
+				if placed {
+					var req = NewRequestWithCallbackId("PlacementConfirmed", request.CallbackId)
+					client.UpdateTrace("PlacementConfirmed->")
+					client.RequestChannel <- req
+					game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
+					move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), &piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
+					game.Moves[game.board.PlayerTurn.Id] = move
+					game.board.PlayerTurn.UpdateScore(move)
+					game.board.NextTurn()
+					//game.board.PrintBoard()
+					game.BroadcastRefresh()
+				} else {
+					var req = NewRequestWithCallbackId("PlacementRefused", request.CallbackId)
+					client.UpdateTrace("PlacementRefused->")
+					client.RequestChannel <- req
+				}
+			} else if request.Type == "PlaceRandom" && isPlayerTurn {
+				client.UPTrace("PlaceRandom")
+				piece := player.PlaceRandomPieceWithIAEasy(&board, false)
 				game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
-				move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), &piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
+				move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
 				game.Moves[game.board.PlayerTurn.Id] = move
 				game.board.PlayerTurn.UpdateScore(move)
 				game.board.NextTurn()
 				//game.board.PrintBoard()
 				game.BroadcastRefresh()
-			} else {
-				var req = NewRequestWithCallbackId("PlacementRefused", request.CallbackId)
-				client.UpdateTrace("PlacementRefused->")
-				client.RequestChannel <- req
+			} else if request.Type == "Concede" {
+				client.UPTrace("Concede")
+				player.Concede()
+				game.BroadcastConcede(player)
+				if isPlayerTurn {
+					game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
+					game.board.NextTurn()
+				}
+				game.BroadcastRefresh()
+			} else if request.Type == "Quit" && !player.HasPlaceabePieces(game.board) {
+				client.UpdateTrace("Quit->")
+				if request.Client.IsAuthenticated() {
+					client.UpdateTrace("QuitingGame->")
+					request.Client.State.Event("quit_game")
+					client.PrintTrace()
+				} else {
+					client.UpdateTrace("QuitingDemo->")
+					request.Client.State.Event("quit_demo")
+					client.PrintTrace()
+				}
 			}
-		} else if request.Type == "PlaceRandom" && isPlayerTurn {
-			client.UPTrace("PlaceRandom")
-			piece := player.PlaceRandomPieceWithIAEasy(&board, false)
-			game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
-			move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
-			game.Moves[game.board.PlayerTurn.Id] = move
-			game.board.PlayerTurn.UpdateScore(move)
-			game.board.NextTurn()
-			//game.board.PrintBoard()
-			game.BroadcastRefresh()
-		} else if request.Type == "Fetch" {
-			client.UpdateTrace("Fetch->")
-			var req = NewRequestWithCallbackId("Fetch", request.CallbackId)
-			req.MarshalData(game.Board())
-			client.RequestChannel <- req
-		} else if request.Type == "FetchPlayer" {
-			client.UpdateTrace("FetchPlayer->")
-			var req = NewRequestWithCallbackId("FetchPlayer", request.CallbackId)
-			req.MarshalData(*player)
-			client.RequestChannel <- req
-		} else if request.Type == "Concede" {
-			client.UPTrace("Concede")
-			player.Concede()
-			game.BroadcastConcede(player)
-			if isPlayerTurn {
-				game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
-				game.board.NextTurn()
+			if game.IsGameOver() {
+				client.UPTrace("GameOverDetected")
+				game.board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
+				game.BroadcastGameOver()
+				game.PersistGameHistory()
+				game.DisconnectPlayers()
+				GetServer().RemoveGame(game)
+				return
 			}
-			game.BroadcastRefresh()
-		} else if request.Type == "Quit" && !player.HasPlaceabePieces(game.board) {
-			client.UpdateTrace("Quit->")
-			if request.Client.IsAuthenticated() {
-				client.UpdateTrace("QuitingGame->")
-				request.Client.State.Event("quit_game")
-				client.PrintTrace()
-			} else {
-				client.UpdateTrace("QuitingDemo->")
-				request.Client.State.Event("quit_demo")
-				client.PrintTrace()
-			}
-		}
-		if game.IsGameOver() {
-			client.UPTrace("GameOverDetected")
-			game.board.PlayerTurn.Time += board.PlayerTurn.GetTurnTime()
-			game.BroadcastGameOver()
-			game.PersistGameHistory()
-			game.DisconnectPlayers()
-			GetServer().RemoveGame(game)
-			return
 		}
 	}
 	return
