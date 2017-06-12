@@ -167,6 +167,9 @@ func (client *Client) IsAuthenticated() bool {
 }
 
 func (client *Client) GameId() int {
+	if client.CurrentGame == nil {
+		return -1
+	}
 	for key := range client.CurrentGame.Clients {
 		if client.CurrentGame.Clients[key] == client {
 			return key
@@ -176,6 +179,9 @@ func (client *Client) GameId() int {
 }
 
 func (client *Client) ObserverId() int {
+	if client.CurrentGame == nil {
+		return -1
+	}
 	for index, _ := range client.CurrentGame.Observers {
 		if client.CurrentGame.Observers[index] == client {
 			return index
