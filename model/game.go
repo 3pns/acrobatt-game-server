@@ -104,7 +104,7 @@ func (game *Game) Start() {
 				client.UpdateTrace("QuitingGame->")
 				request.Client.State.Event("quit_game")
 				client.PrintTrace()
-			} else if request.Type == "BroadcastMessage" {
+			} else if request.Client.IsAuthenticated() && request.Type == "BroadcastMessage" {
 					game.hub.RequestChannel <-request
 			} 
 			continue // fin des action observateurs, on attend une nouvelle request
