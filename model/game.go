@@ -173,6 +173,7 @@ func (game *Game) Start() {
 			} else if request.Type == "Quit" && !player.HasPlaceabePieces(game.board) {
 				client.UpdateTrace("Quit->")
 				if request.Client.IsAuthenticated() {
+					client.CurrentGame = nil
 					client.UpdateTrace("QuitingGame->")
 					request.Client.State.Event("quit_game")
 					client.PrintTrace()
