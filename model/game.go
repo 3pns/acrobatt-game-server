@@ -220,7 +220,9 @@ func (game *Game) BroadCastRequest(request Request) {
 		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.RequestChannel <- request
 		} else {
-			game.Clients[index].RequestChannel <- request
+			if game.Clients[index].CurrentGame == game{
+				game.Clients[index].RequestChannel <- request
+			}
 		}
 	}
 	for index, _ := range game.Observers {
