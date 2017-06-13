@@ -229,15 +229,13 @@ func (serv *server) invitableClientsSlice() []*Client {
 
 func (serv *server) reconnectClient(client *Client) bool {
 	if serv.clients[client.Id] != nil {
-		serv.clients[client.Id].Stop()
+		serv.clients[client.Id].StopAndSendDCByOtherClientRequest()
 		client.MyLobbyId = serv.clients[client.Id].MyLobbyId
 		client.MyGameId = serv.clients[client.Id].MyGameId
 		client.State = serv.clients[client.Id].State
 		client.CurrentGame = serv.clients[client.Id].CurrentGame
 		client.CurrentLobby = serv.clients[client.Id].CurrentLobby
 		client.RequestChannel = serv.clients[client.Id].RequestChannel
-		req := NewRequest("disconnectedByOtherClient")
-		serv.clients[client.Id].RequestChannel <- req
 		serv.SwapClients(serv.clients[client.Id], client)
 		return true
 	} else {
