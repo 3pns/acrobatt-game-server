@@ -153,11 +153,13 @@ func (game *Game) Start() {
 				}
 			} else if request.Type == "PlaceRandom" && isPlayerTurn {
 				client.UPTrace("PlaceRandom")
-				piece := player.PlaceRandomPieceWithIAEasy(&board, false)
+				piece := player.PlaceRandomPieceWithIAMedium(&board, false)
+				if piece != nil {
+					move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
+					game.Moves[game.board.PlayerTurn.Id] = move
+					game.board.PlayerTurn.UpdateScore(move)
+				}
 				game.board.PlayerTurn.Time += game.board.PlayerTurn.GetTurnTime()
-				move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
-				game.Moves[game.board.PlayerTurn.Id] = move
-				game.board.PlayerTurn.UpdateScore(move)
 				game.board.NextTurn()
 				//game.board.PrintBoard()
 				game.BroadcastRefresh()
