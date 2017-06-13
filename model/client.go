@@ -235,8 +235,11 @@ func (client *Client) Start() {
 			// 1001 : websocket: close 1001 (going away)
 			// 1006 : websocket: close 1006 (abnormal closure): unexpected EOF
 			// Si client going away ou abnormal closure on stop le reader, si timeout ça relit un message tous les 1 secondes
-			if strings.Contains(err.Error(), "1000") || strings.Contains(err.Error(), "1001") || strings.Contains(err.Error(), "1006") || strings.Contains(err.Error(), "timeout") {
+			if strings.Contains(err.Error(), "1001") || strings.Contains(err.Error(), "1006") || strings.Contains(err.Error(), "timeout") {
 				return
+			}
+			if strings.Contains(err.Error(), "1000") {
+				//TODO
 			}
 			//TODO on atterit ici et sa affiche websocket: close 1005 (no status)  lorsqu'un utilisateur ferme la fenetre ou a temporairement plus de réseau
 			time.Sleep(1 * time.Second)
