@@ -57,6 +57,8 @@ func (hub *Hub) Start() {
 			json.Unmarshal(request.Data, &message)
 			message.SenderId = client.Id
 			message.SenderPseudo = client.Pseudo
+			message.HolderType = hub.HolderType
+			message.HolderId = hub.HolderId
 			if request.Type == "BroadcastMessage" {
 				var req = NewRequest("BroadcastMessage")
 				req.MarshalData(message)
