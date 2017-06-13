@@ -7,10 +7,10 @@ import (
 )
 
 type AI struct {
-	RequestChannel chan Request
-	Difficulty     string
-	client         *Client
-	Player         *Player
+	RequestChannel chan Request `json:"-"`
+	Difficulty     string `json:"difficulty"`
+	client         *Client `json:"-"`
+	Player         *Player `json:"-"`
 }
 
 func NewIA(client *Client) AI {

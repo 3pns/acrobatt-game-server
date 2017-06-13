@@ -154,7 +154,29 @@ func (lobby *Lobby) Start() {
 					client.UPTrace("->failure")
 				}
 
-			} else if request.Type == "Quit" {
+			} else if request.Type == "SetAiEasy" && lobby.isMaster(client) {
+				client.UpdateTrace("SetAiEasy")
+				seatNumber := request.DataToInt()
+				if lobby.Seats[seatNumber] != nil && lobby.Seats[seatNumber].IsAi() {
+					lobby.Seats[seatNumber].Ai.Difficulty = "easy"
+					client.UPTrace("->success")
+					lobby.broadcast()
+				} else {
+					client.UPTrace("->failure")
+				}
+
+			} else if request.Type == "SetAiMedium" && lobby.isMaster(client) {
+				client.UpdateTrace("SetAiMedium")
+				seatNumber := request.DataToInt()
+				if lobby.Seats[seatNumber] != nil && lobby.Seats[seatNumber].IsAi() {
+					lobby.Seats[seatNumber].Ai.Difficulty = "medium"
+					client.UPTrace("->success")
+					lobby.broadcast()
+				} else {
+					client.UPTrace("->failure")
+				}
+
+			}  else if request.Type == "Quit" {
 				client.UPTrace("->Quit")
 				lobby.unsit(client)
 				client.State.Event("quit_lobby")

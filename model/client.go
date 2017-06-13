@@ -24,7 +24,7 @@ type Client struct {
 	retry          int             `json:"-"`
 	Conn           *websocket.Conn `json:"-"`
 	State          *fsm.FSM        `json:"-"`
-	Ai             *AI             `json:"-"`
+	Ai             *AI             `json:"ai"`
 	CurrentGame    *Game           `json:"-"`
 	CurrentLobby   *Lobby          `json:"-"`
 	RequestChannel chan Request    `json:"-"`

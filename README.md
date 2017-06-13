@@ -121,6 +121,10 @@ myBase64Data => { "sender" : {"id": 1}, "recipient": {"id": 2}, "lobby": {"id": 
 
 {"type":"UnsitAI","dataType":"int","data":"myInt", "callbackId":""} => Attention seul le Master peut utiliser cette commande
 
+{"type":"SetAiEasy","dataType":"int","data":"myInt", "callbackId":""} => Attention seul le Master peut utiliser cette commande
+
+{"type":"SetAiMedium","dataType":"int","data":"myInt", "callbackId":""} => Attention seul le Master peut utiliser cette commande
+
 {"type":"Quit","dataType":"","data":null, "callbackId":""}
 
 myInt => "myInt" | => 0 : "MA==", 1 : "MQ==", 2 : "Mg==", 3 : "Mw=="

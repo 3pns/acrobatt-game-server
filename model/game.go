@@ -153,7 +153,12 @@ func (game *Game) Start() {
 				}
 			} else if request.Type == "PlaceRandom" && isPlayerTurn {
 				client.UPTrace("PlaceRandom")
-				piece := player.PlaceRandomPieceWithIAMedium(&board, false)
+				var piece *Piece
+				if !client.IsAi() || client.IsAi() && client.Ai.Difficulty == "easy"{
+					piece = player.PlaceRandomPieceWithIAEasy(&board, false)
+				} else if client.IsAi() && client.Ai.Difficulty == "medium"{
+					piece = player.PlaceRandomPieceWithIAMedium(&board, false)
+				}
 				if piece != nil {
 					move := Move{game.board.Turn, game.board.PlayerTurn.Id, game.board.PlayerTurn.ApiId(), piece, int(game.board.PlayerTurn.GetTurnTime() / time.Millisecond)}
 					game.Moves[game.board.PlayerTurn.Id] = move
