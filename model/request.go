@@ -124,6 +124,16 @@ func (request *Request) MarshalData(t interface{}) {
 		request.Data = b
 		return
 	}
+	game, ok := t.(Game)
+	if ok {
+		b, err := json.Marshal(game)
+		if err != nil {
+			log.Warn(err)
+		}
+		request.DataType = "Game"
+		request.Data = b
+		return
+	}
 	log.Warn("MarshalData Failed")
 }
 

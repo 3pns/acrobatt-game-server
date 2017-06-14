@@ -83,6 +83,11 @@ func (serv *server) Process(request Request) {
 		if serv.lobbies[index] != nil {
 			serv.lobbies[index].Join(client)
 			client.UPTrace("JoinLobby")
+			var req = NewRequestWithCallbackId("JoinLobbyConfirmed", request.CallbackId)
+			client.RequestChannel <- req
+		} else {
+			var req = NewRequestWithCallbackId("JoinLobbyRefused", request.CallbackId)
+			client.RequestChannel <- req
 		}
 	} else if request.Type == "ObserveGame" {
 		index := request.DataToInt()
