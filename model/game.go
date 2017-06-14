@@ -13,7 +13,7 @@ import (
 
 type Game struct {
 	Id             int             `json:"id"`
-	Clients        map[int]*Client `json:"clients"`
+	Clients        map[int]*Client `json:"players"`
 	Observers        map[int]*Client `json:"observers"`
 	HubClients        map[int]*Client `json:"-"`
 	board          *Board          `json:"-"`
@@ -92,6 +92,7 @@ func (game *Game) Start() {
 		game.Observers[index].State.Event("join_game")
 	}
 	game.BroadcastRefresh()
+	game.BroadcastClients()
 	request := Request{}
 	for {
 		request = <-game.RequestChannel
@@ -224,6 +225,12 @@ func (game *Game) BroadcastGameOver() {
 	game.BroadCastRequest(req)
 }
 
+func (game *Game) BroadcastClients() {
+	var req = NewRequest("BroadcastClients")
+	req.MarshalData(game)
+	game.BroadCastRequest(req)
+}
+
 func (game *Game) BroadCastRequest(request Request) {
 	for index, _ := range game.Clients {
 		if game.Clients[index].IsAi() {
@@ -272,6 +279,7 @@ func (game *Game) JoinAsObserver(client *Client) {
 	game.HubClients[client.Id] = client
 	client.State.Event("join_game")
 	client.CurrentGame = game
+	game.BroadcastClients()
 }
 
 func (game *Game) RemoveClient(client *Client) {
@@ -292,6 +300,7 @@ func (game *Game) RemoveClient(client *Client) {
 	if game.HubClients[client.Id] != nil {
 		delete(game.HubClients, client.Id)
 	}
+	game.BroadcastClients()
 }
 
 func (game *Game) PersistGameHistory() {
