@@ -6,11 +6,11 @@ import (
 )
 
 type Hub struct {
-	Id int `json:"id"`
+	Id             int             `json:"id"`
 	RequestChannel chan Request    `json:"-"`
 	Clients        map[int]*Client `json:"-"`
-	HolderType string `json:"-"`
-	HolderId int `json:"-"`
+	HolderType     string          `json:"-"`
+	HolderId       int             `json:"-"`
 }
 
 type HubFactory struct {
@@ -24,12 +24,13 @@ func NewHubFactory() *HubFactory {
 }
 
 func (factory *HubFactory) NewHub() *Hub {
-	var hub Hub 
+	var hub Hub
 	hub.Id = factory.Id
 	factory.Id++
 	hub.RequestChannel = make(chan Request, 100)
 	return &hub
 }
+
 /*
 func (hub *Hub) AddClient(client *Client) {
 	hub.Clients[client.Id] = client

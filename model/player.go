@@ -221,7 +221,7 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) 
 		}
 	}
 	//on essaye de placer toutes les pièces
-	tryagain:
+tryagain:
 	//fmt.Println("remainingPieces: ", len(remainingPieces))
 	//fmt.Println("playerSquares: ", player.squares)
 	//fmt.Println("targetSquares: ", targetSquares)
@@ -240,15 +240,15 @@ func (player *Player) PlaceRandomPieceWithIAEasy(board *Board, simulation bool) 
 	return nil
 }
 
-func (player *Player) PlaceRandomPieceWithIAMedium (board *Board, simulation bool) *Piece {
+func (player *Player) PlaceRandomPieceWithIAMedium(board *Board, simulation bool) *Piece {
 	rand.Seed(time.Now().UTC().UnixNano())
 	//classification des pièces par taille en nombre de cubes
 	remainingPieces := make(map[int][]*Piece)
 	remainingPieces[1] = []*Piece{}
-	remainingPieces[2]  = []*Piece{}
-	remainingPieces[3]  = []*Piece{}
-	remainingPieces[4]  = []*Piece{}
-	remainingPieces[5]  = []*Piece{}
+	remainingPieces[2] = []*Piece{}
+	remainingPieces[3] = []*Piece{}
+	remainingPieces[4] = []*Piece{}
+	remainingPieces[5] = []*Piece{}
 	for index, _ := range player.Pieces {
 		if player.Pieces[index].Origin == nil {
 			remainingPieces[len(player.Pieces[index].Cubes)] = append(remainingPieces[len(player.Pieces[index].Cubes)], &player.Pieces[index])
@@ -259,7 +259,7 @@ func (player *Player) PlaceRandomPieceWithIAMedium (board *Board, simulation boo
 	currentSize := 6
 	if sizeOfremainingPieces(remainingPieces) <= 0 {
 		return nil
-	} 
+	}
 	if sizeOfremainingPieces(remainingPieces) == 21 {
 		targetSquares = player.startingSquares
 	} else {
@@ -267,8 +267,8 @@ func (player *Player) PlaceRandomPieceWithIAMedium (board *Board, simulation boo
 			targetSquares = append(targetSquares, square.getDiagonalAuthorizedSquares(board)...)
 		}
 	}
-	tryagain:
-	currentSize = currentSize -1
+tryagain:
+	currentSize = currentSize - 1
 	if currentSize == 0 {
 		return nil
 	} else if len(remainingPieces[currentSize]) == 0 {
@@ -292,7 +292,6 @@ func sizeOfremainingPieces(remainingPieces map[int][]*Piece) int {
 	}
 	return size
 }
-
 
 func (player *Player) TryPlacePieceOnSquares(board *Board, piece *Piece, squares []*Square, simulation bool) bool {
 	for _, square := range squares {
@@ -346,7 +345,7 @@ func (player *Player) TryPlacePieceOnSquareWithOrientation(board *Board, piece P
 	for _, cube := range piece.Cubes {
 		if AllowedCoordinates(square.X-cube.X, square.Y-cube.Y) {
 			piece.Origin = board.Squares[square.X-cube.X][square.Y-cube.Y]
-			if player.PlacePiece(piece, board, simulation)!= nil {
+			if player.PlacePiece(piece, board, simulation) != nil {
 				return true
 			} else {
 				piece.Origin = nil
@@ -408,5 +407,3 @@ func (player *Player) PlacedPieceCount() int {
 	}
 	return count
 }
-
-

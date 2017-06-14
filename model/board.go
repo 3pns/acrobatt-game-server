@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	_ "strconv"
 	"sort"
+	_ "strconv"
 )
 
 type Board struct {
@@ -15,7 +15,7 @@ type Board struct {
 	Players    []*Player       `json:"players"`
 	PlayerTurn *Player         `json:"playerTurn"`
 	Turn       int             `json:"turn"`
-	GameId int `json:"gameId"`
+	GameId     int             `json:"gameId"`
 }
 
 func (board *Board) InitBoard() {
@@ -227,7 +227,7 @@ func (board *Board) NextTurn() {
 	return
 }
 
-func (board *Board) GetRankByPlayer(player *Player) int{
+func (board *Board) GetRankByPlayer(player *Player) int {
 	ranking := make(map[*Player]int)
 	for index, _ := range board.Players {
 		ranking[board.Players[index]] = board.Players[index].Score
