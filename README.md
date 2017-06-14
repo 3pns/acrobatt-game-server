@@ -87,6 +87,10 @@ myBase64token => {"player_id": 123, "access-token": "myAccessToken", "client": "
 
 {"type":"JoinLobby","dataType":"int","data":"myInt", "callbackId":""}
 
+=> {"type":"JoinLobbyConfirmed","dataType":"","data":null, "callbackId":""}
+
+=> {"type":"JoinLobbyRefused","dataType":"","data":null, "callbackId":""}
+
 {"type":"ObserveGame","dataType":"int","data":"myInt", "callbackId":""}
 
 {"type":"Broadcast","dataType":"ListLobby","data":"myBase64Data", "callbackId":""}
