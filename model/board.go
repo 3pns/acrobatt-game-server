@@ -15,6 +15,7 @@ type Board struct {
 	Players    []*Player       `json:"players"`
 	PlayerTurn *Player         `json:"playerTurn"`
 	Turn       int             `json:"turn"`
+	GameId int `json:"gameId"`
 }
 
 func (board *Board) InitBoard() {

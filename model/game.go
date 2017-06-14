@@ -74,6 +74,7 @@ func (game *Game) Start() {
 	board.InitPieces()
 	board.InitPlayers()
 	game.board = &board
+	game.board.GameId = game.Id
 	game.StartHub()
 
 	for index := range game.Clients {
