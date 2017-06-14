@@ -240,7 +240,10 @@ func (lobby *Lobby) RemoveClient(client *Client) {
 	delete(lobby.Clients, client.Id)
 	//si il s'agit du Master ou qu'il n'y a pas de master, un autre client devient Master, sinon on supprime le lobby
 	if lobby.isMaster(client) && len(lobby.Clients) > 0 || lobby.Master == nil && len(lobby.Clients) > 0 {
-		lobby.Master = lobby.Clients[0]
+		for key,_ := range lobby.Clients {
+		    lobby.Master = lobby.Clients[key]
+		    break
+		}
 	}
 	if len(lobby.Clients) > 0 {
 		lobby.broadcast()
