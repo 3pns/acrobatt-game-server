@@ -189,16 +189,6 @@ func (lobby *Lobby) Start() {
 			log.Info("Destroy Lobby[" + strconv.Itoa(lobby.Id) + "] RequestChannel")
 			return
 		}
-		/*
-		fmt.Println("#################### PRINTING SEATS ##########################")
-		fmt.Println("seat 0 : ")
-		fmt.Println(lobby.Seats[0])
-		fmt.Println("seat 1 : ")
-		fmt.Println(lobby.Seats[1])
-		fmt.Println("seat 2 : ")
-		fmt.Println(lobby.Seats[2])
-		fmt.Println("seat 3 : ")
-		fmt.Println(lobby.Seats[3])*/
 	}
 }
 
@@ -248,8 +238,8 @@ func (lobby *Lobby) broadcastRequest(request *Request) {
 func (lobby *Lobby) RemoveClient(client *Client) {
 	lobby.unsit(client)
 	delete(lobby.Clients, client.Id)
-	//si il s'agit du Master, un autre client devient Master, sinon on supprime le lobby
-	if lobby.isMaster(client) && len(lobby.Clients) > 0 {
+	//si il s'agit du Master ou qu'il n'y a pas de master, un autre client devient Master, sinon on supprime le lobby
+	if lobby.isMaster(client) && len(lobby.Clients) > 0 ||  lobby.Master == nil && len(lobby.Clients) > 0{
 		lobby.Master = lobby.Clients[0]
 	}
 	if len(lobby.Clients) > 0 {
