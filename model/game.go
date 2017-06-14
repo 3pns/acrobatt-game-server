@@ -13,7 +13,7 @@ import (
 
 type Game struct {
 	Id             int             `json:"id"`
-	Clients        map[int]*Client `json:"players"`
+	Clients        map[int]*Client `json:"clients"`
 	Observers        map[int]*Client `json:"observers"`
 	HubClients        map[int]*Client `json:"-"`
 	board          *Board          `json:"-"`
