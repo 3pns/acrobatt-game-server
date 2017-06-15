@@ -184,7 +184,7 @@ func (client *Client) ObserverId() int {
 		return -1
 	}
 	for index, _ := range client.CurrentGame.Observers {
-		if client.CurrentGame.Observers[index] == client {
+		if client.CurrentGame.Observers[index].Id == client.Id {
 			return index
 		}
 	}
