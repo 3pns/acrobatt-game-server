@@ -17,6 +17,9 @@ Attention, Si vous êtes en mode demo, à la fin d'une partie vous serez renvoy�
 {"type":"FetchPlayer","dataType":"","data":null, "callbackId":""}
 #### réponse :
 {"type":"FetchPlayer","dataType":"Player","data":"myBase64Data", "callbackId":""}
+
+{"type":"FetchPlayerRefused","dataType":"","data":", "callbackId":""}
+
 ### Placer un coup (mettre une origin et changer les paramètres de la pièces)
 #### requête :
 {"type":"PlacePiece","dataType":"Piece","data":"myBase64Data", "callbackId":""}

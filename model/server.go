@@ -14,9 +14,9 @@ type server struct {
 	lobbyFactory   *LobbyFactory
 	gameFactory    *GameFactory
 	clientFactory  *ClientFactory
-	hubFactory *HubFactory
+	hubFactory     *HubFactory
 	cleanerChannel chan *Client
-	hub *Hub
+	hub            *Hub
 }
 
 //thread safe singleton pattern
@@ -95,7 +95,7 @@ func (serv *server) Process(request Request) {
 			serv.currentGames[index].JoinAsObserver(client)
 		}
 		client.UPTrace("ObserveGame")
-	}else if request.Type == "BroadcastMessage" {
+	} else if request.Type == "BroadcastMessage" {
 		serv.hub.RequestChannel <- request
 		client.UPTrace("BroadcastMessage")
 	}

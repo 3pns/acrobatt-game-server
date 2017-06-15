@@ -5,21 +5,20 @@ import (
 	. "../utils"
 	"encoding/json"
 	"fmt"
+	_ "github.com/Sirupsen/logrus"
 	"strconv"
 	"time"
-	_ "github.com/Sirupsen/logrus"
-
 )
 
 type Game struct {
 	Id             int             `json:"id"`
 	Clients        map[int]*Client `json:"clients"`
-	Observers        map[int]*Client `json:"observers"`
-	HubClients        map[int]*Client `json:"-"`
+	Observers      map[int]*Client `json:"observers"`
+	HubClients     map[int]*Client `json:"-"`
 	board          *Board          `json:"-"`
 	RequestChannel chan Request    `json:"-"`
-	Moves map[int]Move `json:"-"`
-	hub *Hub `json:"-"`
+	Moves          map[int]Move    `json:"-"`
+	hub            *Hub            `json:"-"`
 }
 
 type GameFactory struct {
@@ -37,7 +36,7 @@ type GameSlice struct {
 }
 
 func (factory *GameFactory) NewGame() *Game {
-	var game Game 
+	var game Game
 	game.Id = factory.Id
 	game.Clients = make(map[int]*Client)
 	game.Observers = make(map[int]*Client)
@@ -107,7 +106,11 @@ func (game *Game) Start() {
 				client.UpdateTrace("QuitingGame->")
 				request.Client.State.Event("quit_game")
 				client.PrintTrace()
-			}
+			} else if request.Type == "FetchPlayer" {
+                                client.UpdateTrace("FetchPlayer->")
+                                var req = NewRequestWithCallbackId("FetchPlayerRefused", request.CallbackId)
+                                client.RequestChannel <- req
+                        }
 		}
 
 		// Pour les Joueurs et Observateurs
@@ -118,7 +121,7 @@ func (game *Game) Start() {
 				req.MarshalData(game.Board())
 				client.RequestChannel <- req
 			} else if request.Type == "BroadcastMessage" {
-				game.hub.RequestChannel <-request
+				game.hub.RequestChannel <- request
 			}
 		}
 
@@ -126,7 +129,7 @@ func (game *Game) Start() {
 		if request.Client.GameId() >= 0 {
 			player = board.Players[request.Client.GameId()]
 			isPlayerTurn := player == board.PlayerTurn
-			 if request.Type == "FetchPlayer" {
+			if request.Type == "FetchPlayer" {
 				client.UpdateTrace("FetchPlayer->")
 				var req = NewRequestWithCallbackId("FetchPlayer", request.CallbackId)
 				req.MarshalData(*player)
@@ -156,9 +159,9 @@ func (game *Game) Start() {
 			} else if request.Type == "PlaceRandom" && isPlayerTurn {
 				client.UPTrace("PlaceRandom")
 				var piece *Piece
-				if !client.IsAi() || client.IsAi() && client.Ai.Difficulty == "easy"{
+				if !client.IsAi() || client.IsAi() && client.Ai.Difficulty == "easy" {
 					piece = player.PlaceRandomPieceWithIAEasy(&board, false)
-				} else if client.IsAi() && client.Ai.Difficulty == "medium"{
+				} else if client.IsAi() && client.Ai.Difficulty == "medium" {
 					piece = player.PlaceRandomPieceWithIAMedium(&board, false)
 				}
 				if piece != nil {
@@ -236,7 +239,7 @@ func (game *Game) BroadCastRequest(request Request) {
 		if game.Clients[index].IsAi() {
 			game.Clients[index].Ai.RequestChannel <- request
 		} else {
-			if game.Clients[index].CurrentGame == game{
+			if game.Clients[index].CurrentGame == game {
 				game.Clients[index].RequestChannel <- request
 			}
 		}
@@ -269,8 +272,8 @@ func (game *Game) DisconnectPlayers() {
 
 func (game *Game) DisconnectObservers() {
 	for index, _ := range game.Observers {
-				game.Observers[index].State.Event("quit_game")
-				delete(game.Observers, index)
+		game.Observers[index].State.Event("quit_game")
+		delete(game.Observers, index)
 	}
 }
 
@@ -304,7 +307,7 @@ func (game *Game) RemoveClient(client *Client) {
 }
 
 func (game *Game) PersistGameHistory() {
-	//game 
+	//game
 	marshalledData, _ := json.Marshal(game.Moves)
 	gj := GameJson{marshalledData}
 	marshalledGJ, _ := json.Marshal(gj)
@@ -323,7 +326,7 @@ func (game *Game) PersistGameHistory() {
 		} else {
 			history = HistoryJson{game_id, player.ApiId(), player.Id, player.Score, int(player.Time / time.Millisecond), rank}
 		}
-		
+
 		marshalledHistory, _ := json.Marshal(history)
 		ApiRequest("POST", "manager/history", marshalledHistory)
 	}

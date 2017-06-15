@@ -9,13 +9,13 @@ import (
 type Lobby struct {
 	Id             int             `json:"id"`
 	Name           string          `json:"name"`
-	Clients        map[int]*Client      `json:"clients"`
+	Clients        map[int]*Client `json:"clients"`
 	AIClients      map[int]*Client `json:"-"`
 	Master         *Client         `json:"master"`
 	Seats          map[int]*Client `json:"seats"`
 	game           *Game           `json:"-"`
 	RequestChannel chan Request    `json:"-"`
-	hub *Hub `json:"-"`
+	hub            *Hub            `json:"-"`
 }
 
 type LobbyFactory struct {
@@ -67,7 +67,7 @@ func (lobby *Lobby) Start() {
 				client.UpdateTrace("Lobby[" + strconv.Itoa(lobby.Id) + "]->")
 			}
 			if request.Type == "BroadcastMessage" {
-					lobby.hub.RequestChannel <-request
+				lobby.hub.RequestChannel <- request
 			} else if request.Type == "Start" && (client == lobby.Master) {
 				if lobby.Seats[0] != nil && lobby.Seats[1] != nil && lobby.Seats[2] != nil && lobby.Seats[3] != nil {
 
@@ -79,12 +79,12 @@ func (lobby *Lobby) Start() {
 
 					//Ajout des observateurs
 					for key := range lobby.Clients {
-						if lobby.ClientIsObservater(lobby.Clients[key]){
+						if lobby.ClientIsObservater(lobby.Clients[key]) {
 							lobby.game.Observers[key] = lobby.Clients[key]
 							lobby.game.Observers[key].CurrentGame = lobby.game
 						}
 					}
-										client.UPTrace("Start")
+					client.UPTrace("Start")
 					lobby.broadcastStart()
 					go lobby.game.Start()
 					GetServer().RemoveLobby(lobby)
@@ -176,7 +176,7 @@ func (lobby *Lobby) Start() {
 					client.UPTrace("->failure")
 				}
 
-			}  else if request.Type == "Quit" {
+			} else if request.Type == "Quit" {
 				client.UPTrace("->Quit")
 				lobby.unsit(client)
 				client.State.Event("quit_lobby")
@@ -189,16 +189,6 @@ func (lobby *Lobby) Start() {
 			log.Info("Destroy Lobby[" + strconv.Itoa(lobby.Id) + "] RequestChannel")
 			return
 		}
-		/*
-		fmt.Println("#################### PRINTING SEATS ##########################")
-		fmt.Println("seat 0 : ")
-		fmt.Println(lobby.Seats[0])
-		fmt.Println("seat 1 : ")
-		fmt.Println(lobby.Seats[1])
-		fmt.Println("seat 2 : ")
-		fmt.Println(lobby.Seats[2])
-		fmt.Println("seat 3 : ")
-		fmt.Println(lobby.Seats[3])*/
 	}
 }
 
@@ -248,9 +238,12 @@ func (lobby *Lobby) broadcastRequest(request *Request) {
 func (lobby *Lobby) RemoveClient(client *Client) {
 	lobby.unsit(client)
 	delete(lobby.Clients, client.Id)
-	//si il s'agit du Master, un autre client devient Master, sinon on supprime le lobby
-	if lobby.isMaster(client) && len(lobby.Clients) > 0 {
-		lobby.Master = lobby.Clients[0]
+	//si il s'agit du Master ou qu'il n'y a pas de master, un autre client devient Master, sinon on supprime le lobby
+	if lobby.isMaster(client) && len(lobby.Clients) > 0 || lobby.Master == nil && len(lobby.Clients) > 0 {
+		for key,_ := range lobby.Clients {
+		    lobby.Master = lobby.Clients[key]
+		    break
+		}
 	}
 	if len(lobby.Clients) > 0 {
 		lobby.broadcast()

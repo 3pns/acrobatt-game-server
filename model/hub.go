@@ -6,11 +6,11 @@ import (
 )
 
 type Hub struct {
-	Id int `json:"id"`
+	Id             int             `json:"id"`
 	RequestChannel chan Request    `json:"-"`
 	Clients        map[int]*Client `json:"-"`
-	HolderType string `json:"-"`
-	HolderId int `json:"-"`
+	HolderType     string          `json:"-"`
+	HolderId       int             `json:"-"`
 }
 
 type HubFactory struct {
@@ -24,27 +24,13 @@ func NewHubFactory() *HubFactory {
 }
 
 func (factory *HubFactory) NewHub() *Hub {
-	var hub Hub 
+	var hub Hub
 	hub.Id = factory.Id
 	factory.Id++
 	hub.RequestChannel = make(chan Request, 100)
 	return &hub
 }
-/*
-func (hub *Hub) AddClient(client *Client) {
-	hub.Clients[client.Id] = client
-}
 
-func (hub *Hub) AddClientsByMap(clients map[int]*Client) {
-	for index, _ := range clients {
-		hub.Clients[index] = clients[index]
-	}
-}
-
-func (hub *Hub) RemoveClient(client *Client) {
-	delete(hub.Clients, client.Id)
-}
-*/
 func (hub *Hub) Start() {
 	for {
 		request, more := <-hub.RequestChannel
@@ -59,6 +45,9 @@ func (hub *Hub) Start() {
 			message.SenderPseudo = client.Pseudo
 			message.HolderType = hub.HolderType
 			message.HolderId = hub.HolderId
+			if message.Message == "" {
+				continue
+			}
 			if request.Type == "BroadcastMessage" {
 				var req = NewRequest("BroadcastMessage")
 				req.MarshalData(message)
