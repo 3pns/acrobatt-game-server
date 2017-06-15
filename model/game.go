@@ -106,7 +106,11 @@ func (game *Game) Start() {
 				client.UpdateTrace("QuitingGame->")
 				request.Client.State.Event("quit_game")
 				client.PrintTrace()
-			}
+			} else if request.Type == "FetchPlayer" {
+                                client.UpdateTrace("FetchPlayer->")
+                                var req = NewRequestWithCallbackId("FetchPlayerRefused", request.CallbackId)
+                                client.RequestChannel <- req
+                        }
 		}
 
 		// Pour les Joueurs et Observateurs
