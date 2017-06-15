@@ -118,13 +118,13 @@ func (serv *server) StartCleaner() {
 	for {
 		client = <-serv.cleanerChannel
 
-		if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentGame != nil {
+		if serv.clients[client.Id] != nil && client != nil && serv.clients[client.Id] == client && serv.clients[client.Id].CurrentGame != nil {
 			serv.clients[client.Id].CurrentGame.RemoveClient(client)
 		}
-		if serv.clients[client.Id] == client && serv.clients[client.Id].CurrentLobby != nil {
+		if serv.clients[client.Id] != nil && client != nil && serv.clients[client.Id] == client && serv.clients[client.Id].CurrentLobby != nil {
 			serv.clients[client.Id].CurrentLobby.RemoveClient(client)
 		}
-		if serv.clients[client.Id] == client {
+		if serv.clients[client.Id] != nil && client != nil && serv.clients[client.Id] == client {
 			delete(serv.clients, client.Id)
 		}
 		client.Id = -1
